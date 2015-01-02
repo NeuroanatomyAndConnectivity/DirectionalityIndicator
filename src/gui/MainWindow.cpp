@@ -25,36 +25,41 @@
 #include <QMainWindow>
 #include <QSettings>
 
+#include "Application.h"
+
 #include "MainWindow.h"
 
-di::gui::MainWindow::MainWindow( QWidget* parent ):
-    QMainWindow( parent )
+namespace di
 {
-    setWindowTitle( tr( "DirectionalityIndicatior" ) );
-    setObjectName( "MainWindow" );
-}
+    namespace gui
+    {
+        MainWindow::MainWindow( QWidget* parent ):
+            QMainWindow( parent )
+        {
+            setWindowTitle( tr( "DirectionalityIndicatior" ) );
+            setObjectName( "MainWindow" );
+        }
 
-di::gui::MainWindow::~MainWindow()
-{
-}
+        MainWindow::~MainWindow()
+        {
+        }
 
-void di::gui::MainWindow::loadStates()
-{
-    QSettings settings( "SE", "DirectionalityIndicator" );
-    restoreGeometry( settings.value( "gui/geometry" ).toByteArray() );
-    restoreState( settings.value( "gui/windowState" ).toByteArray() );
-}
+        void MainWindow::loadStates()
+        {
+            restoreGeometry( Application::getSettings()->value( "gui/geometry" ).toByteArray() );
+            restoreState( Application::getSettings()->value( "gui/windowState" ).toByteArray() );
+        }
 
-void di::gui::MainWindow::saveStates()
-{
-    QSettings settings( "SE", "DirectionalityIndicator" );
-    settings.setValue( "gui/geometry", saveGeometry() );
-    settings.setValue( "gui/windowState", saveState() );
-}
+        void MainWindow::saveStates()
+        {
+            Application::getSettings()->setValue( "gui/geometry", saveGeometry() );
+            Application::getSettings()->setValue( "gui/windowState", saveState() );
+        }
 
-void di::gui::MainWindow::closeEvent( QCloseEvent* event )
-{
-    saveStates();
-    QMainWindow::closeEvent( event );
+        void MainWindow::closeEvent( QCloseEvent* event )
+        {
+            saveStates();
+            QMainWindow::closeEvent( event );
+        }
+    }
 }
-

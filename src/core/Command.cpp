@@ -22,25 +22,20 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "ParameterWidget.h"
+#include <string>
+
+#include "Command.h"
 
 namespace di
 {
-    namespace gui
+    namespace core
     {
-        ParameterWidget::ParameterWidget( QWidget* parent ):
-            QDockWidget( parent )
+        Command::Command()
         {
-            setWindowTitle( tr( "Algorithm Parameters" ) );
-            setObjectName( "ParameterWidget" );    // needed for persistent GUI states
-
-            // avoid closable docks.
-            setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
         }
 
-        ParameterWidget::~ParameterWidget()
+        Command::~Command()
         {
         }
     }
 }
-

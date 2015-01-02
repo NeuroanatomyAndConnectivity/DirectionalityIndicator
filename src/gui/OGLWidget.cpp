@@ -24,12 +24,18 @@
 
 #include "OGLWidget.h"
 
-di::gui::OGLWidget::OGLWidget( QWidget* parent ):
-    QGLWidget( parent )
+namespace di
 {
-}
+    namespace gui
+    {
+        OGLWidget::OGLWidget( QWidget* parent ):
+            QGLWidget( parent )
+        {
+        }
 
-di::gui::OGLWidget::~OGLWidget()
-{
+        OGLWidget::~OGLWidget()
+        {
+        }
+    }
 }
 

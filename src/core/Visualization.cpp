@@ -22,25 +22,44 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "ParameterWidget.h"
+#include <string>
+
+#include "Visualization.h"
 
 namespace di
 {
-    namespace gui
+    namespace core
     {
-        ParameterWidget::ParameterWidget( QWidget* parent ):
-            QDockWidget( parent )
+        Visualization::Visualization():
+            CommandQueue()
         {
-            setWindowTitle( tr( "Algorithm Parameters" ) );
-            setObjectName( "ParameterWidget" );    // needed for persistent GUI states
-
-            // avoid closable docks.
-            setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
         }
 
-        ParameterWidget::~ParameterWidget()
+        Visualization::~Visualization()
         {
+        }
+
+        void Visualization::start()
+        {
+            CommandQueue::start();
+        }
+
+        void Visualization::stop()
+        {
+            CommandQueue::stop();
+        }
+
+        void Visualization::loadMesh( const std::string& fileName )
+        {
+        }
+
+        void Visualization::loadLabels( const std::string& fileName )
+        {
+        }
+
+        void Visualization::process( SPtr< Command > command )
+        {
+
         }
     }
 }
-

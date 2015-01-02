@@ -26,93 +26,100 @@
 
 #include "ScaleLabel.h"
 
-di::gui::ScaleLabel::ScaleLabel( size_t length, QWidget* parent ):
-    QLabel( parent ),
-    m_additionalWidth( 0 ),
-    m_minLength( length )
+namespace di
 {
-    construct();
+    namespace gui
+    {
+        ScaleLabel::ScaleLabel( size_t length, QWidget* parent ):
+            QLabel( parent ),
+            m_additionalWidth( 0 ),
+            m_minLength( length )
+        {
+            construct();
+        }
+
+        ScaleLabel::ScaleLabel( const QString &text, size_t length, QWidget* parent ) :
+            QLabel( text, parent ),
+            m_orgText( text ),
+            m_additionalWidth( 0 ),
+            m_minLength( length )
+        {
+            construct();
+        }
+
+        ScaleLabel::ScaleLabel( QWidget* parent ):
+            QLabel( parent ),
+            m_additionalWidth( 0 ),
+            m_minLength( PREFERRED_LABEL_LENGTH )
+        {
+            construct();
+        }
+
+        ScaleLabel::ScaleLabel( const QString &text, QWidget* parent ):
+            QLabel( text, parent ),
+            m_orgText( text ),
+            m_additionalWidth( 0 ),
+            m_minLength( PREFERRED_LABEL_LENGTH )
+        {
+            construct();
+        }
+
+        void ScaleLabel::construct()
+        {
+            setMinimumWidth( fontMetrics().width( m_orgText.left( m_minLength ) + tr( "..." ) ) + m_additionalWidth );
+            setSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::Maximum );
+            setMargin( 0 );
+            setTextInteractionFlags( Qt::TextSelectableByMouse );
+        }
+
+        void ScaleLabel::resizeEvent( QResizeEvent* /*event*/ )
+        {
+            fitTextToSize();
+        }
+
+        QSize ScaleLabel::sizeHint() const
+        {
+            return QSize( calculateSize( m_orgText.length() ), QLabel::sizeHint().height() );
+        }
+
+        QSize ScaleLabel::minimumSizeHint() const
+        {
+            return QSize( calculateSize( m_minLength ), QLabel::minimumSizeHint().height() );
+        }
+
+        size_t ScaleLabel::calculateSize( size_t chars ) const
+        {
+            return fontMetrics().width( m_orgText.left( chars ) + tr( "..." ) ) + 2 * margin() + m_additionalWidth;
+        }
+
+        void ScaleLabel::setText( const QString &text )
+        {
+            m_orgText = text;
+            setMinimumWidth( fontMetrics().width( m_orgText.left( m_minLength ) + tr( "..." ) ) + 2 * margin() + m_additionalWidth );
+            fitTextToSize();
+        }
+
+        void ScaleLabel::fitTextToSize()
+        {
+            QString useText = fontMetrics().elidedText( m_orgText, Qt::ElideRight, width() );
+            QLabel::setText( useText );
+        }
+
+        void ScaleLabel::addAdditionalWidth( int w )
+        {
+            m_additionalWidth = w;
+        }
+
+        void ScaleLabel::setMinimalLength( size_t chars )
+        {
+            setText( m_orgText );
+            m_minLength = chars;
+        }
+
+        size_t ScaleLabel::getMinimalLength() const
+        {
+            return m_minLength;
+        }
+    }
 }
 
-di::gui::ScaleLabel::ScaleLabel( const QString &text, size_t length, QWidget* parent ) :
-    QLabel( text, parent ),
-    m_orgText( text ),
-    m_additionalWidth( 0 ),
-    m_minLength( length )
-{
-    construct();
-}
-
-di::gui::ScaleLabel::ScaleLabel( QWidget* parent ):
-    QLabel( parent ),
-    m_additionalWidth( 0 ),
-    m_minLength( PREFERRED_LABEL_LENGTH )
-{
-    construct();
-}
-
-di::gui::ScaleLabel::ScaleLabel( const QString &text, QWidget* parent ):
-    QLabel( text, parent ),
-    m_orgText( text ),
-    m_additionalWidth( 0 ),
-    m_minLength( PREFERRED_LABEL_LENGTH )
-{
-    construct();
-}
-
-void di::gui::ScaleLabel::construct()
-{
-    setMinimumWidth( fontMetrics().width( m_orgText.left( m_minLength ) + tr( "..." ) ) + m_additionalWidth );
-    setSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::Maximum );
-    setMargin( 0 );
-    setTextInteractionFlags( Qt::TextSelectableByMouse );
-}
-
-void di::gui::ScaleLabel::resizeEvent( QResizeEvent* /*event*/ )
-{
-    fitTextToSize();
-}
-
-QSize di::gui::ScaleLabel::sizeHint() const
-{
-    return QSize( calculateSize( m_orgText.length() ), QLabel::sizeHint().height() );
-}
-
-QSize di::gui::ScaleLabel::minimumSizeHint() const
-{
-    return QSize( calculateSize( m_minLength ), QLabel::minimumSizeHint().height() );
-}
-
-size_t di::gui::ScaleLabel::calculateSize( size_t chars ) const
-{
-    return fontMetrics().width( m_orgText.left( chars ) + tr( "..." ) ) + 2 * margin() + m_additionalWidth;
-}
-
-void di::gui::ScaleLabel::setText( const QString &text )
-{
-    m_orgText = text;
-    setMinimumWidth( fontMetrics().width( m_orgText.left( m_minLength ) + tr( "..." ) ) + 2 * margin() + m_additionalWidth );
-    fitTextToSize();
-}
-
-void di::gui::ScaleLabel::fitTextToSize()
-{
-    QString useText = fontMetrics().elidedText( m_orgText, Qt::ElideRight, width() );
-    QLabel::setText( useText );
-}
-
-void di::gui::ScaleLabel::addAdditionalWidth( int w )
-{
-    m_additionalWidth = w;
-}
-
-void di::gui::ScaleLabel::setMinimalLength( size_t chars )
-{
-    setText( m_orgText );
-    m_minLength = chars;
-}
-
-size_t di::gui::ScaleLabel::getMinimalLength() const
-{
-    return m_minLength;
-}

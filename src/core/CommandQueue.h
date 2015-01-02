@@ -22,62 +22,68 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATAWIDGET_H
-#define DATAWIDGET_H
+#ifndef COMMANDQUEUE_H
+#define COMMANDQUEUE_H
 
-#include <QWidget>
-#include <QDockWidget>
+#include <string>
+#include <thread>
 
-class ScaleLabel;
+#include "Types.h"
+
+#include "Command.h"
 
 namespace di
 {
-    namespace gui
+    namespace core
     {
         /**
-         * A simple widget to provide the data-loading functionality.
-         */
-        class DataWidget: public QDockWidget
+         * Implements a command queue. Commit commands to the queue and they will be processed in a separate thread. Class is abstract.
+        */
+        class CommandQueue
         {
-            Q_OBJECT
         public:
             /**
-             * Create the data widget.
-             *
-             * \param parent the parent widget.
+             * Create an empty command queue. This does not start the queue. Use \ref start() to start processing.
+             * After construction, the queue already accepts commands.
              */
-            explicit DataWidget( QWidget* parent = nullptr );
+            CommandQueue();
 
             /**
-             * Destroy and clean up.
+             * Clean up. This stops the queue and removes remaining commands.
              */
-            virtual ~DataWidget();
+            virtual ~CommandQueue();
+
+            /**
+             * Start queue processing.
+             */
+            virtual void start();
+
+            /**
+             * Gracefully stop the queue by processing the remaining commands and refusing new ones.
+             */
+            virtual void stop();
 
         protected:
+            /**
+             * Thread method. Runs inside the m_thread - thread. Processes the currently commited threads.
+             */
+            void run();
+
+            /**
+             * Process the specified command. Use Command::handle to mark the command as being handled.
+             *
+             * \param command the command to handle
+             */
+            virtual void process( SPtr< Command > command ) = 0;
+
         private:
             /**
-             * The label used for the labeling data
+             * The thread of this command queue.
              */
-            ScaleLabel* m_labelLoadLabel = nullptr;
-
-            /**
-             * The label used for the mesh data
-             */
-            ScaleLabel* m_meshLoadLabel = nullptr;
-
-        private slots:
-            /**
-             * Load the mesh data.
-             */
-            void loadMesh();
-
-            /**
-             * Load the label data.
-             */
-            void loadLabels();
+            SPtr< std::thread > m_thread = nullptr;
         };
     }
 }
 
-#endif  // DATAWIDGET_H
+#endif  // COMMANDQUEUE_H
 

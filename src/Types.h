@@ -22,25 +22,27 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "ParameterWidget.h"
+#ifndef TYPES_H
+#define TYPES_H
+
+#include <memory>
 
 namespace di
 {
-    namespace gui
-    {
-        ParameterWidget::ParameterWidget( QWidget* parent ):
-            QDockWidget( parent )
-        {
-            setWindowTitle( tr( "Algorithm Parameters" ) );
-            setObjectName( "ParameterWidget" );    // needed for persistent GUI states
+    /**
+     * Alias for abbreviating the often used std::shared_ptr< Type >.
+     *
+     * \tparam T the type to embed into the shared_ptr.
+     */
+    template< typename T > using SPtr = std::shared_ptr< T >;
 
-            // avoid closable docks.
-            setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
-        }
-
-        ParameterWidget::~ParameterWidget()
-        {
-        }
-    }
+    /**
+     * Alias for abbreviating the often used std::shared_ptr< Type >.
+     *
+     * \tparam T the type to embed into the shared_ptr.
+     */
+    template< typename T > using ConstSPtr = std::shared_ptr< const T >;
 }
+
+#endif  // TYPES_H
 

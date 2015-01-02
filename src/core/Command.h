@@ -22,25 +22,33 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "ParameterWidget.h"
+#ifndef COMMAND_H
+#define COMMAND_H
 
 namespace di
 {
-    namespace gui
+    namespace core
     {
-        ParameterWidget::ParameterWidget( QWidget* parent ):
-            QDockWidget( parent )
+        /**
+         * Implements a command. Derive to implement specific commands.
+        */
+        class Command
         {
-            setWindowTitle( tr( "Algorithm Parameters" ) );
-            setObjectName( "ParameterWidget" );    // needed for persistent GUI states
+        public:
+            /**
+             * Create an empty command. Derive to add a meaning.
+             */
+            Command();
 
-            // avoid closable docks.
-            setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
-        }
-
-        ParameterWidget::~ParameterWidget()
-        {
-        }
+            /**
+             * Clean up.
+             */
+            virtual ~Command();
+        protected:
+        private:
+        };
     }
 }
+
+#endif  // COMMAND_H
 

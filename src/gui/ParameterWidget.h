@@ -30,30 +30,30 @@
 
 namespace di
 {
-namespace gui
-{
-    /**
-     * A simple widget to show the algorithm parameters.
-     */
-    class ParameterWidget: public QDockWidget
+    namespace gui
     {
-        Q_OBJECT
-    public:
         /**
-         * Create the parameter widget.
-         *
-         * \param parent the parent widget.
+         * A simple widget to show the algorithm parameters.
          */
-        explicit ParameterWidget( QWidget* parent = nullptr );
+        class ParameterWidget: public QDockWidget
+        {
+            Q_OBJECT
+        public:
+            /**
+             * Create the parameter widget.
+             *
+             * \param parent the parent widget.
+             */
+            explicit ParameterWidget( QWidget* parent = nullptr );
 
-        /**
-         * Destroy and clean up.
-         */
-        virtual ~ParameterWidget();
-    protected:
-    private:
-    };
-}
+            /**
+             * Destroy and clean up.
+             */
+            virtual ~ParameterWidget();
+        protected:
+        private:
+        };
+    }
 }
 
 #endif  // PARAMETERWIDGET_H

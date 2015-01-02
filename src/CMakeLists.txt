@@ -67,7 +67,7 @@ ENDIF()
 LIST( APPEND CMAKE_STANDARD_LIBRARIES "stdc++" "m" )
 
 # Force latest standard and activate nearly all warnings
-SET( CMAKE_CXX_FLAGS "-frtti -pedantic -std=c++11 -Wall -Wno-long-long -Wextra " CACHE STRING "" FORCE )
+SET( CMAKE_CXX_FLAGS "-frtti -pedantic -std=c++11 -Wall -Wno-long-long -Wextra -pthread" CACHE STRING "" FORCE )
 
 # Darwin's ld isn't GNU and doesn't like the following
 IF( NOT CMAKE_SYSTEM_NAME MATCHES "Darwin" )
@@ -83,6 +83,9 @@ SET( CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem" CACHE STRING "" FORCE )
 
 # Export compile commands. Useful if you are using a code completion tool like YouCompleteMe.
 SET( CMAKE_EXPORT_COMPILE_COMMAND ON FORCE )
+
+# Use src/ as include search path
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 #

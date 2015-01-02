@@ -22,25 +22,46 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "ParameterWidget.h"
+#include <string>
+
+#include "CommandQueue.h"
 
 namespace di
 {
-    namespace gui
+    namespace core
     {
-        ParameterWidget::ParameterWidget( QWidget* parent ):
-            QDockWidget( parent )
+        CommandQueue::CommandQueue()
         {
-            setWindowTitle( tr( "Algorithm Parameters" ) );
-            setObjectName( "ParameterWidget" );    // needed for persistent GUI states
-
-            // avoid closable docks.
-            setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
         }
 
-        ParameterWidget::~ParameterWidget()
+        CommandQueue::~CommandQueue()
         {
+        }
+
+        void CommandQueue::run()
+        {
+            // loop and handle ...
+        }
+
+        void CommandQueue::start()
+        {
+            // ignore the call if the thread is running already
+            if( m_thread )
+            {
+                return;
+            }
+
+            // start the std::thread.
+            m_thread = SPtr< std::thread >( new std::thread( &CommandQueue::run, this ) );
+        }
+
+        void CommandQueue::stop()
+        {
+            if( m_thread )
+            {
+                m_thread->join();
+                m_thread = nullptr;
+            }
         }
     }
 }
-

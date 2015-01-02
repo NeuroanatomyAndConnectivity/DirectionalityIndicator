@@ -30,46 +30,46 @@
 
 namespace di
 {
-namespace gui
-{
-    /**
-     * The main window of the application.
-     */
-    class MainWindow: public QMainWindow
+    namespace gui
     {
-        Q_OBJECT
-    public:
         /**
-         * Create the main window.
-         *
-         * \param parent the parent widget.
+         * The main window of the application.
          */
-        explicit MainWindow( QWidget* parent = nullptr );
+        class MainWindow: public QMainWindow
+        {
+            Q_OBJECT
+        public:
+            /**
+             * Create the main window.
+             *
+             * \param parent the parent widget.
+             */
+            explicit MainWindow( QWidget* parent = nullptr );
 
-        /**
-         * Destroy and clean up.
-         */
-        virtual ~MainWindow();
+            /**
+             * Destroy and clean up.
+             */
+            virtual ~MainWindow();
 
-        /**
-         * Loads and restores previous states  (if any). Useful to retain user GUI setup during sessions.
-         */
-        virtual void loadStates();
+            /**
+             * Loads and restores previous states  (if any). Useful to retain user GUI setup during sessions.
+             */
+            virtual void loadStates();
 
-        /**
-         * Save the current GUI states and sizes. Useful to retain user GUI setup during sessions.
-         */
-        virtual void saveStates();
-    protected:
-        /**
-         * Called on close. For more details, refer to QWidget::closeEvent.
-         *
-         * \param event the close event.
-         */
-        virtual void closeEvent( QCloseEvent* event );
-    private:
-    };
-}
+            /**
+             * Save the current GUI states and sizes. Useful to retain user GUI setup during sessions.
+             */
+            virtual void saveStates();
+        protected:
+            /**
+             * Called on close. For more details, refer to QWidget::closeEvent.
+             *
+             * \param event the close event.
+             */
+            virtual void closeEvent( QCloseEvent* event );
+        private:
+        };
+    }
 }
 
 #endif  // MAINWINDOW_H

@@ -32,31 +32,31 @@
 
 namespace di
 {
-namespace gui
-{
-    /**
-     * A wrapper around the Qt OpenGL widget. This specific widget implements the basic interaction and visualization functionalities of this
-     * application.
-     */
-    class OGLWidget: public QGLWidget
+    namespace gui
     {
-        Q_OBJECT
-    public:
         /**
-         * Create the OpenGL widget.
-         *
-         * \param parent the parent widget.
+         * A wrapper around the Qt OpenGL widget. This specific widget implements the basic interaction and visualization functionalities of this
+         * application.
          */
-        explicit OGLWidget( QWidget* parent = nullptr );
+        class OGLWidget: public QGLWidget
+        {
+            Q_OBJECT
+        public:
+            /**
+             * Create the OpenGL widget.
+             *
+             * \param parent the parent widget.
+             */
+            explicit OGLWidget( QWidget* parent = nullptr );
 
-        /**
-         * Destroy and clean up.
-         */
-        virtual ~OGLWidget();
-    protected:
-    private:
-    };
-}
+            /**
+             * Destroy and clean up.
+             */
+            virtual ~OGLWidget();
+        protected:
+        private:
+        };
+    }
 }
 
 #endif  // OGLWIDGET_H

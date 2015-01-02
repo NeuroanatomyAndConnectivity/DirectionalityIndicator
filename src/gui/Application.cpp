@@ -31,54 +31,84 @@
 
 #include "Application.h"
 
-di::gui::Application::Application( int argc, char** argv ):
-    m_argc( argc ),
-    m_argv( argv ),
-    m_mainWindow( nullptr ),
-    m_mainGLWidget( nullptr ),
-    m_dataWidget( nullptr ),
-    m_parameterWidget( nullptr )
+namespace di
 {
+    namespace gui
+    {
+        Application* Application::m_instance = nullptr;
+
+        Application::Application( int argc, char** argv ):
+            m_argc( argc ),
+            m_argv( argv )
+        {
+            // Init the singleton ...
+            m_instance = this;
+        }
+
+        Application::~Application()
+        {
+            // all the cleanup was done during run().
+        }
+
+        int Application::run()
+        {
+            // Initialize logger
+
+            // Create QApplication
+            QApplication application( m_argc, m_argv, true );
+
+            // Load settings
+            m_settings = new QSettings( "SE", "DirectionalityIndicator" );
+
+            // Create the QMainWindow
+            m_mainWindow = new MainWindow();
+            m_mainWindow->resize( 1024, 768 );
+
+            // Create the GL output:
+            m_mainGLWidget = new OGLWidget( m_mainWindow );
+            m_mainWindow->setCentralWidget( m_mainGLWidget );
+
+            // Create the data widget:
+            m_dataWidget = new DataWidget( m_mainWindow );
+            m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_dataWidget );
+
+            // Create the parameter widget:
+            m_parameterWidget = new ParameterWidget( m_mainWindow );
+            m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_parameterWidget );
+
+            // restore stored states/sizes
+            m_mainWindow->loadStates();
+
+            // start the visualization container
+            m_visualization = SPtr< core::Visualization >( new core::Visualization() );
+            m_visualization->start();
+
+            // Finally, show the UI
+            m_mainWindow->show();
+
+            // run.
+            int retVal = application.exec();
+
+            // Stop if not yet done already.
+            m_visualization->stop();
+
+            // Clean up and return.
+            return retVal;
+        }
+
+        QSettings* Application::getSettings()
+        {
+            return Application::getInstance()->m_settings;
+        }
+
+        Application* Application::getInstance()
+        {
+            return m_instance;
+        }
+
+        di::SPtr< di::core::Visualization > Application::getVisualization()
+        {
+            return Application::getInstance()->m_visualization;
+        }
+    }
 }
-
-di::gui::Application::~Application()
-{
-    // all the cleanup was done during run().
-}
-
-int di::gui::Application::run()
-{
-    // Initialize logger
-
-    // Create QApplication
-    QApplication application( m_argc, m_argv, true );
-
-    // Create the QMainWindow
-    m_mainWindow = new MainWindow();
-    m_mainWindow->resize( 1024, 768 );
-
-    // Create the GL output:
-    m_mainGLWidget = new OGLWidget( m_mainWindow );
-    m_mainWindow->setCentralWidget( m_mainGLWidget );
-
-    // Create the data widget:
-    m_dataWidget = new DataWidget( m_mainWindow );
-    m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_dataWidget );
-
-    // Create the parameter widget:
-    m_parameterWidget = new ParameterWidget( m_mainWindow );
-    m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_parameterWidget );
-
-    // restore stored states/sizes
-    m_mainWindow->loadStates();
-
-    // Finally, show the UI
-    m_mainWindow->show();
-
-    // run.
-    int retVal = application.exec();
-
-    // Clean up and return.
-    return retVal;
-}
-

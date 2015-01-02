@@ -225,6 +225,7 @@ _STL_HEADERS = frozenset([
     'pair.h', 'pthread_alloc', 'queue', 'set', 'set.h', 'sstream', 'streambuf',
     'stack', 'stl_alloc.h', 'stl_relops.h', 'type_traits.h', 'utility',
     'vector', 'vector.h',
+    'thread', 'memory'
     ])
 
 
@@ -263,6 +264,7 @@ _OTHER_HEADERS = frozenset([
 'QString',
 'QGLWidget',
 'QShortcut',
+'QDir',
 'QShowEvent', 'QSlider', 'QSplashScreen', 'QSplitter', 'QStackedWidget', 'QStyleOptionGraphicsItem', 'QTabWidget',
 'QTextCharFormat', 'QTextCursor', 'QTextEdit', 'QtGui', 'QToolBar', 'QToolBox', 'QToolButton',
 'QTreeWidget', 'QTreeWidgetItem', 'QVBoxLayout', 'QWebFrame', 'QWebPage', 'QWebView', 'QWheelEvent', 'QWidget', 'QWidgetAction'
