@@ -1,2 +1,15 @@
+# Ignore contents of the build directory
 build/*
 !build/.dummy
+
+# Some config files of the world's most favorite text editor - VIM ;-)
+lvimrc
+.ycm_extra_conf.py
+.ycm_extra_conf.pyc
+
+# My time-log
+log.otl
+
+# Generated doc
+doc/developer/html/*
+doc/developer/doxygen_sqlite3.db
