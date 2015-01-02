@@ -258,7 +258,11 @@ _OTHER_HEADERS = frozenset([
 'QGraphicsSceneDragDropEvent', 'QGraphicsSceneMouseEvent', 'QGraphicsTextItem', 'QGraphicsView', 'QGridLayout', 'QGroupBox',
 'QHBoxLayout', 'QHideEvent', 'QIcon', 'QImage', 'QInputDialog', 'QKeyEvent', 'QLabel', 'QLineEdit', 'QListWidget', 'QListWidgetItem',
 'QMainWindow', 'QMenu', 'QMenuBar', 'QMessageBox', 'QMimeData', 'QMouseEvent', 'QPaintEngine', 'QPainter', 'QPainterPath', 'QPaintEvent',
-'QPalette', 'QPixmap', 'QPolygonF', 'QProgressBar', 'QPushButton', 'QResizeEvent', 'QScrollArea', 'QScrollBar', 'QShortcut',
+'QPalette', 'QPixmap', 'QPolygonF', 'QProgressBar', 'QPushButton', 'QResizeEvent', 'QScrollArea', 'QScrollBar',
+'QSettings',
+'QString',
+'QGLWidget',
+'QShortcut',
 'QShowEvent', 'QSlider', 'QSplashScreen', 'QSplitter', 'QStackedWidget', 'QStyleOptionGraphicsItem', 'QTabWidget',
 'QTextCharFormat', 'QTextCursor', 'QTextEdit', 'QtGui', 'QToolBar', 'QToolBox', 'QToolButton',
 'QTreeWidget', 'QTreeWidgetItem', 'QVBoxLayout', 'QWebFrame', 'QWebPage', 'QWebView', 'QWheelEvent', 'QWidget', 'QWidgetAction'
