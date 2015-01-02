@@ -25,6 +25,9 @@
 #ifndef COMMANDQUEUE_H
 #define COMMANDQUEUE_H
 
+#include <condition_variable>
+#include <list>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -60,8 +63,17 @@ namespace di
 
             /**
              * Gracefully stop the queue by processing the remaining commands and refusing new ones.
+             *
+             * \param graceful if false, the queue will be stopped immediately. No further commands will be processed.
              */
-            virtual void stop();
+            virtual void stop( bool graceful = true );
+
+            /**
+             * Commit the command to the queue.
+             *
+             * \param command the command to commit.
+             */
+            virtual void commit( SPtr< Command > command );
 
         protected:
             /**
@@ -81,6 +93,48 @@ namespace di
              * The thread of this command queue.
              */
             SPtr< std::thread > m_thread = nullptr;
+
+            /**
+             * The actual command queue.
+             */
+            std::list< SPtr< Command > > m_commandQueue;
+
+            /**
+             * Securing the command queue during processing.
+             */
+            std::mutex m_commandQueueMutex;
+
+            /**
+             * Used to notify the processing thread.
+             */
+            std::condition_variable m_commandQueueCond;
+
+            /**
+             * Denotes whether the queue thread is curring.
+             */
+            bool m_running = false;
+
+            /**
+             * Stop the command queue the graceful way. Finish all commands and stop.
+             */
+            bool m_gracefulStop = true;
+
+            /**
+             * Handles thread notification.
+             */
+            void notifyThread();
+
+            /**
+             * If true, the thread was notified in the past (before the wait call).
+             */
+            bool m_notified = false;
+
+            /**
+             * Handle a single command.
+             *
+             * \param command the command to handle
+             */
+            void processCommand( SPtr< Command > command );
         };
     }
 }

@@ -59,7 +59,6 @@ namespace di
 
         void Visualization::process( SPtr< Command > command )
         {
-
         }
     }
 }

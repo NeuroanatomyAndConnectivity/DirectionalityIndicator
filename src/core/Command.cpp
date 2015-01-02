@@ -37,5 +37,21 @@ namespace di
         Command::~Command()
         {
         }
+
+        void Command::abort()
+        {
+        }
+
+        void Command::exception( const std::exception& e )
+        {
+        }
+
+        void Command::exception()
+        {
+        }
+
+        void Command::processed()
+        {
+        }
     }
 }

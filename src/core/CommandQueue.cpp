@@ -36,11 +36,84 @@ namespace di
 
         CommandQueue::~CommandQueue()
         {
+            stop( false );
         }
 
         void CommandQueue::run()
         {
+            // Used to lock the command queue mutex
+            std::unique_lock< std::mutex > lock( m_commandQueueMutex );
+
             // loop and handle ...
+            while( m_running )
+            {
+                // was the thread notified again?
+                if( !m_notified )
+                {
+                    // No. We wait.
+                    m_commandQueueCond.wait( lock,
+                                             [ this ]  // keep waiting if not explicitly notified
+                                             {
+                                                 return m_notified;
+                                             }
+                                           );
+                }
+                m_notified = false;
+
+                // stop?
+                if( !m_running )
+                {
+                    // if stopping, process the remaining commands:
+                    for( auto command : m_commandQueue )
+                    {
+                        // If we stop gracefully, we allow each command to be processed.
+                        if( m_gracefulStop )
+                        {
+                            processCommand( command );
+                        }
+                        else // for a forced stop, we abort the remaining commands
+                        {
+                            command->abort();
+                        }
+                    }
+                    // Cleanup ...
+                    m_commandQueue.clear();
+                }
+                else    // business as usual ... process command
+                {
+                    // get command
+                    SPtr< Command > command;
+                    if( !m_commandQueue.empty() )
+                    {
+                        command = m_commandQueue.front();
+                        m_commandQueue.pop_back();
+                    }
+                    // as the command might take some time, we unlock the command queue to allow the system to add more commands.
+                    lock.unlock();
+
+                    // process
+                    processCommand( command );
+                }
+            }
+        }
+
+        void CommandQueue::processCommand( SPtr< Command > command )
+        {
+            try
+            {
+                process( command );
+            }
+            catch( const std::exception& e )
+            {
+                command->exception( e );
+            }
+            catch( ... )
+            {
+                command->exception();
+            }
+
+            // maybe someone is waiting ... notify
+            command->processed();
         }
 
         void CommandQueue::start()
@@ -52,16 +125,37 @@ namespace di
             }
 
             // start the std::thread.
+            m_running = true;
             m_thread = SPtr< std::thread >( new std::thread( &CommandQueue::run, this ) );
         }
 
-        void CommandQueue::stop()
+        void CommandQueue::stop( bool graceful )
         {
+            m_running = false;
+            m_gracefulStop = graceful;
             if( m_thread )
             {
+                notifyThread();
                 m_thread->join();
                 m_thread = nullptr;
             }
+        }
+
+        void CommandQueue::commit( SPtr< Command > command )
+        {
+            // grab lock
+            std::lock_guard< std::mutex > theLock( m_commandQueueMutex );
+
+            // add and notify processing thread ...
+            m_commandQueue.push_back( command );
+            notifyThread();
+        }
+
+        void CommandQueue::notifyThread()
+        {
+            // Always set this variable to ensure that a busy thread continues to work if it is not waiting on m_commandQueueCond right now.
+            m_notified = true;
+            m_commandQueueCond.notify_one();
         }
     }
 }

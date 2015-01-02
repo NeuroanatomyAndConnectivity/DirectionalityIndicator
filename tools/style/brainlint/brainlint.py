@@ -225,7 +225,7 @@ _STL_HEADERS = frozenset([
     'pair.h', 'pthread_alloc', 'queue', 'set', 'set.h', 'sstream', 'streambuf',
     'stack', 'stl_alloc.h', 'stl_relops.h', 'type_traits.h', 'utility',
     'vector', 'vector.h',
-    'thread', 'memory'
+    'thread', 'memory', 'condition_variable', 'mutex'
     ])
 
 

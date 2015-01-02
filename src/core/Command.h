@@ -25,6 +25,8 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include <exception>
+
 namespace di
 {
     namespace core
@@ -44,6 +46,29 @@ namespace di
              * Clean up.
              */
             virtual ~Command();
+
+            /**
+             * Called after finishing the command.
+             */
+            virtual void processed();
+
+            /**
+             * Called of the command was aborted.
+             */
+            virtual void abort();
+
+            /**
+             * Called if an exception occured.
+             */
+            virtual void exception();
+
+            /**
+             * Called if an exception occurred.
+             *
+             * \param e the exception
+             */
+            virtual void exception( const std::exception& e );
+
         protected:
         private:
         };
