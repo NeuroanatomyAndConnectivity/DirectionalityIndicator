@@ -22,34 +22,39 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <iostream>
+#include <QMainWindow>
+#include <QSettings>
 
-#include "Application.h"
+#include "MainWindow.h"
 
-/**
- * Print the version information.
- */
-void printVersion()
+di::gui::MainWindow::MainWindow( QWidget* parent ):
+    QMainWindow( parent )
 {
-    std::cout << "DirectionalityIndicator (http://github.com/NeuroanatomyAndConnectivity/DirectionalityIndicator)"
-              << std::endl
-              << std::endl;
-
-    std::cout <<
-    "Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)" << std::endl <<
-    "          2014-2015 Max Planck Research Group \"Neuroanatomy and Connectivity\"" << std::endl <<
-    std::endl;  // Create new line after message for clarity.
+    setWindowTitle( tr( "DirectionalityIndicatior" ) );
+    setObjectName( "MainWindow" );
 }
 
-
-/**
- * The main routine starting up the whole application.
- */
-int main( int argc, char** argv )
+di::gui::MainWindow::~MainWindow()
 {
-    printVersion();
+}
 
-    di::gui::Application app( argc, argv );
-    return app.run();
+void di::gui::MainWindow::loadStates()
+{
+    QSettings settings( "SE", "DirectionalityIndicator" );
+    restoreGeometry( settings.value( "gui/geometry" ).toByteArray() );
+    restoreState( settings.value( "gui/windowState" ).toByteArray() );
+}
+
+void di::gui::MainWindow::saveStates()
+{
+    QSettings settings( "SE", "DirectionalityIndicator" );
+    settings.setValue( "gui/geometry", saveGeometry() );
+    settings.setValue( "gui/windowState", saveState() );
+}
+
+void di::gui::MainWindow::closeEvent( QCloseEvent* event )
+{
+    saveStates();
+    QMainWindow::closeEvent( event );
 }
 

@@ -22,34 +22,42 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <iostream>
+#ifndef OGLWIDGET_H
+#define OGLWIDGET_H
 
-#include "Application.h"
+#include <QWidget>
+// NOTE: QGLWidget is obsolete in Qt5, but the replacement QOpenGLWidget is only available in Qt 5.4+ - we keep QGLWidget for now.
+// #include <QOpenGLWidget>
+#include <QGLWidget>
 
-/**
- * Print the version information.
- */
-void printVersion()
+namespace di
 {
-    std::cout << "DirectionalityIndicator (http://github.com/NeuroanatomyAndConnectivity/DirectionalityIndicator)"
-              << std::endl
-              << std::endl;
+namespace gui
+{
+    /**
+     * A wrapper around the Qt OpenGL widget. This specific widget implements the basic interaction and visualization functionalities of this
+     * application.
+     */
+    class OGLWidget: public QGLWidget
+    {
+        Q_OBJECT
+    public:
+        /**
+         * Create the OpenGL widget.
+         *
+         * \param parent the parent widget.
+         */
+        explicit OGLWidget( QWidget* parent = nullptr );
 
-    std::cout <<
-    "Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)" << std::endl <<
-    "          2014-2015 Max Planck Research Group \"Neuroanatomy and Connectivity\"" << std::endl <<
-    std::endl;  // Create new line after message for clarity.
+        /**
+         * Destroy and clean up.
+         */
+        virtual ~OGLWidget();
+    protected:
+    private:
+    };
+}
 }
 
-
-/**
- * The main routine starting up the whole application.
- */
-int main( int argc, char** argv )
-{
-    printVersion();
-
-    di::gui::Application app( argc, argv );
-    return app.run();
-}
+#endif  // OGLWIDGET_H
 

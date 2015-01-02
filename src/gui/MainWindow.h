@@ -22,34 +22,55 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <iostream>
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#include "Application.h"
+#include <QWidget>
+#include <QMainWindow>
 
-/**
- * Print the version information.
- */
-void printVersion()
+namespace di
 {
-    std::cout << "DirectionalityIndicator (http://github.com/NeuroanatomyAndConnectivity/DirectionalityIndicator)"
-              << std::endl
-              << std::endl;
+namespace gui
+{
+    /**
+     * The main window of the application.
+     */
+    class MainWindow: public QMainWindow
+    {
+        Q_OBJECT
+    public:
+        /**
+         * Create the main window.
+         *
+         * \param parent the parent widget.
+         */
+        explicit MainWindow( QWidget* parent = nullptr );
 
-    std::cout <<
-    "Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)" << std::endl <<
-    "          2014-2015 Max Planck Research Group \"Neuroanatomy and Connectivity\"" << std::endl <<
-    std::endl;  // Create new line after message for clarity.
+        /**
+         * Destroy and clean up.
+         */
+        virtual ~MainWindow();
+
+        /**
+         * Loads and restores previous states  (if any). Useful to retain user GUI setup during sessions.
+         */
+        virtual void loadStates();
+
+        /**
+         * Save the current GUI states and sizes. Useful to retain user GUI setup during sessions.
+         */
+        virtual void saveStates();
+    protected:
+        /**
+         * Called on close. For more details, refer to QWidget::closeEvent.
+         *
+         * \param event the close event.
+         */
+        virtual void closeEvent( QCloseEvent* event );
+    private:
+    };
+}
 }
 
-
-/**
- * The main routine starting up the whole application.
- */
-int main( int argc, char** argv )
-{
-    printVersion();
-
-    di::gui::Application app( argc, argv );
-    return app.run();
-}
+#endif  // MAINWINDOW_H
 

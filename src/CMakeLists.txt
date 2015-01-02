@@ -81,6 +81,9 @@ SET( CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG -O0" CACHE STRING "" FORCE )
 # Supress compilation warnings from includes residing in system paths, see #230 for further details.
 SET( CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem" CACHE STRING "" FORCE )
 
+# Export compile commands. Useful if you are using a code completion tool like YouCompleteMe.
+SET( CMAKE_EXPORT_COMPILE_COMMAND ON FORCE )
+
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 #
 # Documentation

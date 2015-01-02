@@ -22,34 +22,14 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <iostream>
+#include "OGLWidget.h"
 
-#include "Application.h"
-
-/**
- * Print the version information.
- */
-void printVersion()
+di::gui::OGLWidget::OGLWidget( QWidget* parent ):
+    QGLWidget( parent )
 {
-    std::cout << "DirectionalityIndicator (http://github.com/NeuroanatomyAndConnectivity/DirectionalityIndicator)"
-              << std::endl
-              << std::endl;
-
-    std::cout <<
-    "Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)" << std::endl <<
-    "          2014-2015 Max Planck Research Group \"Neuroanatomy and Connectivity\"" << std::endl <<
-    std::endl;  // Create new line after message for clarity.
 }
 
-
-/**
- * The main routine starting up the whole application.
- */
-int main( int argc, char** argv )
+di::gui::OGLWidget::~OGLWidget()
 {
-    printVersion();
-
-    di::gui::Application app( argc, argv );
-    return app.run();
 }
 

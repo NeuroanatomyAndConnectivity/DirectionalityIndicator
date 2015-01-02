@@ -22,34 +22,39 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <iostream>
+#ifndef PARAMETERWIDGET_H
+#define PARAMETERWIDGET_H
 
-#include "Application.h"
+#include <QWidget>
+#include <QDockWidget>
 
-/**
- * Print the version information.
- */
-void printVersion()
+namespace di
 {
-    std::cout << "DirectionalityIndicator (http://github.com/NeuroanatomyAndConnectivity/DirectionalityIndicator)"
-              << std::endl
-              << std::endl;
+namespace gui
+{
+    /**
+     * A simple widget to show the algorithm parameters.
+     */
+    class ParameterWidget: public QDockWidget
+    {
+        Q_OBJECT
+    public:
+        /**
+         * Create the parameter widget.
+         *
+         * \param parent the parent widget.
+         */
+        explicit ParameterWidget( QWidget* parent = nullptr );
 
-    std::cout <<
-    "Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)" << std::endl <<
-    "          2014-2015 Max Planck Research Group \"Neuroanatomy and Connectivity\"" << std::endl <<
-    std::endl;  // Create new line after message for clarity.
+        /**
+         * Destroy and clean up.
+         */
+        virtual ~ParameterWidget();
+    protected:
+    private:
+    };
+}
 }
 
-
-/**
- * The main routine starting up the whole application.
- */
-int main( int argc, char** argv )
-{
-    printVersion();
-
-    di::gui::Application app( argc, argv );
-    return app.run();
-}
+#endif  // PARAMETERWIDGET_H
 
