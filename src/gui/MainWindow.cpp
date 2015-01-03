@@ -36,7 +36,7 @@ namespace di
         MainWindow::MainWindow( QWidget* parent ):
             QMainWindow( parent )
         {
-            setWindowTitle( tr( "DirectionalityIndicatior" ) );
+            setWindowTitle( tr( "DirectionalityIndicator" ) );
             setObjectName( "MainWindow" );
         }
 
