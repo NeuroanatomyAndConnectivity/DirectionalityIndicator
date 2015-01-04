@@ -34,24 +34,125 @@ namespace di
         {
         }
 
+        Command::Command( SPtr< CommandObserver > observer ):
+            m_observer( observer )
+        {
+        }
+
         Command::~Command()
         {
         }
 
+        SPtr< CommandObserver > Command::getObserver() const
+        {
+            return m_observer;
+        }
+
+        void Command::busy()
+        {
+            // Cannot be busy anymore.
+            if( isDone() )
+            {
+                return;
+            }
+
+            // Change state and notify
+            m_isBusy = true;
+            m_observer->busy();
+        }
+
+        bool Command::isBusy() const
+        {
+            return m_isBusy;
+        }
+
+        void Command::waiting()
+        {
+            // Cannot be waiting anymore.
+            if( m_isBusy || isDone() )
+            {
+                return;
+            }
+
+            // Change state and notify
+            m_isWaiting = true;
+            m_observer->waiting();
+        }
+
+        bool Command::isWaiting() const
+        {
+            return m_isWaiting;
+        }
+
+        void Command::success()
+        {
+            // Ignore the case if it already was marked as somehow finished or if it is still waiting.
+            if( isDone() || m_isWaiting )
+            {
+                return;
+            }
+
+            // Change state and notify
+            m_isSuccessful = true;
+            m_observer->success();
+        }
+
+        bool Command::isSuccessful() const
+        {
+            return m_isSuccessful;
+        }
+
         void Command::abort()
         {
+            // Ignore the case if it already was marked as somehow finished.
+            if( isDone() )
+            {
+                return;
+            }
+
+            // Change state and notify
+            m_isAborted = true;
+            m_observer->abort();
         }
 
-        void Command::exception( const std::exception& e )
+        bool Command::isAborted() const
         {
+            return m_isAborted;
         }
 
-        void Command::exception()
+        void Command::fail( const std::string& reason )
         {
+            // Ignore the case if it already was marked as somehow finished or if it is still waiting.
+            if( isDone() || m_isWaiting )
+            {
+                return;
+            }
+
+            // Change state and notify
+            m_isFailed = true;
+            m_failureReason = reason;
+            m_observer->fail();
         }
 
-        void Command::processed()
+        void Command::fail( const std::exception& reason )
         {
+            // For now, keep the exception message:
+            fail( reason.what() );
+        }
+
+        bool Command::isFailed() const
+        {
+            return m_isFailed;
+        }
+
+        bool Command::isDone() const
+        {
+            return m_isSuccessful || m_isFailed || m_isAborted;
+        }
+
+        const std::string& Command::getFailureReason() const
+        {
+            return m_failureReason;
         }
     }
 }

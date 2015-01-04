@@ -22,33 +22,20 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef TYPES_H
-#define TYPES_H
-
-#include <memory>
-
-// NOTE: This file is mostly used for type abbreviations to make life easier.
-// Thanks to the new C++11 "using" statement, you can also define "templated" type aliases. Example: alias a vector of shared_ptr:
-//  template< typename T >
-//  using SPtrVec = std::vector< std::shared_ptr< T > >
-// ... Nice, isn't it?
+#include "Observer.h"
 
 namespace di
 {
-    /**
-     * Alias for abbreviating the often used std::shared_ptr< Type >.
-     *
-     * \tparam T the type to embed into the shared_ptr.
-     */
-    template< typename T > using SPtr = std::shared_ptr< T >;
+    namespace core
+    {
+        Observer::Observer()
+        {
+            // nothing to do.
+        }
 
-    /**
-     * Alias for abbreviating the often used std::shared_ptr< Type >.
-     *
-     * \tparam T the type to embed into the shared_ptr.
-     */
-    template< typename T > using ConstSPtr = std::shared_ptr< const T >;
+        Observer::~Observer()
+        {
+            // nothing to do.
+        }
+    }
 }
-
-#endif  // TYPES_H
-

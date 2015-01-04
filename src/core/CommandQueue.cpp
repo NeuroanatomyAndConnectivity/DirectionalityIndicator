@@ -99,21 +99,29 @@ namespace di
 
         void CommandQueue::processCommand( SPtr< Command > command )
         {
+            // If the command was aborted ...
+            if( command->isAborted() )
+            {
+                return;
+            }
+
+            // The command is now busy ...
+            command->busy();
             try
             {
                 process( command );
             }
             catch( const std::exception& e )
             {
-                command->exception( e );
+                command->fail( e );
             }
             catch( ... )
             {
-                command->exception();
+                command->fail( "Unknown exception occurred." );
             }
 
             // maybe someone is waiting ... notify
-            command->processed();
+            command->success();
         }
 
         void CommandQueue::start()
@@ -148,6 +156,11 @@ namespace di
 
             // add and notify processing thread ...
             m_commandQueue.push_back( command );
+
+            // Change command state.
+            command->waiting();
+
+            // Notify thread
             notifyThread();
         }
 
