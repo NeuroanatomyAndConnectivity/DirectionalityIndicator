@@ -122,6 +122,12 @@ namespace di
              */
             size_t getNumVertices() const;
 
+            /**
+             * Checks if the data is reasonable. Basically, this ensures that there is at least one triangle and that there are enough vertices.
+             *
+             * \return true if reasonable data is present.
+             */
+            bool sanityCheck() const;
         protected:
         private:
             /**

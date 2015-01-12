@@ -232,6 +232,12 @@ INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
 # Is header-only. Use /ext as include search path (see above)
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Setup RPly
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+FILE( GLOB_RECURSE TARGET_EXT_RPLY_CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/*.c )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
 #
 # Code Setup
 #
@@ -252,7 +258,7 @@ FILE( GLOB_RECURSE TARGET_H_FILES   ${CMAKE_CURRENT_SOURCE_DIR}/*.h )
 SET( CMAKE_AUTOMOC ON )
 
 # Setup the target
-ADD_EXECUTABLE( ${BinName} ${TARGET_CPP_FILES} ${TARGET_H_FILES} )
+ADD_EXECUTABLE( ${BinName} ${TARGET_CPP_FILES} ${TARGET_H_FILES} ${TARGET_EXT_RPLY_CPP_FILES} )
 
 # Some Linux distributions need to explicitly link against X11. We add this lib here.
 IF( CMAKE_HOST_SYSTEM MATCHES "Linux" )

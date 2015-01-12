@@ -28,8 +28,8 @@ namespace di
 {
     namespace core
     {
-        TriangleDataSet::TriangleDataSet( const std::string name, ConstSPtr< TriangleMesh > triangles ):
-            DataSet< TriangleMesh > ( name, triangles )
+        TriangleDataSet::TriangleDataSet( const std::string name, ConstSPtr< TriangleMesh > triangles, ConstSPtr< RGBAArray > color ):
+            DataSet< TriangleMesh, RGBAArray > ( name, triangles, color )
         {
             // init
         }
