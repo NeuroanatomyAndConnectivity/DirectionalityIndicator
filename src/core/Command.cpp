@@ -18,7 +18,7 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
@@ -30,10 +30,6 @@ namespace di
 {
     namespace core
     {
-        Command::Command()
-        {
-        }
-
         Command::Command( SPtr< CommandObserver > observer ):
             m_observer( observer )
         {
@@ -58,7 +54,10 @@ namespace di
 
             // Change state and notify
             m_isBusy = true;
-            m_observer->busy();
+            if( m_observer )
+            {
+                m_observer->busy();
+            }
         }
 
         bool Command::isBusy() const
@@ -76,7 +75,10 @@ namespace di
 
             // Change state and notify
             m_isWaiting = true;
-            m_observer->waiting();
+            if( m_observer )
+            {
+                m_observer->waiting();
+            }
         }
 
         bool Command::isWaiting() const
@@ -94,7 +96,10 @@ namespace di
 
             // Change state and notify
             m_isSuccessful = true;
-            m_observer->success();
+            if( m_observer )
+            {
+                m_observer->success();
+            }
         }
 
         bool Command::isSuccessful() const
@@ -112,7 +117,10 @@ namespace di
 
             // Change state and notify
             m_isAborted = true;
-            m_observer->abort();
+            if( m_observer )
+            {
+                m_observer->abort();
+            }
         }
 
         bool Command::isAborted() const
@@ -131,7 +139,10 @@ namespace di
             // Change state and notify
             m_isFailed = true;
             m_failureReason = reason;
-            m_observer->fail();
+            if( m_observer )
+            {
+                m_observer->fail();
+            }
         }
 
         void Command::fail( const std::exception& reason )

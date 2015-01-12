@@ -22,20 +22,12 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "Observer.h"
+#include "PlyReader.h"
 
 namespace di
 {
     namespace core
     {
-        Observer::Observer()
-        {
-            // nothing to do.
-        }
-
-        Observer::~Observer()
-        {
-            // nothing to do.
-        }
     }
 }
+

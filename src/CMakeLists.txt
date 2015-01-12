@@ -18,7 +18,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+# along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 #
 #----------------------------------------------------------------------------------------
 
@@ -215,6 +215,21 @@ SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_QT5_EXECUTABLE_COMPILE_FLAGS}" )
 
 # This is needed since the mocs will be generated there
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#
+# External Code Setup (/ext)
+#
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Add /ext directory to include search path
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Setup GLM
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Is header-only. Use /ext as include search path (see above)
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 #

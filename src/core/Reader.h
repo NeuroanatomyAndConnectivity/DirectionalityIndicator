@@ -22,62 +22,63 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATAWIDGET_H
-#define DATAWIDGET_H
+#ifndef READER_H
+#define READER_H
 
-#include <QWidget>
-#include <QDockWidget>
+#include <string>
 
-class ScaleLabel;
+#include "Types.h"
 
 namespace di
 {
-    namespace gui
+    namespace core
     {
         /**
-         * A simple widget to provide the data-loading functionality.
+         * Interface to all file loader implementations. There will be an instance for each specific implementation and each instance is const. This
+         * means, that all load operations do not have side-effects and that the reader is not the owner of the data once it returned from the load
+         * function.
+         *
+         * \tparam ResultType the resulting type (type of loaded data). If your data format supports different types of data, use a generic
+         * ResultType (or variants).
          */
-        class DataWidget: public QDockWidget
+        template< typename ResultType >
+        class Reader
         {
-            Q_OBJECT
         public:
             /**
-             * Create the data widget.
+             * Check whether the specified file can be loaded.
              *
-             * \param parent the parent widget.
+             * \param filename the file to load
+             *
+             * \return true if this implementation is able to load the data.
              */
-            explicit DataWidget( QWidget* parent = nullptr );
+            virtual bool canLoad( const std::string& filename ) const = 0;
 
             /**
-             * Destroy and clean up.
+             * Load the specified file. This throws an exception if something went wrong.
+             *
+             * \param filename the file to load
+             *
+             * \return the data
              */
-            virtual ~DataWidget();
+            virtual SPtr< ResultType > load( const std::string& filename ) const = 0;
 
         protected:
+            /**
+             * Constructor.
+             */
+            Reader();
+
+            /**
+             * Destructor.
+             */
+            virtual ~Reader();
         private:
-            /**
-             * The label used for the labeling data
-             */
-            ScaleLabel* m_labelLoadLabel = nullptr;
-
-            /**
-             * The label used for the mesh data
-             */
-            ScaleLabel* m_meshLoadLabel = nullptr;
-
-        private slots:
-            /**
-             * Load the mesh data.
-             */
-            void loadMesh();
-
-            /**
-             * Load the label data.
-             */
-            void loadLabels();
         };
     }
 }
 
-#endif  // DATAWIDGET_H
+#endif  // READER_H
+
+
 

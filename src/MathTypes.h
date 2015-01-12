@@ -22,20 +22,20 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "Observer.h"
+#ifndef MATHTYPES_H
+#define MATHTYPES_H
 
-namespace di
-{
-    namespace core
-    {
-        Observer::Observer()
-        {
-            // nothing to do.
-        }
+// NOTE: This file is mostly used to include some standard math types like matrix and vector.
 
-        Observer::~Observer()
-        {
-            // nothing to do.
-        }
-    }
-}
+// vectors
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
+#include "glm/vec4.hpp"
+
+// matrices
+#include "glm/mat3x3.hpp"
+#include "glm/mat4x4.hpp"
+
+#endif  // MATHTYPES_H
+
+

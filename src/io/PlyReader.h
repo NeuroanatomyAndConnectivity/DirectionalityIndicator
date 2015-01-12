@@ -22,20 +22,49 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "Observer.h"
+#ifndef PLYREADER_H
+#define PLYREADER_H
+
+#include <string>
+
+#include "core/Reader.h"
+#include "core/data/TriangleMesh.h"
+#include "core/data/DataSet.h"
+#include "core/data/TriangleDataSet.h"
 
 namespace di
 {
     namespace core
     {
-        Observer::Observer()
+        /**
+         * Implements a loader for PLY mesh+attributes files. It implements the \ref Reader interface.
+         */
+        class PlyReader: public Reader< TriangleDataSet >
         {
-            // nothing to do.
-        }
+        public:
+            /**
+             * Check whether the specified file can be loaded.
+             *
+             * \param filename the file to load
+             *
+             * \return true if this implementation is able to load the data.
+             */
+            virtual bool canLoad( const std::string& filename ) const;
 
-        Observer::~Observer()
-        {
-            // nothing to do.
-        }
+            /**
+             * Load the specified file. This throws an exception if something went wrong.
+             *
+             * \param filename the file to load
+             *
+             * \return the data
+             */
+            virtual SPtr< TriangleDataSet > load( const std::string& filename ) const;
+        protected:
+        private:
+        };
     }
 }
+
+#endif  // PLYREADER_H
+
+

@@ -18,13 +18,14 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
 #ifndef TYPES_H
 #define TYPES_H
 
+// shared_ptr
 #include <memory>
 
 // NOTE: This file is mostly used for type abbreviations to make life easier.

@@ -22,20 +22,27 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "Observer.h"
+#ifndef GFXTYPES_H
+#define GFXTYPES_H
+
+// NOTE: This file is mostly used to include some standard graphics types, like vector arrays and similar.
+
+#include <vector>
+
+// we need the math types
+#include "MathTypes.h"
 
 namespace di
 {
-    namespace core
-    {
-        Observer::Observer()
-        {
-            // nothing to do.
-        }
+    typedef std::vector< glm::vec2 > Vec2Array;
+    typedef std::vector< glm::vec3 > Vec3Array;
+    typedef std::vector< glm::vec4 > Vec4Array;
 
-        Observer::~Observer()
-        {
-            // nothing to do.
-        }
-    }
+    typedef std::vector< glm::ivec2 > IndexVec2Array;
+    typedef std::vector< glm::ivec3 > IndexVec3Array;
+    typedef std::vector< glm::ivec4 > IndexVec4Array;
 }
+
+#endif  // GFXTYPES_H
+
+

@@ -18,7 +18,7 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
@@ -31,6 +31,7 @@
 #include "Types.h"
 
 #include "Command.h"
+#include "CommandObserver.h"
 #include "CommandQueue.h"
 
 namespace di
@@ -74,15 +75,17 @@ namespace di
              * Load the specified mesh file. This operation is non-blocking and runs in this container's thread.
              *
              * \param fileName the file to load
+             * \param observer the observer that gets informed about changes. Can be omitted.
              */
-            virtual void loadMesh( const std::string& fileName );
+            virtual void loadMesh( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
 
             /**
              * Load the specified label file. This operation is non-blocking and runs in this container's thread.
              *
              * \param fileName the file to load
+             * \param observer the observer that gets informed about changes. Can be omitted.
              */
-            virtual void loadLabels( const std::string& fileName );
+            virtual void loadLabels( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
 
         protected:
             /**

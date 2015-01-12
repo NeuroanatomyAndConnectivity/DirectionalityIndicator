@@ -18,7 +18,7 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
@@ -49,11 +49,11 @@ namespace di
             CommandQueue::stop();
         }
 
-        void Visualization::loadMesh( const std::string& fileName )
+        void Visualization::loadMesh( const std::string& fileName, SPtr< CommandObserver > observer )
         {
         }
 
-        void Visualization::loadLabels( const std::string& fileName )
+        void Visualization::loadLabels( const std::string& fileName, SPtr< CommandObserver > observer )
         {
         }
 

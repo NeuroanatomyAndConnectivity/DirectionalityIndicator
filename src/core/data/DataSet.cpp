@@ -22,20 +22,11 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "Observer.h"
+#include "DataSet.h"
 
 namespace di
 {
     namespace core
     {
-        Observer::Observer()
-        {
-            // nothing to do.
-        }
-
-        Observer::~Observer()
-        {
-            // nothing to do.
-        }
     }
 }

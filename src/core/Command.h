@@ -18,7 +18,7 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
@@ -50,15 +50,10 @@ namespace di
         public:
             /**
              * Create an empty command. Derive to add a meaning.
-             */
-            Command();
-
-            /**
-             * Create an empty command. Derive to add a meaning.
              *
              * \param observer an object that gets notified upon changes in this command's state.
              */
-            explicit Command( SPtr< CommandObserver > observer );
+            explicit Command( SPtr< CommandObserver > observer = nullptr );
 
             /**
              * Clean up.

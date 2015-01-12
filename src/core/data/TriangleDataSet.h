@@ -22,20 +22,30 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "Observer.h"
+#ifndef TRIANGLEDATASET_H
+#define TRIANGLEDATASET_H
+
+#include <tuple>
+#include <vector>
+
+#include "core/data/DataSet.h"
+#include "core/data/TriangleMesh.h"
+#include "MathTypes.h"
+#include "GfxTypes.h"
 
 namespace di
 {
     namespace core
     {
-        Observer::Observer()
+        class TriangleDataSet: public DataSet< TriangleMesh, // triangle mesh as grid
+                                               Vec4Array > // a color array
         {
-            // nothing to do.
-        }
-
-        Observer::~Observer()
-        {
-            // nothing to do.
-        }
+        public:
+        protected:
+        private:
+        };
     }
 }
+
+#endif  // TRIANGLEDATASET_H
+
