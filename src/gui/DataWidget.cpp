@@ -31,6 +31,9 @@
 #include "Application.h"
 #include "ScaleLabel.h"
 
+#define LogTag "gui/DataWidget"
+#include "core/Logger.h"
+
 // include some icons as XPM. This will be replaced by a proper file loading.
 #include "icons/iconMesh.xpm"
 #include "icons/iconLabels.xpm"
@@ -101,7 +104,7 @@ namespace di
         {
             QString lastPath = Application::getSettings()->value( "LastMeshPath", "" ).toString();
             QString selected = QFileDialog::getOpenFileName( this, "Load Mesh File", lastPath,
-                                                                   "Mesh File (*.gii *.asc);; GIfTI File (*.gii);; ASCII Mesh File (*.asc)" );
+                                                                   "Mesh File (*.gii *.asc *.ply);; GIfTI File (*.gii);; ASCII Mesh File (*.asc);; Stanford Poly Format (*.ply)" );
             if( selected == "" )
             {
                 return;
@@ -112,14 +115,14 @@ namespace di
             Application::getSettings()->setValue( "LastMeshPath", fi.path() );
 
             // Use deferred loading:
-            Application::getVisualization()->loadMesh( selected.toStdString() );
+            Application::getVisualization()->loadFile( selected.toStdString() );
         }
 
         void DataWidget::loadLabels()
         {
             QString lastPath = Application::getSettings()->value( "LastLabelPath", "" ).toString();
             QString selected = QFileDialog::getOpenFileName( this, "Load Label File", lastPath,
-                                                                   "Label File (*.labels)" );
+                                                                   "Label File (*.dpv)" );
             if( selected == "" )
             {
                 return;
@@ -130,7 +133,7 @@ namespace di
             Application::getSettings()->setValue( "LastLabelPath", fi.path() );
 
             // Use deferred loading:
-            Application::getVisualization()->loadLabels( selected.toStdString() );
+            Application::getVisualization()->loadFile( selected.toStdString() );
         }
     }
 }

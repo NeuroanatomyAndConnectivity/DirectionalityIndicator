@@ -24,6 +24,14 @@
 
 #include <string>
 
+#define LogTag "core/Visualization"
+#include "Logger.h"
+#include "Reader.h"
+
+#include "commands/ReadFile.h"
+
+#include "io/PlyReader.h"
+
 #include "Visualization.h"
 
 namespace di
@@ -41,6 +49,9 @@ namespace di
 
         void Visualization::start()
         {
+            // Fill the list of readers. IMPORTANT: in the future, readers will be added dynamically (loaded from DLLs/SOs/DyLibs)
+            m_reader.push_back( SPtr< di::io::PlyReader >( new di::io::PlyReader() ) );
+
             CommandQueue::start();
         }
 
@@ -49,16 +60,39 @@ namespace di
             CommandQueue::stop();
         }
 
-        void Visualization::loadMesh( const std::string& fileName, SPtr< CommandObserver > observer )
+        void Visualization::loadFile( const std::string& fileName, SPtr< CommandObserver > observer )
         {
-        }
-
-        void Visualization::loadLabels( const std::string& fileName, SPtr< CommandObserver > observer )
-        {
+            commit(
+                SPtr< Command >(
+                    new di::commands::ReadFile( fileName, observer )
+                )
+            );
         }
 
         void Visualization::process( SPtr< Command > command )
         {
+            // IMPORTANT: in the future, it is planned to make this dynamic... for now, it is sufficient to do it the hard-coded way as we need to get
+            // started with the visualization itself.
+
+            LogD << "Processing command: \"" << command->getTitle() << "\"" << LogEnd;
+
+            // Is a ReadFile command?
+            SPtr< di::commands::ReadFile > readFile = std::dynamic_pointer_cast< di::commands::ReadFile >( command );
+            if( readFile )
+            {
+                std::string fn = readFile->getFilename();
+                LogD << "Try loading: \"" << fn << "\"" << LogEnd;
+                // iterate all known readers to find the best:
+                for( auto aReader : m_reader )
+                {
+                    if( aReader->canLoad( fn ) )
+                    {
+                        // NOTE: exceptions get handled in CommandQueue
+                        aReader->load( fn );
+                        break;
+                    }
+                }
+            }
         }
     }
 }

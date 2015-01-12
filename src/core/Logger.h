@@ -22,42 +22,15 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <string>
-#include <locale>
-#include <algorithm>
+#ifndef LOGGER_H
+#define LOGGER_H
 
-#define LogTag "io/PlyReader"
-#include "core/Logger.h"
-#include "core/Filesystem.h"
-#include "core/StringUtils.h"
+#include <iostream>
 
-#include "PlyReader.h"
+#define LogEnd std::endl;
+#define LogD std::cout << "DEBUG [" << LogTag << "]: "
+#define LogI std::cout << "INFO  [" << LogTag << "]: "
+#define LogW std::cout << "WARN  [" << LogTag << "]: "
+#define LogE std::cout << "ERROR [" << LogTag << "]: "
 
-namespace di
-{
-    namespace io
-    {
-        PlyReader::PlyReader():
-            Reader()
-        {
-        }
-
-        PlyReader::~PlyReader()
-        {
-        }
-
-        bool PlyReader::canLoad( const std::string& filename ) const
-        {
-            std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "ply" );
-        }
-
-        SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
-        {
-            LogD << "Loading \"" << filename << "\"." << LogEnd;
-
-            return nullptr;
-        }
-    }
-}
-
+#endif  // LOGGER_H

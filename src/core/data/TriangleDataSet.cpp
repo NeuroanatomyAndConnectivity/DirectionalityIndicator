@@ -22,42 +22,21 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <string>
-#include <locale>
-#include <algorithm>
-
-#define LogTag "io/PlyReader"
-#include "core/Logger.h"
-#include "core/Filesystem.h"
-#include "core/StringUtils.h"
-
-#include "PlyReader.h"
+#include "TriangleDataSet.h"
 
 namespace di
 {
-    namespace io
+    namespace core
     {
-        PlyReader::PlyReader():
-            Reader()
+        TriangleDataSet::TriangleDataSet( const std::string name, ConstSPtr< TriangleMesh > triangles ):
+            DataSet< TriangleMesh > ( name, triangles )
         {
+            // init
         }
 
-        PlyReader::~PlyReader()
+        TriangleDataSet::~TriangleDataSet()
         {
-        }
-
-        bool PlyReader::canLoad( const std::string& filename ) const
-        {
-            std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "ply" );
-        }
-
-        SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
-        {
-            LogD << "Loading \"" << filename << "\"." << LogEnd;
-
-            return nullptr;
+            // cleanup done by the shared pointers.
         }
     }
 }
-

@@ -24,9 +24,3 @@
 
 #include "DataSet.h"
 
-namespace di
-{
-    namespace core
-    {
-    }
-}

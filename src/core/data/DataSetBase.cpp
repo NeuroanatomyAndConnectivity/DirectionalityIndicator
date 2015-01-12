@@ -22,42 +22,24 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <string>
-#include <locale>
-#include <algorithm>
-
-#define LogTag "io/PlyReader"
-#include "core/Logger.h"
-#include "core/Filesystem.h"
-#include "core/StringUtils.h"
-
-#include "PlyReader.h"
+#include "DataSetBase.h"
 
 namespace di
 {
-    namespace io
+    namespace core
     {
-        PlyReader::PlyReader():
-            Reader()
+        DataSetBase::DataSetBase( const std::string& name ):
+            m_name( name )
         {
         }
 
-        PlyReader::~PlyReader()
+        DataSetBase::~DataSetBase()
         {
         }
 
-        bool PlyReader::canLoad( const std::string& filename ) const
+        const std::string& DataSetBase::getName() const
         {
-            std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "ply" );
-        }
-
-        SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
-        {
-            LogD << "Loading \"" << filename << "\"." << LogEnd;
-
-            return nullptr;
+            return m_name;
         }
     }
 }
-

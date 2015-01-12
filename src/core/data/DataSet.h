@@ -26,6 +26,9 @@
 #define DATASET_H
 
 #include <string>
+#include <tuple>
+
+#include "DataSetBase.h"
 
 #include "Types.h"
 
@@ -38,13 +41,17 @@ namespace di
          * attributes, we can define a dataset to be a grid and a set of indexable attributes. The dataset itself only stores const pointers, as it is
          * not the owner of the data. Only the owner is allowed to modify the data. Create copies if you need to write to the data.
          *
-         * \note Keep in mind that the type of the attribute can also be a std::tuple to create more complex datasets. Optional attributes should be
-         * implemented using runtime functions.
+         * \note Keep in mind that you can specify multiple attribute types. Optional attributes should be implemented using runtime functions.
          */
-        template< typename GridType, typename AttributeType >
-        class DataSet
+        template< typename GridType, typename... AttributeType >
+        class DataSet: public DataSetBase
         {
         public:
+            /**
+             * The tuple containing all attributes.
+             */
+            typedef std::tuple< ConstSPtr< AttributeType >... > AttributesTuple;
+
             /**
              * Create a new dataset. Datasets only exist if they have a grid and attribute(s).
              *
@@ -52,19 +59,12 @@ namespace di
              * \param grid the grid
              * \param attributes
              */
-            DataSet( const std::string& name, ConstSPtr< GridType > grid, ConstSPtr< AttributeType > attributes );
+            DataSet( const std::string& name, ConstSPtr< GridType > grid, ConstSPtr< AttributeType >... attributes );
 
             /**
              * Destructor. Does NOT free the contained data. Data is freed automatically if no one keeps a reference anymore.
              */
             virtual ~DataSet();
-
-            /**
-             * Get the name of this dataset.
-             *
-             * \return the dataset name
-             */
-            const std::string& getName() const;
 
             /**
              * Get the grid.
@@ -76,17 +76,17 @@ namespace di
             /**
              * Get the attributes.
              *
+             * \tparam Index the attribute index if any. Do not use this function on datasets without attributes.
              * \return the attributes
              */
-            ConstSPtr< AttributeType > getAttributes() const;
+            template< int Index >
+            typename std::tuple_element< Index, AttributesTuple >::type getAttributes() const
+            {
+                return std::get< Index >( m_attributes );
+            }
 
         protected:
         private:
-            /**
-             * The name
-             */
-            std::string m_name = "";
-
             /**
              * The grid of the dataset.
              */
@@ -95,42 +95,29 @@ namespace di
             /**
              * The attributes
              */
-            ConstSPtr< AttributeType > m_attributes = nullptr;
+            AttributesTuple m_attributes;
         };
 
-        template< typename GridType, typename AttributeType >
-        DataSet< GridType, AttributeType >::DataSet( const std::string& name,
+        template< typename GridType, typename... AttributeType >
+        DataSet< GridType, AttributeType... >::DataSet( const std::string& name,
                                                      ConstSPtr< GridType > grid,
-                                                     ConstSPtr< AttributeType > attributes ):
-            m_name( name ),
+                                                     ConstSPtr< AttributeType >... attributes ):
+            DataSetBase( name ),
             m_grid( grid ),
-            m_attributes( attributes )
+            m_attributes( std::make_tuple( attributes... ) )
         {
         }
 
-        template< typename GridType, typename AttributeType >
-        DataSet< GridType, AttributeType >::~DataSet()
+        template< typename GridType, typename... AttributeType >
+        DataSet< GridType, AttributeType... >::~DataSet()
         {
             // cleanup is done by the SPtr.
         }
 
-        template< typename GridType, typename AttributeType >
-        const std::string&  DataSet< GridType, AttributeType >::getName() const
-        {
-            return m_name;
-        }
-
-
-        template< typename GridType, typename AttributeType >
-        ConstSPtr< GridType > DataSet< GridType, AttributeType >::getGrid() const
+        template< typename GridType, typename... AttributeType >
+        ConstSPtr< GridType > DataSet< GridType, AttributeType... >::getGrid() const
         {
             return m_grid;
-        }
-
-        template< typename GridType, typename AttributeType >
-        ConstSPtr< AttributeType > DataSet< GridType, AttributeType >::getAttributes() const
-        {
-            return m_attributes;
         }
     }
 }

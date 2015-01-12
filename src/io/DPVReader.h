@@ -22,42 +22,56 @@
 //
 //---------------------------------------------------------------------------------------
 
+#ifndef DPVREADER_H
+#define DPVREADER_H
+
 #include <string>
-#include <locale>
-#include <algorithm>
 
-#define LogTag "io/PlyReader"
-#include "core/Logger.h"
-#include "core/Filesystem.h"
-#include "core/StringUtils.h"
-
-#include "PlyReader.h"
+#include "core/Reader.h"
+#include "core/data/DataSetBase.h"
 
 namespace di
 {
     namespace io
     {
-        PlyReader::PlyReader():
-            Reader()
+        /**
+         * Implements a loader for DPV mesh attributes. It implements the \ref Reader interface.
+         */
+        class DPVReader: public di::core::Reader
         {
-        }
+        public:
+            /**
+             * Constructor;
+             */
+            DPVReader();
 
-        PlyReader::~PlyReader()
-        {
-        }
+            /**
+             * Destructor.
+             */
+            virtual ~DPVReader();
 
-        bool PlyReader::canLoad( const std::string& filename ) const
-        {
-            std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "ply" );
-        }
+            /**
+             * Check whether the specified file can be loaded.
+             *
+             * \param filename the file to load
+             *
+             * \return true if this implementation is able to load the data.
+             */
+            virtual bool canLoad( const std::string& filename ) const;
 
-        SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
-        {
-            LogD << "Loading \"" << filename << "\"." << LogEnd;
-
-            return nullptr;
-        }
+            /**
+             * Load the specified file. This throws an exception if something went wrong.
+             *
+             * \param filename the file to load
+             *
+             * \return the data
+             */
+            virtual SPtr< di::core::DataSetBase > load( const std::string& filename ) const;
+        protected:
+        private:
+        };
     }
 }
+
+#endif  // DPVREADER_H
 

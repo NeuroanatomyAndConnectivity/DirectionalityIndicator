@@ -27,9 +27,11 @@
 
 #include <string>
 #include <thread>
+#include <vector>
 
 #include "Types.h"
 
+#include "Reader.h"
 #include "Command.h"
 #include "CommandObserver.h"
 #include "CommandQueue.h"
@@ -72,20 +74,12 @@ namespace di
             virtual void stop();
 
             /**
-             * Load the specified mesh file. This operation is non-blocking and runs in this container's thread.
+             * Load the specified file. This operation is non-blocking and runs in this container's thread.
              *
              * \param fileName the file to load
              * \param observer the observer that gets informed about changes. Can be omitted.
              */
-            virtual void loadMesh( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
-
-            /**
-             * Load the specified label file. This operation is non-blocking and runs in this container's thread.
-             *
-             * \param fileName the file to load
-             * \param observer the observer that gets informed about changes. Can be omitted.
-             */
-            virtual void loadLabels( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
+            virtual void loadFile( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
 
         protected:
             /**
@@ -96,6 +90,10 @@ namespace di
             virtual void process( SPtr< Command > command );
 
         private:
+            /**
+             * A list of all known readers.
+             */
+            std::vector< SPtr< Reader > > m_reader;
         };
     }
 }

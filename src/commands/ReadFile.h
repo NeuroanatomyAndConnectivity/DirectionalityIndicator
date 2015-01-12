@@ -22,61 +22,71 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef READER_H
-#define READER_H
+#ifndef READFILECOMMAND_H
+#define READFILECOMMAND_H
 
+#include <exception>
 #include <string>
+
+#include "core/CommandObserver.h"
+#include "core/Command.h"
 
 #include "Types.h"
 
-#include "data/DataSetBase.h"
-
 namespace di
 {
-    namespace core
+    namespace commands
     {
         /**
-         * Interface to all file loader implementations. There will be an instance for each specific implementation and each instance is const. This
-         * means, that all load operations do not have side-effects and that the reader is not the owner of the data once it returned from the load
-         * function.
+         * Implements a command to read files from disk.
          */
-        class Reader
+        class ReadFile: public di::core::Command
         {
         public:
             /**
-             * Check whether the specified file can be loaded.
+             * Create an loader command to load the specified file.
              *
+             * \param observer an object that gets notified upon changes in this command's state.
              * \param filename the file to load
-             *
-             * \return true if this implementation is able to load the data.
              */
-            virtual bool canLoad( const std::string& filename ) const = 0;
+            ReadFile( const std::string& filename,  SPtr< di::core::CommandObserver > observer = nullptr );
 
             /**
-             * Load the specified file. This throws an exception if something went wrong.
-             *
-             * \param filename the file to load
-             *
-             * \return the data
+             * Clean up.
              */
-            virtual SPtr< DataSetBase > load( const std::string& filename ) const = 0;
+            virtual ~ReadFile();
+
+            /**
+             * Get the human-readable title of this command. This should be something like "Calculating Gradients".
+             *
+             * \return the title
+             */
+            virtual std::string getTitle() const;
+
+            /**
+             * Get the human-readable description of this command. This is a more detailed description of what is going on, like "Calculating the
+             * gradients using the differential quotient on scalar data.".
+             *
+             * \return the description
+             */
+            virtual std::string getDescription() const;
+
+            /**
+             * Get the filename specified.
+             *
+             * \return the filename
+             */
+            std::string getFilename() const;
 
         protected:
-            /**
-             * Constructor.
-             */
-            Reader();
-
-            /**
-             * Destructor.
-             */
-            virtual ~Reader();
         private:
+            /**
+             * The filename.
+             */
+            std::string m_filename;
         };
     }
 }
 
-#endif  // READER_H
-
-
+#endif  // READFILECOMMAND_H
 

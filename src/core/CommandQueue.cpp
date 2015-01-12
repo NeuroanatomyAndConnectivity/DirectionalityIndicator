@@ -24,6 +24,9 @@
 
 #include <string>
 
+#define LogTag "core/CommandQueue"
+#include "Logger.h"
+
 #include "CommandQueue.h"
 
 namespace di
@@ -66,6 +69,12 @@ namespace di
                     // if stopping, process the remaining commands:
                     for( auto command : m_commandQueue )
                     {
+                        // be fool-proof
+                        if( !command )
+                        {
+                            continue;
+                        }
+
                         // If we stop gracefully, we allow each command to be processed.
                         if( m_gracefulStop )
                         {
@@ -88,8 +97,11 @@ namespace di
                         command = m_commandQueue.front();
                         m_commandQueue.pop_back();
                     }
-                    // as the command might take some time, we unlock the command queue to allow the system to add more commands.
-                    lock.unlock();
+                    // be fool-proof
+                    if( !command )
+                    {
+                        continue;
+                    }
 
                     // process
                     processCommand( command );

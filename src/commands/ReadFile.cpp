@@ -23,41 +23,37 @@
 //---------------------------------------------------------------------------------------
 
 #include <string>
-#include <locale>
-#include <algorithm>
 
-#define LogTag "io/PlyReader"
-#include "core/Logger.h"
-#include "core/Filesystem.h"
-#include "core/StringUtils.h"
-
-#include "PlyReader.h"
+#include "ReadFile.h"
 
 namespace di
 {
-    namespace io
+    namespace commands
     {
-        PlyReader::PlyReader():
-            Reader()
+        ReadFile::ReadFile( const std::string& filename, SPtr< di::core::CommandObserver > observer ):
+            Command( observer ),
+            m_filename( filename )
         {
         }
 
-        PlyReader::~PlyReader()
+        ReadFile::~ReadFile()
         {
         }
 
-        bool PlyReader::canLoad( const std::string& filename ) const
+        std::string ReadFile::getTitle() const
         {
-            std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "ply" );
+            return "Read File";
         }
 
-        SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
+        std::string ReadFile::getDescription() const
         {
-            LogD << "Loading \"" << filename << "\"." << LogEnd;
-
-            return nullptr;
+            return "Read a file from disk. This command tries to use the optimal loader.";
         }
+
+        std::string ReadFile::getFilename() const
+        {
+            return m_filename;
+        }
+
     }
 }
-

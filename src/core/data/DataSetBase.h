@@ -22,42 +22,50 @@
 //
 //---------------------------------------------------------------------------------------
 
+#ifndef DATASETBASE_H
+#define DATASETBASE_H
+
 #include <string>
-#include <locale>
-#include <algorithm>
 
-#define LogTag "io/PlyReader"
-#include "core/Logger.h"
-#include "core/Filesystem.h"
-#include "core/StringUtils.h"
-
-#include "PlyReader.h"
+#include "Types.h"
 
 namespace di
 {
-    namespace io
+    namespace core
     {
-        PlyReader::PlyReader():
-            Reader()
+        /**
+         * This defines the interface to dataset types. It only requires a name and the visibility.
+         */
+        class DataSetBase
         {
-        }
+        public:
+            /**
+             * Create a new dataset.
+             *
+             * \param name a useful name to help the user identify this data.
+             */
+            DataSetBase( const std::string& name );
 
-        PlyReader::~PlyReader()
-        {
-        }
+            /**
+             * Destructor. Does NOT free the contained data. Data is freed automatically if no one keeps a reference anymore.
+             */
+            virtual ~DataSetBase();
 
-        bool PlyReader::canLoad( const std::string& filename ) const
-        {
-            std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "ply" );
-        }
-
-        SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
-        {
-            LogD << "Loading \"" << filename << "\"." << LogEnd;
-
-            return nullptr;
-        }
+            /**
+             * Get the name of this dataset.
+             *
+             * \return the dataset name
+             */
+            const std::string& getName() const;
+        protected:
+        private:
+            /**
+             * The name
+             */
+            std::string m_name = "";
+        };
     }
 }
+
+#endif  // DATASETBASE_H
 

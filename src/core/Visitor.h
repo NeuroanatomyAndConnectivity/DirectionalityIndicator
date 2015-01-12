@@ -22,56 +22,65 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef PLYREADER_H
-#define PLYREADER_H
-
-#include <string>
-
-#include "core/Reader.h"
-#include "core/data/DataSetBase.h"
+#ifndef VISITOR_H
+#define VISITOR_H
 
 namespace di
 {
-    namespace io
+    namespace core
     {
         /**
-         * Implements a loader for PLY mesh+attributes files. It implements the \ref Reader interface.
+         * Base for all visitors.
          */
-        class PlyReader: public di::core::Reader
+        class BaseVisitor
         {
         public:
             /**
-             * Constructor;
-             */
-            PlyReader();
-
-            /**
              * Destructor.
              */
-            virtual ~PlyReader();
+            virtual ~BaseVisitor() {};
+        };
 
+        /**
+         * Visit implementation for an arbitrary visitable class.
+         *
+         * \tparam VisitableType type of the class to actually visit.
+         */
+        template< class VisitableType >
+        class Visitor
+        {
+        public:
             /**
-             * Check whether the specified file can be loaded.
+             * Visit the given visitable. Abstract. Implement in your visitor.
              *
-             * \param filename the file to load
-             *
-             * \return true if this implementation is able to load the data.
+             * \param visitable the visitable
              */
-            virtual bool canLoad( const std::string& filename ) const;
+            virtual void visit( VisitableType& visitable ) = 0;
+        };
 
+        /**
+         * Base type for all classes that can be "visited".
+         *
+         * \tparam Visitable the visitable class. This is the class that derives from BaseVisible to utilize the CRTP pattern
+         */
+        template< class VisitableType >
+        class BaseVisitable
+        {
+        public:
             /**
-             * Load the specified file. This throws an exception if something went wrong.
+             * The method allows calling a visitor on the deriving class.
              *
-             * \param filename the file to load
-             *
-             * \return the data
+             * \tparam VisitorType the type of the visitor.
+             * \param visitor the visitor to use
              */
-            virtual SPtr< di::core::DataSetBase > load( const std::string& filename ) const;
-        protected:
-        private:
+            template< typename VisitorType >
+            void accept( VisitorType& visitor)
+            {
+                visitor.visit( static_cast< VisitableType& >( *this ) );
+            }
         };
     }
 }
 
-#endif  // PLYREADER_H
+#endif  // VISITOR_H
 

@@ -26,36 +26,35 @@
 #include <locale>
 #include <algorithm>
 
-#define LogTag "io/PlyReader"
+#define LogTag "io/DPVReader"
 #include "core/Logger.h"
 #include "core/Filesystem.h"
 #include "core/StringUtils.h"
 
-#include "PlyReader.h"
+#include "DPVReader.h"
 
 namespace di
 {
     namespace io
     {
-        PlyReader::PlyReader():
+        DPVReader::DPVReader():
             Reader()
         {
         }
 
-        PlyReader::~PlyReader()
+        DPVReader::~DPVReader()
         {
         }
 
-        bool PlyReader::canLoad( const std::string& filename ) const
+        bool DPVReader::canLoad( const std::string& filename ) const
         {
             std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "ply" );
+            return ( di::core::toLower( ext ) == "dpv" );
         }
 
-        SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
+        SPtr< di::core::DataSetBase > DPVReader::load( const std::string& filename ) const
         {
             LogD << "Loading \"" << filename << "\"." << LogEnd;
-
             return nullptr;
         }
     }

@@ -23,41 +23,21 @@
 //---------------------------------------------------------------------------------------
 
 #include <string>
-#include <locale>
-#include <algorithm>
 
-#define LogTag "io/PlyReader"
-#include "core/Logger.h"
-#include "core/Filesystem.h"
-#include "core/StringUtils.h"
-
-#include "PlyReader.h"
+// This file implements some utils we all love from boost::filesystem
 
 namespace di
 {
-    namespace io
+    namespace core
     {
-        PlyReader::PlyReader():
-            Reader()
-        {
-        }
-
-        PlyReader::~PlyReader()
-        {
-        }
-
-        bool PlyReader::canLoad( const std::string& filename ) const
-        {
-            std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "ply" );
-        }
-
-        SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
-        {
-            LogD << "Loading \"" << filename << "\"." << LogEnd;
-
-            return nullptr;
-        }
+        /**
+         * Convert string to lower case.
+         *
+         * \param str the string
+         *
+         * \return the lower case string.
+         */
+        std::string toLower( const std::string& str );
     }
 }
 

@@ -37,10 +37,21 @@ namespace di
 {
     namespace core
     {
-        class TriangleDataSet: public DataSet< TriangleMesh, // triangle mesh as grid
-                                               Vec4Array > // a color array
+        class TriangleDataSet: public DataSet< TriangleMesh > // triangle mesh as grid, no attributes
         {
         public:
+            /**
+             * Create a dataset containing only the triangle mesh as grid. Attributes are optional.
+             *
+             * \param triangles the triangle grid
+             * \param name the name of the dataset
+             */
+            TriangleDataSet( const std::string name, ConstSPtr< TriangleMesh > triangles );
+
+            /**
+             * Destructor.
+             */
+            virtual ~TriangleDataSet();
         protected:
         private:
         };
