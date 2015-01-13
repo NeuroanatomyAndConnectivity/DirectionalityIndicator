@@ -24,7 +24,7 @@
 
 #include <iostream>
 #include <string>
-#include <locale>
+#include <clocale>
 #include <algorithm>
 #include <functional>
 #include <chrono>
@@ -165,6 +165,12 @@ namespace di
 
         SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
         {
+
+            // Use C style numeric locale to ensure that all loaders work properly.
+            // Keep old locale
+            const char* oldLocale = setlocale( LC_NUMERIC, NULL );
+            setlocale( LC_NUMERIC, "C" );
+
             LogD << "Loading \"" << filename << "\"." << LogEnd;
 
             // store the mesh and a color array:
@@ -230,6 +236,9 @@ namespace di
             }
 
             LogD << "Loading \"" << filename << "\" done." << LogEnd;
+
+            // Restore locale.
+            setlocale( LC_ALL, oldLocale );
 
             // construct the dataset
             return SPtr< di::core::TriangleDataSet >( new di::core::TriangleDataSet( filename, mesh, colors ) );
