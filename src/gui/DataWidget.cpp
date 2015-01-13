@@ -118,6 +118,11 @@ namespace di
         {
         }
 
+        void DataWidget::prepareProcessingNetwork()
+        {
+            // We use DataInject algorithms to inject data we have loaded (or will load)
+        }
+
         void DataWidget::loadMesh()
         {
             QString lastPath = Application::getSettings()->value( "LastMeshPath", "" ).toString();

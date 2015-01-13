@@ -63,6 +63,10 @@ namespace di
              */
             virtual bool event( QEvent* event );
 
+            /**
+             * Allows this widget to prepare everything in the network. This is only a temporary solution.
+             */
+            void prepareProcessingNetwork();
         protected:
         private:
             /**

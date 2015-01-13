@@ -83,6 +83,9 @@ namespace di
             m_processingNetwork = SPtr< core::ProcessingNetwork >( new core::ProcessingNetwork() );
             m_processingNetwork->start();
 
+            // Tell the data widget that the processing network is ready.
+            m_dataWidget->prepareProcessingNetwork();
+
             // Finally, show the UI
             m_mainWindow->show();
 

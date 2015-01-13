@@ -57,6 +57,7 @@ namespace di
 
         void DataInject::inject( ConstSPtr< di::core::AlgorithmDataCompatible > data )
         {
+            // NOTE: we are not allowed to update the outputs here.
             std::lock_guard<std::mutex> lock( m_injectionDataMutex );
             m_injectionData = data;
         }

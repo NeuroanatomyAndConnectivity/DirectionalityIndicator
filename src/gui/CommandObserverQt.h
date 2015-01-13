@@ -27,6 +27,7 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 
 #include <QWidget>
 
@@ -50,6 +51,16 @@ namespace di
              * \param affected the widgets that caused the command. Can be the same as receiver.
              */
             CommandObserverQt( QWidget* receiver, std::vector< QWidget* > affected = {} );
+
+            /**
+             * Constructor. Does nothing.
+             *
+             * \param receiver the widget that handles the event.
+             * \param affected the widgets that caused the command. Can be the same as receiver.
+             * \param callback allows to define a callback in the Qt thread. This will not be called by this event automatically. You have to take
+             * care of it in your event handler.
+             */
+            CommandObserverQt( QWidget* receiver, std::function<void()> callback, std::vector< QWidget* > affected = {} );
 
             /**
              * Destructor. Does nothing.
@@ -100,6 +111,11 @@ namespace di
              */
             const std::vector< QWidget* >& getAffected() const;
 
+            /**
+             * Call the specified callback, if any. Use this in your Qt event handler. If no callback was set, nothing happens.
+             */
+            void callback();
+
         protected:
         private:
             /**
@@ -111,6 +127,16 @@ namespace di
              * The widget that is affected by the command. This might be the receiver, but sometimes you construct widgets using others.
              */
             std::vector< QWidget* > m_affected = {};
+
+            /**
+             * A callback that will be called in the Qt thread. Useful to implant further functionality without extending this class.
+             */
+            std::function<void()> m_callback;
+
+            /**
+             * true if a callback was set
+             */
+            bool m_hasCallback = false;
         };
     }
 }

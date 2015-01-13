@@ -44,6 +44,13 @@ namespace di
             // nothing to do.
         }
 
+        CommandObserverQt::CommandObserverQt( QWidget* receiver, std::function<void()> callback, std::vector< QWidget* > affected ):
+            CommandObserverQt( receiver, affected )
+        {
+            m_hasCallback = true;
+            m_callback = callback;
+        }
+
         CommandObserverQt::~CommandObserverQt()
         {
             // nothing to do.
@@ -99,6 +106,14 @@ namespace di
         const std::vector< QWidget* >& CommandObserverQt::getAffected() const
         {
             return m_affected;
+        }
+
+        void CommandObserverQt::callback()
+        {
+            if( m_hasCallback )
+            {
+                m_callback();
+            }
         }
     }
 }
