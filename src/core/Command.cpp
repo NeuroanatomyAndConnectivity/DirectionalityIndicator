@@ -54,6 +54,7 @@ namespace di
 
             // Change state and notify
             m_isBusy = true;
+            m_isWaiting = false;
             if( m_observer )
             {
                 m_observer->busy();
@@ -96,6 +97,8 @@ namespace di
 
             // Change state and notify
             m_isSuccessful = true;
+            m_isWaiting = false;
+            m_isBusy = false;
             if( m_observer )
             {
                 m_observer->success();
@@ -117,6 +120,9 @@ namespace di
 
             // Change state and notify
             m_isAborted = true;
+            m_isWaiting = false;
+            m_isBusy = false;
+            m_isSuccessful = false;
             if( m_observer )
             {
                 m_observer->abort();
@@ -138,6 +144,10 @@ namespace di
 
             // Change state and notify
             m_isFailed = true;
+            m_isAborted = true;
+            m_isWaiting = false;
+            m_isBusy = false;
+            m_isSuccessful = false;
             m_failureReason = reason;
             if( m_observer )
             {

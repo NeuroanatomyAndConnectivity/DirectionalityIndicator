@@ -22,45 +22,5 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "CommandObserver.h"
+#include "Events.h"
 
-namespace di
-{
-    namespace core
-    {
-        CommandObserver::CommandObserver()
-        {
-            // nothing to do.
-        }
-
-        CommandObserver::~CommandObserver()
-        {
-            // nothing to do.
-        }
-
-        void CommandObserver::busy()
-        {
-            notify();
-        }
-
-        void CommandObserver::waiting()
-        {
-            notify();
-        }
-
-        void CommandObserver::success()
-        {
-            notify();
-        }
-
-        void CommandObserver::abort()
-        {
-            notify();
-        }
-
-        void CommandObserver::fail()
-        {
-            notify();
-        }
-    }
-}

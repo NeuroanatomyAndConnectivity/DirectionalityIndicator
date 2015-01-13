@@ -91,9 +91,7 @@ namespace di
         bool TriangleMesh::sanityCheck() const
         {
             bool enoughTris = ( getNumTriangles() >= 1 );
-            bool enoughVerts = ( getNumVertices() >= 3 * getNumTriangles() );
-
-            return enoughTris && enoughVerts;
+            return enoughTris;
         }
     }
 }

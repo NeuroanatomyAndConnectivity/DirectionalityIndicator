@@ -22,25 +22,40 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef COMMANDOBSERVER_H
-#define COMMANDOBSERVER_H
+#ifndef COMMANDOBSERVERQT_H
+#define COMMANDOBSERVERQT_H
 
-#include "Observer.h"
+#include <vector>
+#include <memory>
+
+#include <QWidget>
+
+#include "core/CommandObserver.h"
 
 namespace di
 {
-    namespace core
+    namespace gui
     {
         /**
-         * Implements a class to monitor changes in a \ref Command. It uses the observer pattern to inform anyone interested in changes. This class is
-         * useful for implementing GUI interaction with the visualization system and its commands.
-         *
-         * This specific observer, namely the CommandObserver provides some methods that match the Command interface. If you do not override them,
-         * they will always call the notify function.
+         * A wrapper around \ref di::core::CommandObserver to enable GUI feedback. It forwards the event to the GUI using specific QEvents.
          */
-        class CommandObserver: public Observer
+        class CommandObserverQt: public di::core::CommandObserver,
+                                 public std::enable_shared_from_this< CommandObserverQt >
         {
         public:
+            /**
+             * Constructor. Does nothing.
+             *
+             * \param receiver the widget that handles the event.
+             * \param affected the widgets that caused the command. Can be the same as receiver.
+             */
+            CommandObserverQt( QWidget* receiver, std::vector< QWidget* > affected = {} );
+
+            /**
+             * Destructor. Does nothing.
+             */
+            virtual ~CommandObserverQt();
+
             /**
              * Mark the command as being processed right now.
              */
@@ -65,21 +80,40 @@ namespace di
              * Called if the command failed somehow.
              */
             virtual void fail();
+
+            /**
+             * Notification. Implemented using QEvents
+             */
+            virtual void notify();
+
+            /**
+             * The receiver widget.
+             *
+             * \return the receiver widget.
+             */
+            QWidget* getReceiver() const;
+
+            /**
+             * Get the affected widgets. Can be empty.
+             *
+             * \return the affected widgets.
+             */
+            const std::vector< QWidget* >& getAffected() const;
+
         protected:
-            /**
-             * Constructor. Does nothing.
-             */
-            CommandObserver();
-
-            /**
-             * Destructor. Does nothing.
-             */
-            virtual ~CommandObserver();
-
         private:
+            /**
+             * The widget to receive the event.
+             */
+            QWidget* m_receiver = nullptr;
+
+            /**
+             * The widget that is affected by the command. This might be the receiver, but sometimes you construct widgets using others.
+             */
+            std::vector< QWidget* > m_affected = {};
         };
     }
 }
 
-#endif  // COMMANDOBSERVER_H
+#endif  // COMMANDOBSERVERQT_H
 

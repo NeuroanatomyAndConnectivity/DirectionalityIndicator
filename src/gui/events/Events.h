@@ -22,45 +22,14 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "CommandObserver.h"
+#ifndef EVENTS_H
+#define EVENTS_H
 
-namespace di
-{
-    namespace core
-    {
-        CommandObserver::CommandObserver()
-        {
-            // nothing to do.
-        }
+#include <QEvent>
 
-        CommandObserver::~CommandObserver()
-        {
-            // nothing to do.
-        }
+#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
 
-        void CommandObserver::busy()
-        {
-            notify();
-        }
+#include "CommandObserverEvent.h"
 
-        void CommandObserver::waiting()
-        {
-            notify();
-        }
+#endif  // EVENTS_H
 
-        void CommandObserver::success()
-        {
-            notify();
-        }
-
-        void CommandObserver::abort()
-        {
-            notify();
-        }
-
-        void CommandObserver::fail()
-        {
-            notify();
-        }
-    }
-}

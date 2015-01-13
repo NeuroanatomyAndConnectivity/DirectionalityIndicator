@@ -22,71 +22,72 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef READFILE_H
-#define READFILE_H
+#ifndef COMMANDOBSERVEREVENT_H
+#define COMMANDOBSERVEREVENT_H
 
-#include <exception>
-#include <string>
-
-#include "core/CommandObserver.h"
-#include "core/Command.h"
+#include <QEvent>
 
 #include "Types.h"
 
+#include "../CommandObserverQt.h"
+
+#include "Events.h"
+
 namespace di
 {
-    namespace commands
+    namespace gui
     {
         /**
-         * Implements a command to read files from disk.
+         * A QEvent to handle \ref CommandObserverQt updates.
          */
-        class ReadFile: public di::core::Command
+        class CommandObserverEvent: public QEvent
         {
         public:
             /**
-             * Create an loader command to load the specified file.
-             *
-             * \param observer an object that gets notified upon changes in this command's state.
-             * \param filename the file to load
+             * All CommandObserver events.
              */
-            ReadFile( const std::string& filename,  SPtr< di::core::CommandObserver > observer = nullptr );
+            enum CommandObserverStatus{ BUSY, WAITING, SUCCESS, ABORT, FAIL, GENERIC };
 
             /**
-             * Clean up.
+             * Constructor. Does nothing.
+             *
+             * \param observer the observer that has sent the event.
+             * \param status the current observer status change.
              */
-            virtual ~ReadFile();
+            CommandObserverEvent( SPtr< CommandObserverQt > observer, CommandObserverStatus status );
 
             /**
-             * Get the human-readable title of this command. This should be something like "Calculating Gradients".
-             *
-             * \return the title
+             * Destructor. Does nothing.
              */
-            virtual std::string getTitle() const;
+            virtual ~CommandObserverEvent();
 
             /**
-             * Get the human-readable description of this command. This is a more detailed description of what is going on, like "Calculating the
-             * gradients using the differential quotient on scalar data.".
+             * Return the observer that has sent this event.
              *
-             * \return the description
+             * \return the observer
              */
-            virtual std::string getDescription() const;
+            SPtr< CommandObserverQt > getObserver() const;
 
             /**
-             * Get the filename specified.
+             * Get the status at which the observer fired.
              *
-             * \return the filename
+             * \return the status
              */
-            std::string getFilename() const;
-
+            CommandObserverStatus getObserverStatus() const;
         protected:
         private:
             /**
-             * The filename.
+             * The observer that has sent the event.
              */
-            std::string m_filename;
+            SPtr< CommandObserverQt > m_observer = nullptr;
+
+            /**
+             * Status
+             */
+            CommandObserverStatus m_status = GENERIC;
         };
     }
 }
 
-#endif  // READFILE_H
+#endif  // COMMANDOBSERVEREVENT_H
 

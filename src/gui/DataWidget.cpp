@@ -38,7 +38,11 @@
 #include "icons/iconMesh.xpm"
 #include "icons/iconLabels.xpm"
 
+#include "CommandObserverQt.h"
+#include "events/CommandObserverEvent.h"
+
 #include "DataWidget.h"
+
 namespace di
 {
     namespace gui
@@ -65,11 +69,11 @@ namespace di
             QWidget* meshLoad( new QWidget );
             QHBoxLayout* meshLoadLayout( new QHBoxLayout );
             meshLoad->setLayout( meshLoadLayout );
-            QToolButton* meshLoadBtn( new QToolButton );
-            meshLoadBtn->setIcon( QIcon( QPixmap( iconMesh_xpm ) ) );
-            meshLoadBtn->setIconSize( QSize( 64, 64 ) );
+            m_meshLoadBtn = new QToolButton;
+            m_meshLoadBtn->setIcon( QIcon( QPixmap( iconMesh_xpm ) ) );
+            m_meshLoadBtn->setIconSize( QSize( 64, 64 ) );
             m_meshLoadLabel = new ScaleLabel;
-            meshLoadLayout->addWidget( meshLoadBtn );
+            meshLoadLayout->addWidget( m_meshLoadBtn );
             meshLoadLayout->addWidget( m_meshLoadLabel );
             m_meshLoadLabel->setText( tr( "No Data Loaded" ) );
 
@@ -77,11 +81,11 @@ namespace di
             QWidget* labelLoad( new QWidget );
             QHBoxLayout* labelLoadLayout( new QHBoxLayout );
             labelLoad->setLayout( labelLoadLayout );
-            QToolButton* labelLoadBtn( new QToolButton );
-            labelLoadBtn->setIcon( QIcon( QPixmap( iconLabels_xpm ) ) );
-            labelLoadBtn->setIconSize( QSize( 64, 64 ) );
+            m_labelLoadBtn = new QToolButton;
+            m_labelLoadBtn->setIcon( QIcon( QPixmap( iconLabels_xpm ) ) );
+            m_labelLoadBtn->setIconSize( QSize( 64, 64 ) );
             m_labelLoadLabel = new ScaleLabel;
-            labelLoadLayout->addWidget( labelLoadBtn );
+            labelLoadLayout->addWidget( m_labelLoadBtn );
             labelLoadLayout->addWidget( m_labelLoadLabel );
             m_labelLoadLabel->setText( tr( "No Data Loaded" ) );
 
@@ -92,8 +96,8 @@ namespace di
             // setSizePolicy( QSizePolicy( QSizePolicy::Minimum, QSizePolicy::Minimum ) );
 
             // Connect the tool buttons to an actual file dialog
-            connect( meshLoadBtn, SIGNAL( clicked( bool ) ), this, SLOT( loadMesh() ) );
-            connect( labelLoadBtn, SIGNAL( clicked( bool ) ), this, SLOT( loadLabels() ) );
+            connect( m_meshLoadBtn, SIGNAL( clicked( bool ) ), this, SLOT( loadMesh() ) );
+            connect( m_labelLoadBtn, SIGNAL( clicked( bool ) ), this, SLOT( loadLabels() ) );
         }
 
         DataWidget::~DataWidget()
@@ -104,7 +108,13 @@ namespace di
         {
             QString lastPath = Application::getSettings()->value( "LastMeshPath", "" ).toString();
             QString selected = QFileDialog::getOpenFileName( this, "Load Mesh File", lastPath,
-                                                                   "Mesh File (*.gii *.asc *.ply);; GIfTI File (*.gii);; ASCII Mesh File (*.asc);; Stanford Poly Format (*.ply)" );
+                                                                   "Stanford Poly Format (*.ply)" );
+            /* Not yet implemented
+                                                                   "Mesh File (*.gii *.asc *.ply);;
+                                                                   GIfTI File (*.gii);; " +
+                                                                   "ASCII Mesh File (*.asc);; " +
+                                                                   "Stanford Poly Format (*.ply)" );
+                                                                   */
             if( selected == "" )
             {
                 return;
@@ -115,7 +125,11 @@ namespace di
             Application::getSettings()->setValue( "LastMeshPath", fi.path() );
 
             // Use deferred loading:
-            Application::getVisualization()->loadFile( selected.toStdString() );
+            Application::getVisualization()->loadFile( selected.toStdString(),
+                                                       SPtr< CommandObserverQt >(
+                                                           new CommandObserverQt( this, { m_meshLoadLabel, m_meshLoadLabel } )
+                                                       )
+                                                      );
         }
 
         void DataWidget::loadLabels()
@@ -133,7 +147,74 @@ namespace di
             Application::getSettings()->setValue( "LastLabelPath", fi.path() );
 
             // Use deferred loading:
-            Application::getVisualization()->loadFile( selected.toStdString() );
+            Application::getVisualization()->loadFile( selected.toStdString(),
+                                                       SPtr< CommandObserverQt >(
+                                                           new CommandObserverQt( this, { m_labelLoadLabel, m_labelLoadLabel } )
+                                                       )
+                                                      );
+        }
+
+        bool DataWidget::event( QEvent* event )
+        {
+            // QT_COMMANDOBSERVER_EVENT?
+            if( event->type() == QT_COMMANDOBSERVER_EVENT )
+            {
+                CommandObserverEvent* coe = dynamic_cast< CommandObserverEvent* >( event );
+
+                // status of a CommandObserver changed
+                if( coe->getObserverStatus() == CommandObserverEvent::GENERIC )
+                {
+                    // do not know what to do.
+                }
+
+                if( coe->getObserverStatus() == CommandObserverEvent::BUSY )
+                {
+                    coe->getObserver()->getReceiver()->setEnabled( false );
+
+                    // Update Text
+                    ScaleLabel* label = dynamic_cast< ScaleLabel* >( coe->getObserver()->getAffected()[1] );
+                    label->setText( "Busy" );
+                }
+
+                if( coe->getObserverStatus() == CommandObserverEvent::WAITING )
+                {
+                    coe->getObserver()->getReceiver()->setEnabled( false );
+
+                    // Update Text
+                    ScaleLabel* label = dynamic_cast< ScaleLabel* >( coe->getObserver()->getAffected()[1] );
+                    label->setText( "Waiting" );
+                }
+
+                if( coe->getObserverStatus() == CommandObserverEvent::SUCCESS )
+                {
+                    coe->getObserver()->getReceiver()->setEnabled( true );
+
+                    // Update Text
+                    ScaleLabel* label = dynamic_cast< ScaleLabel* >( coe->getObserver()->getAffected()[1] );
+                    label->setText( "Success" );
+                }
+
+                if( coe->getObserverStatus() == CommandObserverEvent::ABORT )
+                {
+                    coe->getObserver()->getReceiver()->setEnabled( true );
+
+                    // Update Text
+                    ScaleLabel* label = dynamic_cast< ScaleLabel* >( coe->getObserver()->getAffected()[1] );
+                    label->setText( "Abort" );
+
+                }
+
+                if( coe->getObserverStatus() == CommandObserverEvent::FAIL )
+                {
+                    coe->getObserver()->getReceiver()->setEnabled( true );
+
+                    // Update Text
+                    ScaleLabel* label = dynamic_cast< ScaleLabel* >( coe->getObserver()->getAffected()[1] );
+                    label->setText( "Failed" );
+                }
+            }
+
+            return QDockWidget::event( event );
         }
     }
 }

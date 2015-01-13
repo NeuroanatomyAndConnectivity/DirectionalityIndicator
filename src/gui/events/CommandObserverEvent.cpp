@@ -1,11 +1,3 @@
-//---------------------------------------------------------------------------------------
-//
-// Project: DirectionalityIndicator
-//
-// Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)
-//           2014-2015 Max Planck Research Group "Neuroanatomy and Connectivity"
-//
-// This file is part of DirectionalityIndicator.
 //
 // DirectionalityIndicator is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -22,45 +14,37 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "CommandObserver.h"
+#define LogTag "gui/CommandObserverEvent"
+#include "core/Logger.h"
+
+#include "Events.h"
+#include "CommandObserverEvent.h"
 
 namespace di
 {
-    namespace core
+    namespace gui
     {
-        CommandObserver::CommandObserver()
+        CommandObserverEvent::CommandObserverEvent( SPtr< CommandObserverQt > observer, CommandObserverStatus status ):
+            QEvent( static_cast< QEvent::Type >( QT_COMMANDOBSERVER_EVENT ) ),
+            m_observer( observer ),
+            m_status( status )
         {
-            // nothing to do.
         }
 
-        CommandObserver::~CommandObserver()
+        CommandObserverEvent::~CommandObserverEvent()
         {
-            // nothing to do.
+            // do nothing
         }
 
-        void CommandObserver::busy()
+        SPtr< CommandObserverQt > CommandObserverEvent::getObserver() const
         {
-            notify();
+            return m_observer;
         }
 
-        void CommandObserver::waiting()
+        CommandObserverEvent::CommandObserverStatus CommandObserverEvent::getObserverStatus() const
         {
-            notify();
-        }
-
-        void CommandObserver::success()
-        {
-            notify();
-        }
-
-        void CommandObserver::abort()
-        {
-            notify();
-        }
-
-        void CommandObserver::fail()
-        {
-            notify();
+            return m_status;
         }
     }
 }
+

@@ -27,6 +27,8 @@
 #include <locale>
 #include <algorithm>
 #include <functional>
+#include <chrono>
+#include <thread>
 
 #define LogTag "io/PlyReader"
 #include "core/Logger.h"

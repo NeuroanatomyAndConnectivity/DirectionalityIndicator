@@ -27,6 +27,7 @@
 
 #include <QWidget>
 #include <QDockWidget>
+#include <QToolButton>
 
 class ScaleLabel;
 
@@ -53,6 +54,15 @@ namespace di
              */
             virtual ~DataWidget();
 
+            /**
+             * Event handler. We use it to handle \ref CommandObserverQt updates.
+             *
+             * \param event the event to handle
+             *
+             * \return true on success.
+             */
+            virtual bool event( QEvent* event );
+
         protected:
         private:
             /**
@@ -64,6 +74,16 @@ namespace di
              * The label used for the mesh data
              */
             ScaleLabel* m_meshLoadLabel = nullptr;
+
+            /**
+             * The mesh load button
+             */
+            QToolButton* m_meshLoadBtn = nullptr;
+
+            /**
+             * The label load button.
+             */
+            QToolButton* m_labelLoadBtn = nullptr;
 
         private slots:
             /**
