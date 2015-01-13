@@ -76,6 +76,11 @@ namespace di
             ScaleLabel* m_meshLoadLabel = nullptr;
 
             /**
+             * The label to indicate status of the data
+             */
+            ScaleLabel* m_statusLabel = nullptr;
+
+            /**
              * The mesh load button
              */
             QToolButton* m_meshLoadBtn = nullptr;

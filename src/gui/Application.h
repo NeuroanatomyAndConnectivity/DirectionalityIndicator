@@ -34,7 +34,7 @@ class ParameterWidget;
 class MainWindow;
 
 #include "Types.h"
-#include "core/Visualization.h"
+#include "core/ProcessingNetwork.h"
 
 namespace di
 {
@@ -87,11 +87,11 @@ namespace di
             static Application* getInstance();
 
             /**
-             * Get the visualization container controlled by this UI
+             * Get the processing container controlled by this UI
              *
-             * \return the vis container.
+             * \return the container.
              */
-            static SPtr< core::Visualization > getVisualization();
+            static SPtr< di::core::ProcessingNetwork > getProcessingNetwork();
 
         protected:
         private:
@@ -136,9 +136,9 @@ namespace di
             ParameterWidget* m_parameterWidget = nullptr;
 
             /**
-             * The visualization container managed by this application instance.
+             * The processing container managed by this application instance.
              */
-            SPtr< core::Visualization > m_visualization = nullptr;
+            SPtr< core::ProcessingNetwork > m_processingNetwork = nullptr;
         };
     }
 }

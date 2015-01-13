@@ -22,8 +22,10 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
+#ifndef ALGORITHMDATACOMPATIBLE_H
+#define ALGORITHMDATACOMPATIBLE_H
+
+#include <string>
 
 #include "Types.h"
 
@@ -32,25 +34,26 @@ namespace di
     namespace core
     {
         /**
-         * Interface to define the basic operations of all visualizations.
+         * Base class for all kinds of data that can be exchanged using AlgorithmData. Derive from this class to use this mechanism. It does not need
+         * anything. Just derive.
          */
-        class Visualization
+        class AlgorithmDataCompatible
         {
         public:
         protected:
             /**
              * Constructor.
              */
-            Visualization();
+            AlgorithmDataCompatible();
 
             /**
              * Destructor.
              */
-            virtual ~Visualization();
+            virtual ~AlgorithmDataCompatible();
         private:
         };
     }
 }
 
-#endif  // VISUALIZATION_H
+#endif  // ALGORITHMDATACOMPATIBLE_H
 

@@ -22,35 +22,5 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
-
-#include "Types.h"
-
-namespace di
-{
-    namespace core
-    {
-        /**
-         * Interface to define the basic operations of all visualizations.
-         */
-        class Visualization
-        {
-        public:
-        protected:
-            /**
-             * Constructor.
-             */
-            Visualization();
-
-            /**
-             * Destructor.
-             */
-            virtual ~Visualization();
-        private:
-        };
-    }
-}
-
-#endif  // VISUALIZATION_H
+#include "AlgorithmData.h"
 

@@ -22,35 +22,44 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
+#define LogTag "algorithms/DataInject"
+#include "core/Logger.h"
 
-#include "Types.h"
+#include "DataInject.h"
 
 namespace di
 {
-    namespace core
+    namespace algorithms
     {
-        /**
-         * Interface to define the basic operations of all visualizations.
-         */
-        class Visualization
+        DataInject::DataInject():
+            Algorithm( "Data Inject",
+                       "This algorithm simply injects data into the processing network. It does not process or load anything." )
         {
-        public:
-        protected:
-            /**
-             * Constructor.
-             */
-            Visualization();
+            // We require some output.
 
-            /**
-             * Destructor.
-             */
-            virtual ~Visualization();
-        private:
-        };
+            // 1: the injection output
+            m_dataOutput = addOutput< di::core::AlgorithmDataCompatible >(
+                    "Data",
+                    "The data that has been injected."
+            );
+        }
+
+        DataInject::~DataInject()
+        {
+            // nothing to clean up so far
+        }
+
+        void DataInject::process()
+        {
+            std::lock_guard<std::mutex> lock( m_injectionDataMutex );
+            m_dataOutput->setData( m_injectionData );
+        }
+
+        void DataInject::inject( ConstSPtr< di::core::AlgorithmDataCompatible > data )
+        {
+            std::lock_guard<std::mutex> lock( m_injectionDataMutex );
+            m_injectionData = data;
+        }
     }
 }
-
-#endif  // VISUALIZATION_H
 

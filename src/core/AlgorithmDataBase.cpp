@@ -22,35 +22,33 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
-
-#include "Types.h"
+#include "AlgorithmDataBase.h"
 
 namespace di
 {
     namespace core
     {
-        /**
-         * Interface to define the basic operations of all visualizations.
-         */
-        class Visualization
+        AlgorithmDataBase::AlgorithmDataBase( const std::string& name, const std::string& description ):
+            m_name( name ),
+            m_description( description )
         {
-        public:
-        protected:
-            /**
-             * Constructor.
-             */
-            Visualization();
+            // nothing
+        }
 
-            /**
-             * Destructor.
-             */
-            virtual ~Visualization();
-        private:
-        };
+        AlgorithmDataBase::~AlgorithmDataBase()
+        {
+            // clean up
+        }
+
+        const std::string& AlgorithmDataBase::getName() const
+        {
+            return m_name;
+        }
+
+        const std::string& AlgorithmDataBase::getDescription() const
+        {
+            return m_description;
+        }
     }
 }
-
-#endif  // VISUALIZATION_H
 

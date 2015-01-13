@@ -22,35 +22,21 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
-
-#include "Types.h"
+#include "AlgorithmDataCompatible.h"
 
 namespace di
 {
     namespace core
     {
-        /**
-         * Interface to define the basic operations of all visualizations.
-         */
-        class Visualization
+        AlgorithmDataCompatible::AlgorithmDataCompatible()
         {
-        public:
-        protected:
-            /**
-             * Constructor.
-             */
-            Visualization();
+            // nothing
+        }
 
-            /**
-             * Destructor.
-             */
-            virtual ~Visualization();
-        private:
-        };
+        AlgorithmDataCompatible::~AlgorithmDataCompatible()
+        {
+            // clean up
+        }
     }
 }
-
-#endif  // VISUALIZATION_H
 

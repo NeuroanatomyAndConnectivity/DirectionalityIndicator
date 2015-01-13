@@ -55,5 +55,15 @@ namespace di
             return m_filename;
         }
 
+        SPtr< di::core::DataSetBase > ReadFile::getResult() const
+        {
+            return m_result;
+        }
+
+        void ReadFile::setResult( SPtr< di::core::DataSetBase > result )
+        {
+            m_result = result;
+        }
+
     }
 }

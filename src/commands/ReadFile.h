@@ -30,6 +30,7 @@
 
 #include "core/CommandObserver.h"
 #include "core/Command.h"
+#include "core/data/DataSetBase.h"
 
 #include "Types.h"
 
@@ -78,12 +79,30 @@ namespace di
              */
             std::string getFilename() const;
 
+            /**
+             * Get the result if any. This is useful as readers do not automatically add results to a visualization network.
+             *
+             * \return the result.
+             */
+            SPtr< di::core::DataSetBase > getResult() const;
+
+            /**
+             * Set the result if any. Always set before command processing finished. This ensures that the result is visible on success-notification.
+             *
+             * \param result the result
+             */
+            void setResult( SPtr< di::core::DataSetBase > result );
         protected:
         private:
             /**
              * The filename.
              */
-            std::string m_filename;
+            std::string m_filename = "";
+
+            /**
+             * The read result.
+             */
+            SPtr< di::core::DataSetBase > m_result = nullptr;
         };
     }
 }

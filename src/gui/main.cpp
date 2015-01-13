@@ -49,7 +49,11 @@ int main( int argc, char** argv )
 {
     printVersion();
 
+    // Run GUI App
     di::gui::Application app( argc, argv );
-    return app.run();
+    int ret = app.run();
+
+    // Done.
+    return ret;
 }
 

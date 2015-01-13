@@ -22,35 +22,41 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
+#define LogTag "algorithms/DirectionalityVisualization"
+#include "core/Logger.h"
 
-#include "Types.h"
+#include "core/data/TriangleDataSet.h"
+
+#include "DirectionalityVisualization.h"
 
 namespace di
 {
-    namespace core
+    namespace algorithms
     {
-        /**
-         * Interface to define the basic operations of all visualizations.
-         */
-        class Visualization
+        DirectionalityVisualization::DirectionalityVisualization():
+            Algorithm( "Directionality Visualization",
+                       "This algorithm takes a triangle mesh and scalar information defined on the mesh. "
+                       "It the creates directional information from the scalar data and displays it on "
+                       "the mesh itself visually." )
         {
-        public:
-        protected:
-            /**
-             * Constructor.
-             */
-            Visualization();
+            // We require some inputs.
 
-            /**
-             * Destructor.
-             */
-            virtual ~Visualization();
-        private:
-        };
+            // 1: the triangle mesh
+            m_triangleDataInput = addInput< di::core::TriangleDataSet >(
+                    "Triangle Mesh",
+                    "The triangle mesh on which the directionality information should be shown."
+            );
+        }
+
+        DirectionalityVisualization::~DirectionalityVisualization()
+        {
+            // nothing to clean up so far
+        }
+
+        void DirectionalityVisualization::process()
+        {
+            // process.
+        }
     }
 }
-
-#endif  // VISUALIZATION_H
 

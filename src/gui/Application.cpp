@@ -79,9 +79,9 @@ namespace di
             // restore stored states/sizes
             m_mainWindow->loadStates();
 
-            // start the visualization container
-            m_visualization = SPtr< core::Visualization >( new core::Visualization() );
-            m_visualization->start();
+            // start the processing container
+            m_processingNetwork = SPtr< core::ProcessingNetwork >( new core::ProcessingNetwork() );
+            m_processingNetwork->start();
 
             // Finally, show the UI
             m_mainWindow->show();
@@ -90,7 +90,7 @@ namespace di
             int retVal = application.exec();
 
             // Stop if not yet done already.
-            m_visualization->stop();
+            m_processingNetwork->stop();
 
             // Clean up and return.
             return retVal;
@@ -106,9 +106,9 @@ namespace di
             return m_instance;
         }
 
-        di::SPtr< di::core::Visualization > Application::getVisualization()
+        di::SPtr< di::core::ProcessingNetwork > Application::getProcessingNetwork()
         {
-            return Application::getInstance()->m_visualization;
+            return Application::getInstance()->m_processingNetwork;
         }
     }
 }

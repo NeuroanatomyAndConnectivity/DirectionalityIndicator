@@ -22,35 +22,48 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
+#ifndef DIRECTIONALITYVISUALIZATION_H
+#define DIRECTIONALITYVISUALIZATION_H
 
-#include "Types.h"
+#include "core/Algorithm.h"
 
 namespace di
 {
-    namespace core
+    namespace algorithms
     {
+        class TriangleDataSet;
+
         /**
-         * Interface to define the basic operations of all visualizations.
+         * Directionality Indicator. This class implements the algorithm and the visualization.
          */
-        class Visualization
+        class DirectionalityVisualization: public di::core::Algorithm
+                                           // public di::core::Visualization
         {
         public:
-        protected:
             /**
-             * Constructor.
+             * Constructor. Initialize all inputs, outputs and parameters.
              */
-            Visualization();
+            DirectionalityVisualization();
 
             /**
-             * Destructor.
+             * Destructor. Clean up if needed.
              */
-            virtual ~Visualization();
+            virtual ~DirectionalityVisualization();
+
+            /**
+             * Process the data in the inputs and update output data. Keep in mind that this might be called in its own thread thread.
+             */
+            virtual void process();
+
+        protected:
         private:
+            /**
+             * The triangle mesh input to use.
+             */
+            SPtr< di::core::AlgorithmData< di::core::TriangleDataSet > > m_triangleDataInput;
         };
     }
 }
 
-#endif  // VISUALIZATION_H
+#endif  // DIRECTIONALITYVISUALIZATION_H
 

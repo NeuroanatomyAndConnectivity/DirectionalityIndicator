@@ -22,52 +22,68 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATASETBASE_H
-#define DATASETBASE_H
+#ifndef DATAINJECT_H
+#define DATAINJECT_H
 
-#include <string>
+#include <mutex>
 
-#include "../AlgorithmDataCompatible.h"
-
-#include "Types.h"
+#include "core/Algorithm.h"
 
 namespace di
 {
-    namespace core
+    namespace algorithms
     {
+        class TriangleDataSet;
+
         /**
-         * This defines the interface to dataset types. It only requires a name and the visibility.
+         * Data Inject. This class allows to inject an arbitrary AlgorithmDataCompatible instance into the processing network.
          */
-        class DataSetBase: public AlgorithmDataCompatible
+        class DataInject: public di::core::Algorithm
         {
         public:
             /**
-             * Create a new dataset.
-             *
-             * \param name a useful name to help the user identify this data.
+             * Constructor. Initialize all inputs, outputs and parameters.
              */
-            DataSetBase( const std::string& name );
+            DataInject();
 
             /**
-             * Destructor. Does NOT free the contained data. Data is freed automatically if no one keeps a reference anymore.
+             * Destructor. Clean up if needed.
              */
-            virtual ~DataSetBase();
+            virtual ~DataInject();
 
             /**
-             * Get the name of this dataset.
-             *
-             * \return the dataset name
+             * Does nothing in this case, besides setting the injection data.
              */
-            const std::string& getName() const;
+            virtual void process();
+
+            /**
+             * Inject this data.
+             *
+             * \param data the data. Can be nullptr.
+             */
+            void inject( ConstSPtr< di::core::AlgorithmDataCompatible > data );
+
         protected:
         private:
             /**
-             * The name
+             * The triangle mesh input to use.
              */
-            std::string m_name = "";
+            SPtr< di::core::AlgorithmData< di::core::AlgorithmDataCompatible > > m_dataOutput;
+
+            /**
+             * Mutex to secure access.
+             *
+             * \note std::atomic would be a nice option, but gcc has problems there.
+             */
+            std::mutex m_injectionDataMutex;
+
+            /**
+             * The data to inject
+             */
+            ConstSPtr< di::core::AlgorithmDataCompatible > m_injectionData;
         };
     }
 }
 
-#endif  // DATASETBASE_H
+#endif  // DATAINJECT_H
 

@@ -22,35 +22,56 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
+#define  LogTag "core/Algorithm"
+#include "Logger.h"
 
-#include "Types.h"
+#include "Algorithm.h"
 
 namespace di
 {
     namespace core
     {
-        /**
-         * Interface to define the basic operations of all visualizations.
-         */
-        class Visualization
+        Algorithm::Algorithm( const std::string& name, const std::string& description ):
+            m_name( name ),
+            m_description( description )
         {
-        public:
-        protected:
-            /**
-             * Constructor.
-             */
-            Visualization();
+            // init
+        }
 
-            /**
-             * Destructor.
-             */
-            virtual ~Visualization();
-        private:
-        };
+        Algorithm::~Algorithm()
+        {
+            // cleanup
+        }
+
+        const ConstSPtrSet< AlgorithmDataBase >& Algorithm::getInputs() const
+        {
+            return m_inputs;
+        }
+
+        const ConstSPtrSet< AlgorithmDataBase >& Algorithm::getOutputs() const
+        {
+            return m_outputs;
+        }
+
+        void Algorithm::addInput( SPtr< AlgorithmDataBase > input )
+        {
+            m_inputs.insert( input );
+        }
+
+        void Algorithm::addOutput( SPtr< AlgorithmDataBase > output )
+        {
+            m_outputs.insert( output );
+        }
+
+        const std::string& Algorithm::getName() const
+        {
+            return m_name;
+        }
+
+        const std::string& Algorithm::getDescription() const
+        {
+            return m_description;
+        }
     }
 }
-
-#endif  // VISUALIZATION_H
 

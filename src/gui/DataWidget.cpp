@@ -89,8 +89,22 @@ namespace di
             labelLoadLayout->addWidget( m_labelLoadLabel );
             m_labelLoadLabel->setText( tr( "No Data Loaded" ) );
 
+            // Add the data status indicator
+            QWidget* statusIndicator( new QWidget );
+            QHBoxLayout* statusIndicatorLayout( new QHBoxLayout );
+            statusIndicator->setLayout( statusIndicatorLayout );
+
+            m_statusLabel = new ScaleLabel;
+            m_statusLabel->setText( tr( "Not Complete" ) );
+            ScaleLabel* statusInfoLabel = new ScaleLabel;   // only shows the static text
+            statusInfoLabel->setText( tr( "Data Status: " ) );
+
+            statusIndicatorLayout->addWidget( statusInfoLabel );
+            statusIndicatorLayout->addWidget( m_statusLabel );
+
             contentLayout->addWidget( meshLoad );
             contentLayout->addWidget( labelLoad );
+            contentLayout->addWidget( statusIndicator );
             contentLayout->setAlignment( Qt::AlignTop );
 
             // setSizePolicy( QSizePolicy( QSizePolicy::Minimum, QSizePolicy::Minimum ) );
@@ -125,7 +139,7 @@ namespace di
             Application::getSettings()->setValue( "LastMeshPath", fi.path() );
 
             // Use deferred loading:
-            Application::getVisualization()->loadFile( selected.toStdString(),
+            Application::getProcessingNetwork()->loadFile( selected.toStdString(),
                                                        SPtr< CommandObserverQt >(
                                                            new CommandObserverQt( this, { m_meshLoadLabel, m_meshLoadLabel } )
                                                        )
@@ -147,7 +161,7 @@ namespace di
             Application::getSettings()->setValue( "LastLabelPath", fi.path() );
 
             // Use deferred loading:
-            Application::getVisualization()->loadFile( selected.toStdString(),
+            Application::getProcessingNetwork()->loadFile( selected.toStdString(),
                                                        SPtr< CommandObserverQt >(
                                                            new CommandObserverQt( this, { m_labelLoadLabel, m_labelLoadLabel } )
                                                        )

@@ -25,6 +25,9 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <vector>
+#include <set>
+
 // shared_ptr
 #include <memory>
 
@@ -49,6 +52,38 @@ namespace di
      * \tparam T the type to embed into the shared_ptr.
      */
     template< typename T > using ConstSPtr = std::shared_ptr< const T >;
+
+    /**
+     * Alias for abbreviating often used shared pointer vector containers
+     *
+     * \tparam T the type in the shared_ptr vector.
+     */
+    template< typename T >
+    using SPtrVec = std::vector< std::shared_ptr< T > >;
+
+    /**
+     * Alias for abbreviating often used shared pointer vector containers
+     *
+     * \tparam T the type in the shared_ptr vector.
+     */
+    template< typename T >
+    using ConstSPtrVec = std::vector< std::shared_ptr< const T > >;
+
+    /**
+     * Alias for abbreviating often used shared pointer set containers
+     *
+     * \tparam T the type in the shared_ptr vector.
+     */
+    template< typename T >
+    using SPtrSet = std::set< std::shared_ptr< T > >;
+
+    /**
+     * Alias for abbreviating often used shared pointer set containers
+     *
+     * \tparam T the type in the shared_ptr vector.
+     */
+    template< typename T >
+    using ConstSPtrSet = std::set< std::shared_ptr< const T > >;
 }
 
 #endif  // TYPES_H
