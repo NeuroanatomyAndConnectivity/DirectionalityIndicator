@@ -118,6 +118,9 @@ namespace di
         {
             auto meshAlgo = m_meshLoad->getDataInject();
             auto labelAlgo = m_labelLoad->getDataInject();
+
+            Application::getProcessingNetwork()->connectAlgorithms( meshAlgo, "Data", to, "Triangle Mesh" );
+            // Application::getProcessingNetwork()->connectAlgorithms( labelAlgo, "Data", to, "Triangle Labels" );
         }
     }
 }

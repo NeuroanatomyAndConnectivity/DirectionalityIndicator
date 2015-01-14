@@ -29,17 +29,14 @@
 #include <QWidget>
 #include <QToolButton>
 
+#include "algorithms/DataInject.h"
+
 #include "Types.h"
 
 class ScaleLabel;
 
 namespace di
 {
-    namespace algorithms
-    {
-        class DataInject;
-    }
-
     namespace gui
     {
         /**

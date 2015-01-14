@@ -107,6 +107,9 @@ namespace di
             // IMPORTANT: in the future, it is planned to make this dynamic... for now, it is sufficient to do it the hard-coded way as we need to get
             // started with the visualization itself.
 
+            // NOTE: also keep in mind that a class CommandInterpreter would be useful to move those implementations to somewhere else as this grow
+            // big fast.
+
             // Is a ReadFile command?
             SPtr< di::commands::ReadFile > readFile = std::dynamic_pointer_cast< di::commands::ReadFile >( command );
             if( readFile )
