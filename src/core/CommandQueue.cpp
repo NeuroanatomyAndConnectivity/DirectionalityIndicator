@@ -50,6 +50,11 @@ namespace di
             // loop and handle ...
             while( m_running )
             {
+                if( m_commandQueue.empty() )
+                {
+                    LogD << "Empty queue. Sleeping." << LogEnd;
+                }
+
                 // was the thread notified again?
                 if( !m_notified )
                 {
@@ -95,7 +100,7 @@ namespace di
                     if( !m_commandQueue.empty() )
                     {
                         command = m_commandQueue.front();
-                        m_commandQueue.pop_back();
+                        m_commandQueue.pop_front();
                     }
                     // be fool-proof
                     if( !command )
