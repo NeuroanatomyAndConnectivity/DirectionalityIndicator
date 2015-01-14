@@ -22,20 +22,32 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "AlgorithmDataCompatible.h"
+#include "ConnectorBase.h"
 
 namespace di
 {
     namespace core
     {
-        AlgorithmDataCompatible::AlgorithmDataCompatible()
+        ConnectorBase::ConnectorBase( const std::string& name, const std::string& description ):
+            m_name( name ),
+            m_description( description )
         {
             // nothing
         }
 
-        AlgorithmDataCompatible::~AlgorithmDataCompatible()
+        ConnectorBase::~ConnectorBase()
         {
             // clean up
+        }
+
+        const std::string& ConnectorBase::getName() const
+        {
+            return m_name;
+        }
+
+        const std::string& ConnectorBase::getDescription() const
+        {
+            return m_description;
         }
     }
 }

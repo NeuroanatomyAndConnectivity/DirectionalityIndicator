@@ -25,9 +25,9 @@
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
 
-#include "AlgorithmDataBase.h"
-#include "AlgorithmData.h"
-#include "AlgorithmDataCompatible.h"
+#include "ConnectorBase.h"
+#include "Connector.h"
+#include "ConnectorTransferable.h"
 
 #include "Types.h"
 
@@ -67,14 +67,14 @@ namespace di
              *
              * \return the list of inputs.
              */
-            const ConstSPtrSet< AlgorithmDataBase >& getInputs() const;
+            const ConstSPtrSet< ConnectorBase >& getInputs() const;
 
             /**
              * Get the list of outputs of this algorithm.
              *
              * \return the list of outputs.
              */
-            const ConstSPtrSet< AlgorithmDataBase >& getOutputs() const;
+            const ConstSPtrSet< ConnectorBase >& getOutputs() const;
 
         protected:
             /**
@@ -95,7 +95,7 @@ namespace di
              *
              * \param input the input to add
              */
-            void addInput( SPtr< AlgorithmDataBase > input );
+            void addInput( SPtr< ConnectorBase > input );
 
             /**
              * Add an output to this algorithm. This works only during construction.
@@ -108,9 +108,9 @@ namespace di
              * \return the created data object. Keep this to get access!
              */
             template< typename DataType >
-            SPtr< AlgorithmData< DataType > > addInput( const std::string& name, const std::string& description )
+            SPtr< Connector< DataType > > addInput( const std::string& name, const std::string& description )
             {
-                auto theData = SPtr< AlgorithmData< DataType > >( new AlgorithmData< DataType >( name, description ) );
+                auto theData = SPtr< Connector< DataType > >( new Connector< DataType >( name, description ) );
                 addInput( theData );
                 return theData;
             }
@@ -120,7 +120,7 @@ namespace di
              *
              * \param output the output to add
              */
-            void addOutput( SPtr< AlgorithmDataBase > output );
+            void addOutput( SPtr< ConnectorBase > output );
 
             /**
              * Add an output to this algorithm. This works only during construction.
@@ -133,9 +133,9 @@ namespace di
              * \return the created data object. Keep this to get access!
              */
             template< typename DataType >
-            SPtr< AlgorithmData< DataType > > addOutput( const std::string& name, const std::string& description )
+            SPtr< Connector< DataType > > addOutput( const std::string& name, const std::string& description )
             {
-                auto theData = SPtr< AlgorithmData< DataType > >( new AlgorithmData< DataType >( name, description ) );
+                auto theData = SPtr< Connector< DataType > >( new Connector< DataType >( name, description ) );
                 addOutput( theData );
                 return theData;
             }
@@ -144,12 +144,12 @@ namespace di
             /**
              * Algorithm inputs. Fill during construction.
              */
-            ConstSPtrSet< AlgorithmDataBase > m_inputs;
+            ConstSPtrSet< ConnectorBase > m_inputs;
 
             /**
              * Algorithm outputs. Fill during construction.
              */
-            ConstSPtrSet< AlgorithmDataBase > m_outputs;
+            ConstSPtrSet< ConnectorBase > m_outputs;
 
             /**
              * The name of the algorithm.

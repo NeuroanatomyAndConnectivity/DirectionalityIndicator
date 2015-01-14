@@ -29,7 +29,7 @@ namespace di
     namespace core
     {
         DataSetBase::DataSetBase( const std::string& name ):
-            AlgorithmDataCompatible(),
+            ConnectorTransferable(),
             m_name( name )
         {
         }

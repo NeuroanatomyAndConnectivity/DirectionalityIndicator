@@ -22,5 +22,38 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "AlgorithmData.h"
+#ifndef CONNECTORTRANSFERABLE_H
+#define CONNECTORTRANSFERABLE_H
+
+#include <string>
+
+#include "Types.h"
+
+namespace di
+{
+    namespace core
+    {
+        /**
+         * Base class for all kinds of data that can be exchanged using \ref Connector. Derive from this class to use this mechanism. It does not need
+         * anything. Just derive.
+         */
+        class ConnectorTransferable
+        {
+        public:
+        protected:
+            /**
+             * Constructor.
+             */
+            ConnectorTransferable();
+
+            /**
+             * Destructor.
+             */
+            virtual ~ConnectorTransferable();
+        private:
+        };
+    }
+}
+
+#endif  // CONNECTORTRANSFERABLE_H
 

@@ -38,7 +38,7 @@ namespace di
             // We require some output.
 
             // 1: the injection output
-            m_dataOutput = addOutput< di::core::AlgorithmDataCompatible >(
+            m_dataOutput = addOutput< di::core::ConnectorTransferable >(
                     "Data",
                     "The data that has been injected."
             );
@@ -55,7 +55,7 @@ namespace di
             m_dataOutput->setData( m_injectionData );
         }
 
-        void DataInject::inject( ConstSPtr< di::core::AlgorithmDataCompatible > data )
+        void DataInject::inject( ConstSPtr< di::core::ConnectorTransferable > data )
         {
             // NOTE: we are not allowed to update the outputs here.
             std::lock_guard<std::mutex> lock( m_injectionDataMutex );

@@ -22,32 +22,20 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "AlgorithmDataBase.h"
+#include "ConnectorTransferable.h"
 
 namespace di
 {
     namespace core
     {
-        AlgorithmDataBase::AlgorithmDataBase( const std::string& name, const std::string& description ):
-            m_name( name ),
-            m_description( description )
+        ConnectorTransferable::ConnectorTransferable()
         {
             // nothing
         }
 
-        AlgorithmDataBase::~AlgorithmDataBase()
+        ConnectorTransferable::~ConnectorTransferable()
         {
             // clean up
-        }
-
-        const std::string& AlgorithmDataBase::getName() const
-        {
-            return m_name;
-        }
-
-        const std::string& AlgorithmDataBase::getDescription() const
-        {
-            return m_description;
         }
     }
 }

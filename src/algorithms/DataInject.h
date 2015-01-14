@@ -36,7 +36,7 @@ namespace di
         class TriangleDataSet;
 
         /**
-         * Data Inject. This class allows to inject an arbitrary AlgorithmDataCompatible instance into the processing network.
+         * Data Inject. This class allows to inject an arbitrary ConnectorTransferable instance into the processing network.
          */
         class DataInject: public di::core::Algorithm
         {
@@ -61,14 +61,14 @@ namespace di
              *
              * \param data the data. Can be nullptr.
              */
-            void inject( ConstSPtr< di::core::AlgorithmDataCompatible > data );
+            void inject( ConstSPtr< di::core::ConnectorTransferable > data );
 
         protected:
         private:
             /**
              * The triangle mesh input to use.
              */
-            SPtr< di::core::AlgorithmData< di::core::AlgorithmDataCompatible > > m_dataOutput;
+            SPtr< di::core::Connector< di::core::ConnectorTransferable > > m_dataOutput;
 
             /**
              * Mutex to secure access.
@@ -80,7 +80,7 @@ namespace di
             /**
              * The data to inject
              */
-            ConstSPtr< di::core::AlgorithmDataCompatible > m_injectionData;
+            ConstSPtr< di::core::ConnectorTransferable > m_injectionData;
         };
     }
 }

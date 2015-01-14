@@ -22,12 +22,12 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef ALGORITHMDATABASE_H
-#define ALGORITHMDATABASE_H
+#ifndef CONNECTORBASE_H
+#define CONNECTORBASE_H
 
 #include <string>
 
-#include "AlgorithmDataCompatible.h"
+#include "ConnectorTransferable.h"
 
 #include "Types.h"
 
@@ -37,9 +37,9 @@ namespace di
     {
         /**
          * Base class for all kinds of data exchange between algorithms. Please keep in mind that everything that can be transferred between
-         * algorithms needs to be derived from AlgorithmDataCompatible somehow.
+         * algorithms needs to be derived from ConnectorTransferable somehow.
          */
-        class AlgorithmDataBase
+        class ConnectorBase
         {
         public:
             /**
@@ -57,13 +57,13 @@ namespace di
             virtual const std::string& getDescription() const;
 
             /**
-             * Check if the specified thingy is compatible with this AlgorithmDataBase instance
+             * Check if the specified thingy is compatible with this ConnectorBase instance
              *
              * \param checkAgainst the thing to check
              *
              * \return true if yes.
              */
-            virtual bool compatible( ConstSPtr< AlgorithmDataCompatible > checkAgainst ) const = 0;
+            virtual bool compatible( ConstSPtr< ConnectorTransferable > checkAgainst ) const = 0;
 
             /**
              * Set the compatible data. If the given thing is not compatible, nullptr is set as new data.
@@ -72,7 +72,7 @@ namespace di
              *
              * \return true if the data was compatible and was set
              */
-            virtual bool setCompatibleData( ConstSPtr< AlgorithmDataCompatible > data ) = 0;
+            virtual bool setCompatibleData( ConstSPtr< ConnectorTransferable > data ) = 0;
 
         protected:
             /**
@@ -81,12 +81,12 @@ namespace di
              * \param name the name of the input. Please specify something useful.
              * \param description description of the input.
              */
-            AlgorithmDataBase( const std::string& name, const std::string& description );
+            ConnectorBase( const std::string& name, const std::string& description );
 
             /**
              * Destructor.
              */
-            virtual ~AlgorithmDataBase();
+            virtual ~ConnectorBase();
         private:
             /**
              * The name.
@@ -101,5 +101,5 @@ namespace di
     }
 }
 
-#endif  // ALGORITHMDATABASE_H
+#endif  // CONNECTORBASE_H
 

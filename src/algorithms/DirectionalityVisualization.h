@@ -63,7 +63,7 @@ namespace di
             /**
              * The triangle mesh input to use.
              */
-            SPtr< di::core::AlgorithmData< di::core::TriangleDataSet > > m_triangleDataInput;
+            SPtr< di::core::Connector< di::core::TriangleDataSet > > m_triangleDataInput;
         };
     }
 }

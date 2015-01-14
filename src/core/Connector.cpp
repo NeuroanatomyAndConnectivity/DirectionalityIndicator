@@ -22,38 +22,5 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef ALGORITHMDATACOMPATIBLE_H
-#define ALGORITHMDATACOMPATIBLE_H
-
-#include <string>
-
-#include "Types.h"
-
-namespace di
-{
-    namespace core
-    {
-        /**
-         * Base class for all kinds of data that can be exchanged using AlgorithmData. Derive from this class to use this mechanism. It does not need
-         * anything. Just derive.
-         */
-        class AlgorithmDataCompatible
-        {
-        public:
-        protected:
-            /**
-             * Constructor.
-             */
-            AlgorithmDataCompatible();
-
-            /**
-             * Destructor.
-             */
-            virtual ~AlgorithmDataCompatible();
-        private:
-        };
-    }
-}
-
-#endif  // ALGORITHMDATACOMPATIBLE_H
+#include "Connector.h"
 

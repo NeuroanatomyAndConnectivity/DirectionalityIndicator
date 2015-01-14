@@ -27,7 +27,7 @@
 
 #include <string>
 
-#include "../AlgorithmDataCompatible.h"
+#include "../ConnectorTransferable.h"
 
 #include "Types.h"
 
@@ -38,7 +38,7 @@ namespace di
         /**
          * This defines the interface to dataset types. It only requires a name and the visibility.
          */
-        class DataSetBase: public AlgorithmDataCompatible
+        class DataSetBase: public ConnectorTransferable
         {
         public:
             /**

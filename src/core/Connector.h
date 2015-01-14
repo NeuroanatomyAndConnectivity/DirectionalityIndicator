@@ -22,12 +22,12 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef ALGORITHMDATA_H
-#define ALGORITHMDATA_H
+#ifndef CONNECTOR_H
+#define CONNECTOR_H
 
 #include <string>
 
-#include "AlgorithmDataBase.h"
+#include "ConnectorBase.h"
 
 #include "Types.h"
 
@@ -41,7 +41,7 @@ namespace di
          * \tparam DataType the type of data to transfer.
          */
         template< typename DataType >
-        class AlgorithmData: public AlgorithmDataBase
+        class Connector: public ConnectorBase
         {
         public:
             /**
@@ -50,12 +50,12 @@ namespace di
              * \param name the name of the input. Please specify something useful.
              * \param description description of the input.
              */
-            AlgorithmData( const std::string& name, const std::string& description );
+            Connector( const std::string& name, const std::string& description );
 
             /**
              * Destructor.
              */
-            virtual ~AlgorithmData();
+            virtual ~Connector();
 
             /**
              * The data to set. This only accepts const pointers to avoid side effects in algorithms that change data they do not own.
@@ -71,13 +71,13 @@ namespace di
             virtual ConstSPtr< DataType > getData() const;
 
             /**
-             * Check if the specified thingy is compatible with this AlgorithmDataBase instance
+             * Check if the specified thingy is compatible with this ConnectoBase instance
              *
              * \param checkAgainst the thing to check
              *
              * \return true if yes.
              */
-            virtual bool compatible( ConstSPtr< AlgorithmDataCompatible > checkAgainst ) const;
+            virtual bool compatible( ConstSPtr< ConnectorTransferable > checkAgainst ) const;
 
             /**
              * Set the compatible data, if compatible. If the given thing is not compatible, nullptr is set as new data.
@@ -86,7 +86,7 @@ namespace di
              *
              * \return true if the data was compatible and was set
              */
-            virtual bool setCompatibleData( ConstSPtr< AlgorithmDataCompatible > data );
+            virtual bool setCompatibleData( ConstSPtr< ConnectorTransferable > data );
 
         protected:
         private:
@@ -97,32 +97,32 @@ namespace di
         };
 
         template< typename DataType >
-        AlgorithmData< DataType >::AlgorithmData( const std::string& name, const std::string& description ):
-            AlgorithmDataBase( name, description )
+        Connector< DataType >::Connector( const std::string& name, const std::string& description ):
+            ConnectorBase( name, description )
         {
             // init
         }
 
         template< typename DataType >
-        AlgorithmData< DataType >::~AlgorithmData()
+        Connector< DataType >::~Connector()
         {
             // clean up. The shared_ptr clean up automatically.
         }
 
         template< typename DataType >
-        void AlgorithmData< DataType >::setData( ConstSPtr< DataType > data )
+        void Connector< DataType >::setData( ConstSPtr< DataType > data )
         {
             m_data = data;
         }
 
         template< typename DataType >
-        ConstSPtr< DataType > AlgorithmData< DataType >::getData() const
+        ConstSPtr< DataType > Connector< DataType >::getData() const
         {
             return m_data;
         }
 
         template< typename DataType >
-        bool AlgorithmData< DataType >::compatible( ConstSPtr< AlgorithmDataCompatible > checkAgainst ) const
+        bool Connector< DataType >::compatible( ConstSPtr< ConnectorTransferable > checkAgainst ) const
         {
             // it is compatible if it can be cast:
             auto result = std::dynamic_pointer_cast< const DataType >( checkAgainst );
@@ -130,7 +130,7 @@ namespace di
         }
 
         template< typename DataType >
-        bool AlgorithmData< DataType >::setCompatibleData( ConstSPtr< AlgorithmDataCompatible > data )
+        bool Connector< DataType >::setCompatibleData( ConstSPtr< ConnectorTransferable > data )
         {
             auto result = std::dynamic_pointer_cast< const DataType >( data );
             setData( result ); // NOTE: if incompatible, the pointer cast returns a nullptr. This will be set.
@@ -139,5 +139,5 @@ namespace di
     }
 }
 
-#endif  // ALGORITHMDATA_H
+#endif  // CONNECTOR_H
 

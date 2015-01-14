@@ -43,22 +43,22 @@ namespace di
             // cleanup
         }
 
-        const ConstSPtrSet< AlgorithmDataBase >& Algorithm::getInputs() const
+        const ConstSPtrSet< ConnectorBase >& Algorithm::getInputs() const
         {
             return m_inputs;
         }
 
-        const ConstSPtrSet< AlgorithmDataBase >& Algorithm::getOutputs() const
+        const ConstSPtrSet< ConnectorBase >& Algorithm::getOutputs() const
         {
             return m_outputs;
         }
 
-        void Algorithm::addInput( SPtr< AlgorithmDataBase > input )
+        void Algorithm::addInput( SPtr< ConnectorBase > input )
         {
             m_inputs.insert( input );
         }
 
-        void Algorithm::addOutput( SPtr< AlgorithmDataBase > output )
+        void Algorithm::addOutput( SPtr< ConnectorBase > output )
         {
             m_outputs.insert( output );
         }
