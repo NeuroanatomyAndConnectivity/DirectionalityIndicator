@@ -22,35 +22,48 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATAWIDGET_H
-#define DATAWIDGET_H
+#ifndef FILEWIDGET_H
+#define FILEWIDGET_H
 
-#include <QDockWidget>
+#include <QIcon>
+#include <QWidget>
+#include <QToolButton>
 
-class FileWidget;
+class ScaleLabel;
 
 namespace di
 {
     namespace gui
     {
         /**
-         * A simple widget to provide the data-loading functionality. For now, it hard-codes the required files of our use-case.
+         * A simple widget to provide the data-loading functionality of a single file.
          */
-        class DataWidget: public QDockWidget
+        class FileWidget: public QWidget
         {
             Q_OBJECT
         public:
             /**
              * Create the data widget.
              *
-             * \param parent the parent widget.
+             * \param icon the icon to use for the buttons
+             * \param parent the parent widget
+             * \param fileFilter the file filter to use
              */
-            explicit DataWidget( QWidget* parent = nullptr );
+            FileWidget( const QIcon& icon, const QString& fileFilter, QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
              */
-            virtual ~DataWidget();
+            virtual ~FileWidget();
+
+            /**
+             * Event handler. We use it to handle \ref CommandObserverQt updates.
+             *
+             * \param event the event to handle
+             *
+             * \return true on success.
+             */
+            virtual bool event( QEvent* event );
 
             /**
              * Allows this widget to prepare everything in the network. This is only a temporary solution.
@@ -58,18 +71,29 @@ namespace di
             void prepareProcessingNetwork();
         protected:
         private:
-             /**
-             * The mesh load widget.
+            /**
+             * The label used for the file data
              */
-            FileWidget* m_meshLoad = nullptr;
+            ScaleLabel* m_fileLoadLabel = nullptr;
 
             /**
-             * The label load widget.
+             * The file load button
              */
-            FileWidget* m_labelLoad = nullptr;
+            QToolButton* m_fileLoadBtn = nullptr;
+
+            /**
+             * File filter to use in the open dialogs
+             */
+            QString m_fileFilter = "All Files (*.*)";
+
+        private slots:
+            /**
+             * Load the file data.
+             */
+            void loadFile();
         };
     }
 }
 
-#endif  // DATAWIDGET_H
+#endif  // FILEWIDGET_H
 
