@@ -25,6 +25,7 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include <memory>
 #include <exception>
 #include <string>
 
@@ -45,7 +46,7 @@ namespace di
          *
          * Derive to implement specific commands.
          */
-        class Command
+        class Command: public std::enable_shared_from_this< Command >
         {
         public:
             /**

@@ -27,11 +27,13 @@
 
 #include <QEvent>
 
-#include "Types.h"
+#include "core/Command.h"
 
 #include "../CommandObserverQt.h"
 
 #include "Events.h"
+
+#include "Types.h"
 
 namespace di
 {
@@ -52,9 +54,10 @@ namespace di
              * Constructor. Does nothing.
              *
              * \param observer the observer that has sent the event.
+             * \param issuer the command that issued this event.
              * \param status the current observer status change.
              */
-            CommandObserverEvent( SPtr< CommandObserverQt > observer, CommandObserverStatus status );
+            CommandObserverEvent( SPtr< CommandObserverQt > observer, SPtr< di::core::Command > issuer, CommandObserverStatus status );
 
             /**
              * Destructor. Does nothing.
@@ -67,6 +70,19 @@ namespace di
              * \return the observer
              */
             SPtr< CommandObserverQt > getObserver() const;
+
+            /**
+             * The command that caused this notification.
+             *
+             * \tparam the type of the command. If this does not match the real type of the command, nullptr is returned.
+             *
+             * \return the command.
+             */
+            template< typename CommandType = di::core::Command >
+            SPtr< CommandType > getIssuer() const
+            {
+                return std::dynamic_pointer_cast< CommandType >( m_issuer );
+            }
 
             /**
              * Get the status at which the observer fired.
@@ -85,6 +101,11 @@ namespace di
              * Status
              */
             CommandObserverStatus m_status = GENERIC;
+
+            /**
+             * The command that caused this notification.
+             */
+            SPtr< di::core::Command > m_issuer = nullptr;
         };
     }
 }

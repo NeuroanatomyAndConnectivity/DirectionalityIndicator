@@ -95,6 +95,7 @@ namespace di
         void ScaleLabel::setText( const QString &text )
         {
             m_orgText = text;
+            setToolTip( text );
             setMinimumWidth( fontMetrics().width( m_orgText.left( m_minLength ) + tr( "..." ) ) + 2 * margin() + m_additionalWidth );
             fitTextToSize();
         }

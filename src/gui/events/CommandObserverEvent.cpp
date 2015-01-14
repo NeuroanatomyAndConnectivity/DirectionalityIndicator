@@ -24,10 +24,12 @@ namespace di
 {
     namespace gui
     {
-        CommandObserverEvent::CommandObserverEvent( SPtr< CommandObserverQt > observer, CommandObserverStatus status ):
+        CommandObserverEvent::CommandObserverEvent( SPtr< CommandObserverQt > observer, SPtr< di::core::Command > issuer,
+                                                    CommandObserverStatus status ):
             QEvent( static_cast< QEvent::Type >( QT_COMMANDOBSERVER_EVENT ) ),
             m_observer( observer ),
-            m_status( status )
+            m_status( status ),
+            m_issuer( issuer )
         {
         }
 

@@ -161,21 +161,6 @@ namespace di
             }
         }
 
-        void CommandQueue::commit( SPtr< Command > command )
-        {
-            // grab lock
-            std::lock_guard< std::mutex > theLock( m_commandQueueMutex );
-
-            // add and notify processing thread ...
-            m_commandQueue.push_back( command );
-
-            // Change command state.
-            command->waiting();
-
-            // Notify thread
-            notifyThread();
-        }
-
         void CommandQueue::notifyThread()
         {
             // Always set this variable to ensure that a busy thread continues to work if it is not waiting on m_commandQueueCond right now.

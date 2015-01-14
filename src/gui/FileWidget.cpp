@@ -37,6 +37,8 @@
 #include "CommandObserverQt.h"
 #include "events/CommandObserverEvent.h"
 
+#include "algorithms/DataInject.h"
+
 #include "FileWidget.h"
 
 namespace di
@@ -69,6 +71,8 @@ namespace di
         void FileWidget::prepareProcessingNetwork()
         {
             // We use DataInject algorithms to inject data we have loaded (or will load)
+            m_dataInject = SPtr< di::algorithms::DataInject >( new di::algorithms::DataInject() );
+            Application::getProcessingNetwork()->addAlgorithm( m_dataInject );
         }
 
         void FileWidget::loadFile()
@@ -130,6 +134,9 @@ namespace di
                     // Update Text
                     ScaleLabel* label = dynamic_cast< ScaleLabel* >( coe->getObserver()->getAffected()[1] );
                     label->setText( "Success" );
+
+                    // Inject to network
+                    m_dataInject->inject( coe->getIssuer< di::commands::ReadFile >()->getResult() );
                 }
 
                 if( coe->getObserverStatus() == CommandObserverEvent::ABORT )
@@ -148,7 +155,7 @@ namespace di
 
                     // Update Text
                     ScaleLabel* label = dynamic_cast< ScaleLabel* >( coe->getObserver()->getAffected()[1] );
-                    label->setText( "Failed" );
+                    label->setText( "Failed: " + QString::fromStdString( coe->getIssuer()->getFailureReason() ) );
                 }
             }
 

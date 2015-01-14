@@ -29,10 +29,19 @@
 #include <QWidget>
 #include <QToolButton>
 
+#include "core/Algorithm.h"
+
+#include "Types.h"
+
 class ScaleLabel;
 
 namespace di
 {
+    namespace algorithms
+    {
+        class DataInject;
+    }
+
     namespace gui
     {
         /**
@@ -85,6 +94,11 @@ namespace di
              * File filter to use in the open dialogs
              */
             QString m_fileFilter = "All Files (*.*)";
+
+            /**
+             * The data inject algorithm used to place loaded data into the network.
+             */
+            SPtr< di::algorithms::DataInject > m_dataInject = nullptr;
 
         private slots:
             /**

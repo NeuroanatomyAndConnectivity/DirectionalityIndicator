@@ -27,44 +27,63 @@
 
 #include "Observer.h"
 
+#include "Types.h"
+
 namespace di
 {
     namespace core
     {
+        class Command;
+
         /**
          * Implements a class to monitor changes in a \ref Command. It uses the observer pattern to inform anyone interested in changes. This class is
          * useful for implementing GUI interaction with the visualization system and its commands.
          *
          * This specific observer, namely the CommandObserver provides some methods that match the Command interface. If you do not override them,
          * they will always call the notify function.
+         *
+         * \note All notifications provide a shared_ptr to the calling command. This is important, as there is no other way to query the command that
+         * triggered the notification (unless, of course, you manage a list of obsevers<->commands). The easy identification of the calling command
+         * allows to use one observer instance for multiple commands.
          */
         class CommandObserver: public Observer
         {
         public:
             /**
              * Mark the command as being processed right now.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void busy();
+            virtual void busy( SPtr< Command > command ) = 0;
 
             /**
              * The command is now waiting in the command-queue.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void waiting();
+            virtual void waiting( SPtr< Command > command ) = 0;
 
             /**
              * Called after finishing the command successfully.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void success();
+            virtual void success( SPtr< Command > command ) = 0;
 
             /**
              * Called if the command was aborted.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void abort();
+            virtual void abort( SPtr< Command > command ) = 0;
 
             /**
              * Called if the command failed somehow.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void fail();
+            virtual void fail( SPtr< Command > command ) = 0;
+
         protected:
             /**
              * Constructor. Does nothing.

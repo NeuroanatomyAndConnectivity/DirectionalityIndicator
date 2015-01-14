@@ -56,46 +56,46 @@ namespace di
             // nothing to do.
         }
 
-        void CommandObserverQt::busy()
+        void CommandObserverQt::busy( SPtr< di::core::Command > command )
         {
             // the shared_from_this creates a shared_ptr of this instance. This ensures that the observer is valid as long as the event is in the Qt
             // queue ...
-            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), CommandObserverEvent::BUSY ) );
+            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), command, CommandObserverEvent::BUSY ) );
         }
 
-        void CommandObserverQt::waiting()
+        void CommandObserverQt::waiting( SPtr< di::core::Command > command )
         {
             // the shared_from_this creates a shared_ptr of this instance. This ensures that the observer is valid as long as the event is in the Qt
             // queue ...
-            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), CommandObserverEvent::WAITING ) );
+            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), command, CommandObserverEvent::WAITING ) );
         }
 
-        void CommandObserverQt::success()
+        void CommandObserverQt::success( SPtr< di::core::Command > command )
         {
             // the shared_from_this creates a shared_ptr of this instance. This ensures that the observer is valid as long as the event is in the Qt
             // queue ...
-            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), CommandObserverEvent::SUCCESS ) );
+            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), command, CommandObserverEvent::SUCCESS ) );
         }
 
-        void CommandObserverQt::abort()
+        void CommandObserverQt::abort( SPtr< di::core::Command > command )
         {
             // the shared_from_this creates a shared_ptr of this instance. This ensures that the observer is valid as long as the event is in the Qt
             // queue ...
-            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), CommandObserverEvent::ABORT ) );
+            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), command, CommandObserverEvent::ABORT ) );
         }
 
-        void CommandObserverQt::fail()
+        void CommandObserverQt::fail( SPtr< di::core::Command > command )
         {
             // the shared_from_this creates a shared_ptr of this instance. This ensures that the observer is valid as long as the event is in the Qt
             // queue ...
-            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), CommandObserverEvent::FAIL ) );
+            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), command, CommandObserverEvent::FAIL ) );
         }
 
         void CommandObserverQt::notify()
         {
             // the shared_from_this creates a shared_ptr of this instance. This ensures that the observer is valid as long as the event is in the Qt
             // queue ...
-            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), CommandObserverEvent::GENERIC ) );
+            QCoreApplication::postEvent( m_receiver, new CommandObserverEvent( shared_from_this(), nullptr, CommandObserverEvent::GENERIC ) );
         }
 
         QWidget* CommandObserverQt::getReceiver() const

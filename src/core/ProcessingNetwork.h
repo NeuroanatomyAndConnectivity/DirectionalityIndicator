@@ -35,6 +35,11 @@
 #include "Command.h"
 #include "CommandObserver.h"
 #include "CommandQueue.h"
+#include "Algorithm.h"
+
+// All commands provided as convenience wrapper.
+#include "commands/ReadFile.h"
+#include "commands/AddAlgorithm.h"
 
 namespace di
 {
@@ -73,13 +78,30 @@ namespace di
              */
             virtual void stop();
 
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Some convenience methods. The wrap around command-creation. The specific command is mentioned as a note.
+
             /**
              * Load the specified file. This operation is non-blocking and runs in this container's thread.
              *
+             * \note equals to committing a di::commands::ReadFile( fileName, observer );
+             *
              * \param fileName the file to load
              * \param observer the observer that gets informed about changes. Can be omitted.
+             *
+             * \return the command
              */
-            virtual void loadFile( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
+            virtual SPtr< di::commands::ReadFile > loadFile( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
+
+            /**
+             * Add an algorithm to the network. This operation is asynchronous. If you need to get informed about success, specify a observer.
+             *
+             * \note equals to committing a di::commands::AddAlgorithm( algorithm );
+             *
+             * \param algorithm the algorithm to add.
+             * \param observer the observer that gets informed about the changes. Can be omitted.
+             */
+            virtual SPtr< di::commands::AddAlgorithm > addAlgorithm( SPtr< Algorithm > algorithm, SPtr< CommandObserver > observer = nullptr );
 
         protected:
             /**

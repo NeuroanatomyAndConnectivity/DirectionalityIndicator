@@ -60,11 +60,20 @@ namespace di
             CommandQueue::stop();
         }
 
-        void ProcessingNetwork::loadFile( const std::string& fileName, SPtr< CommandObserver > observer )
+        SPtr< di::commands::ReadFile > ProcessingNetwork::loadFile( const std::string& fileName, SPtr< CommandObserver > observer )
         {
-            commit(
-                SPtr< Command >(
+            return commit(
+                SPtr< di::commands::ReadFile >(
                     new di::commands::ReadFile( fileName, observer )
+                )
+            );
+        }
+
+        SPtr< di::commands::AddAlgorithm > ProcessingNetwork::addAlgorithm( SPtr< Algorithm > algorithm, SPtr< CommandObserver > observer )
+        {
+            return commit(
+                SPtr< di::commands::AddAlgorithm >(
+                    new di::commands::AddAlgorithm( algorithm, observer )
                 )
             );
         }
@@ -80,6 +89,8 @@ namespace di
             SPtr< di::commands::ReadFile > readFile = std::dynamic_pointer_cast< di::commands::ReadFile >( command );
             if( readFile )
             {
+                bool foundReader = false;    // did we find a reader?
+
                 std::string fn = readFile->getFilename();
                 LogD << "Try loading: \"" << fn << "\"" << LogEnd;
                 // iterate all known readers to find the best:
@@ -89,8 +100,15 @@ namespace di
                     {
                         // NOTE: exceptions get handled in CommandQueue
                         readFile->setResult( aReader->load( fn ) );
+                        foundReader = true;
                         break;
                     }
+                }
+
+                // Inform about failed command, as no reader was present
+                if( !foundReader )
+                {
+                    readFile->fail( "No suitable reader found for \"" + fn  + "\"."  );
                 }
             }
         }

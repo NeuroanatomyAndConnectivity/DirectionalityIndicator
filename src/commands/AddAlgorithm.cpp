@@ -22,20 +22,37 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include "CommandObserver.h"
+#include <string>
+
+#include "AddAlgorithm.h"
 
 namespace di
 {
-    namespace core
+    namespace commands
     {
-        CommandObserver::CommandObserver()
+        AddAlgorithm::AddAlgorithm( SPtr< di::core::Algorithm > algorithm, SPtr< di::core::CommandObserver > observer ):
+            Command( observer ),
+            m_algorithm( algorithm )
         {
-            // nothing to do.
         }
 
-        CommandObserver::~CommandObserver()
+        AddAlgorithm::~AddAlgorithm()
         {
-            // nothing to do.
+        }
+
+        std::string AddAlgorithm::getTitle() const
+        {
+            return "Add Algorithm";
+        }
+
+        std::string AddAlgorithm::getDescription() const
+        {
+            return "Add a algorithm as node to the processing network without connecting it.";
+        }
+
+        SPtr< di::core::Algorithm > AddAlgorithm::getAlgorithm() const
+        {
+            return m_algorithm;
         }
     }
 }

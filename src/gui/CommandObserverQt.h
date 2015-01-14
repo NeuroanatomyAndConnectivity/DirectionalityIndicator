@@ -31,6 +31,7 @@
 
 #include <QWidget>
 
+#include "core/Command.h"
 #include "core/CommandObserver.h"
 
 namespace di
@@ -69,28 +70,38 @@ namespace di
 
             /**
              * Mark the command as being processed right now.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void busy();
+            virtual void busy( SPtr< di::core::Command > command );
 
             /**
              * The command is now waiting in the command-queue.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void waiting();
+            virtual void waiting( SPtr< di::core::Command > command );
 
             /**
              * Called after finishing the command successfully.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void success();
+            virtual void success( SPtr< di::core::Command > command );
 
             /**
              * Called if the command was aborted.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void abort();
+            virtual void abort( SPtr< di::core::Command > command );
 
             /**
              * Called if the command failed somehow.
+             *
+             * \param command the command that issued this notification.
              */
-            virtual void fail();
+            virtual void fail( SPtr< di::core::Command > command );
 
             /**
              * Notification. Implemented using QEvents

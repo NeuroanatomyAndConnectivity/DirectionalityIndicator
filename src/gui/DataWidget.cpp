@@ -108,7 +108,9 @@ namespace di
 
         void DataWidget::prepareProcessingNetwork()
         {
-            // We use DataInject algorithms to inject data we have loaded (or will load)
+            // We use DataInject algorithms to inject data we have loaded (or will load). Let the FileWidgets do it:
+            m_meshLoad->prepareProcessingNetwork();
+            m_labelLoad->prepareProcessingNetwork();
         }
     }
 }

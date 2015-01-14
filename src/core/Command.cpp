@@ -26,11 +26,14 @@
 
 #include "Command.h"
 
+#include "Types.h"
+
 namespace di
 {
     namespace core
     {
         Command::Command( SPtr< CommandObserver > observer ):
+            std::enable_shared_from_this< Command >(),
             m_observer( observer )
         {
         }
@@ -57,7 +60,7 @@ namespace di
             m_isWaiting = false;
             if( m_observer )
             {
-                m_observer->busy();
+                m_observer->busy( shared_from_this() );
             }
         }
 
@@ -78,7 +81,7 @@ namespace di
             m_isWaiting = true;
             if( m_observer )
             {
-                m_observer->waiting();
+                m_observer->waiting( shared_from_this() );
             }
         }
 
@@ -101,7 +104,7 @@ namespace di
             m_isBusy = false;
             if( m_observer )
             {
-                m_observer->success();
+                m_observer->success( shared_from_this() );
             }
         }
 
@@ -125,7 +128,7 @@ namespace di
             m_isSuccessful = false;
             if( m_observer )
             {
-                m_observer->abort();
+                m_observer->abort( shared_from_this() );
             }
         }
 
@@ -151,7 +154,7 @@ namespace di
             m_failureReason = reason;
             if( m_observer )
             {
-                m_observer->fail();
+                m_observer->fail( shared_from_this() );
             }
         }
 

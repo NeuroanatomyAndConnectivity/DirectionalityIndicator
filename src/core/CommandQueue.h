@@ -73,7 +73,23 @@ namespace di
              *
              * \param command the command to commit.
              */
-            virtual void commit( SPtr< Command > command );
+            template< typename CommandType >
+            SPtr< CommandType > commit( SPtr< CommandType > command )
+            {
+                // grab lock
+                std::lock_guard< std::mutex > theLock( m_commandQueueMutex );
+
+                // add and notify processing thread ...
+                m_commandQueue.push_back( command );
+
+                // Change command state.
+                command->waiting();
+
+                // Notify thread
+                notifyThread();
+
+                return command;
+            }
 
         protected:
             /**
