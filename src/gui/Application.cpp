@@ -85,6 +85,7 @@ namespace di
 
             // Tell the data widget that the processing network is ready.
             m_dataWidget->prepareProcessingNetwork();
+            m_parameterWidget->prepareProcessingNetwork();
 
             // Finally, show the UI
             m_mainWindow->show();

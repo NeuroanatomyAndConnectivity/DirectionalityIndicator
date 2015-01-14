@@ -29,8 +29,6 @@
 #include <QWidget>
 #include <QToolButton>
 
-#include "core/Algorithm.h"
-
 #include "Types.h"
 
 class ScaleLabel;

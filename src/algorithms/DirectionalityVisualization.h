@@ -29,10 +29,13 @@
 
 namespace di
 {
-    namespace algorithms
+    namespace core
     {
         class TriangleDataSet;
+    }
 
+    namespace algorithms
+    {
         /**
          * Directionality Indicator. This class implements the algorithm and the visualization.
          */

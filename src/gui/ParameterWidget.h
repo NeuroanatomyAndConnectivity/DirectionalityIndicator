@@ -28,8 +28,15 @@
 #include <QWidget>
 #include <QDockWidget>
 
+#include "Types.h"
+
 namespace di
 {
+    namespace algorithms
+    {
+        class DirectionalityVisualization;
+    }
+
     namespace gui
     {
         /**
@@ -50,8 +57,19 @@ namespace di
              * Destroy and clean up.
              */
             virtual ~ParameterWidget();
+
+            /**
+             * Allows this widget to prepare everything in the network. This is only a temporary solution.
+             */
+            void prepareProcessingNetwork();
+
         protected:
         private:
+            /**
+             * The algorithm handled by this widget.
+             */
+            SPtr< di::algorithms::DirectionalityVisualization > m_algorithm  = nullptr;
+
         };
     }
 }
