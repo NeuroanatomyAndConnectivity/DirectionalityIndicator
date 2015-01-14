@@ -57,7 +57,7 @@ namespace di
                     m_commandQueueCond.wait( lock,
                                              [ this ]  // keep waiting if not explicitly notified
                                              {
-                                                 return m_notified;
+                                                 return m_notified || !m_commandQueue.empty();
                                              }
                                            );
                 }

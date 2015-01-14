@@ -24,6 +24,9 @@
 
 #include <string>
 
+#define LogTag "core/Command"
+#include "Logger.h"
+
 #include "Command.h"
 
 #include "Types.h"
@@ -55,6 +58,8 @@ namespace di
                 return;
             }
 
+            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": busy." << LogEnd;
+
             // Change state and notify
             m_isBusy = true;
             m_isWaiting = false;
@@ -77,6 +82,8 @@ namespace di
                 return;
             }
 
+            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": waiting." << LogEnd;
+
             // Change state and notify
             m_isWaiting = true;
             if( m_observer )
@@ -97,6 +104,8 @@ namespace di
             {
                 return;
             }
+
+            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": success." << LogEnd;
 
             // Change state and notify
             m_isSuccessful = true;
@@ -121,6 +130,8 @@ namespace di
                 return;
             }
 
+            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": abort." << LogEnd;
+
             // Change state and notify
             m_isAborted = true;
             m_isWaiting = false;
@@ -144,6 +155,8 @@ namespace di
             {
                 return;
             }
+
+            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": failed - Reason: " << reason << "" << LogEnd;
 
             // Change state and notify
             m_isFailed = true;

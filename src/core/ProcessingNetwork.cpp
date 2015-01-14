@@ -83,14 +83,11 @@ namespace di
             // IMPORTANT: in the future, it is planned to make this dynamic... for now, it is sufficient to do it the hard-coded way as we need to get
             // started with the visualization itself.
 
-            LogD << "Processing command: \"" << command->getTitle() << "\"" << LogEnd;
-
             // Is a ReadFile command?
             SPtr< di::commands::ReadFile > readFile = std::dynamic_pointer_cast< di::commands::ReadFile >( command );
             if( readFile )
             {
                 bool foundReader = false;    // did we find a reader?
-
                 std::string fn = readFile->getFilename();
                 LogD << "Try loading: \"" << fn << "\"" << LogEnd;
                 // iterate all known readers to find the best:
