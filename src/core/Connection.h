@@ -22,71 +22,41 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATAWIDGET_H
-#define DATAWIDGET_H
+#ifndef CONNECTION_H
+#define CONNECTION_H
 
-#include <QDockWidget>
+#include "ConnectorBase.h"
 
 #include "Types.h"
-
-class FileWidget;
 
 namespace di
 {
     namespace core
     {
-        class Algorithm;
-    }
-
-    namespace gui
-    {
         /**
-         * A simple widget to provide the data-loading functionality. For now, it hard-codes the required files of our use-case.
+         * Class represents a direct connection between two \ref Connector. As the connectors do not differentiate between in and out, the direction
+         * of this connection defines the direction of the data flow.
          */
-        class DataWidget: public QDockWidget
+        class Connection
         {
-            Q_OBJECT
         public:
             /**
-             * Create the data widget.
+             * Constructor. The data is initially unset.
              *
-             * \param parent the parent widget.
+             * \param name the name of the input. Please specify something useful.
+             * \param description description of the input.
              */
-            explicit DataWidget( QWidget* parent = nullptr );
+            Connection( const std::string& name, const std::string& description );
 
             /**
-             * Destroy and clean up.
+             * Destructor.
              */
-            virtual ~DataWidget();
-
-            /**
-             * Allows this widget to prepare everything in the network. This is only a temporary solution.
-             */
-            void prepareProcessingNetwork();
-
-            /**
-             * Connect the data to the algorithm.
-             *
-             * \note Hard-coded. Ugly. Do not copy.
-             *
-             * \param to to this algorithm.
-             */
-            void connectDataToAlgo( ConstSPtr< di::core::Algorithm > to );
-
+            virtual ~Connection();
         protected:
         private:
-             /**
-             * The mesh load widget.
-             */
-            FileWidget* m_meshLoad = nullptr;
-
-            /**
-             * The label load widget.
-             */
-            FileWidget* m_labelLoad = nullptr;
         };
     }
 }
 
-#endif  // DATAWIDGET_H
+#endif  // CONNECTION_H
 

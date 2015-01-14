@@ -37,6 +37,11 @@ namespace di
         class DirectionalityVisualization;
     }
 
+    namespace core
+    {
+        class Algorithm;
+    }
+
     namespace gui
     {
         /**
@@ -62,6 +67,13 @@ namespace di
              * Allows this widget to prepare everything in the network. This is only a temporary solution.
              */
             void prepareProcessingNetwork();
+
+            /**
+             * The algorithm handled by this widget.
+             *
+             * \return the algorithm
+             */
+            ConstSPtr< di::core::Algorithm > getAlgorithm() const;
 
         protected:
         private:

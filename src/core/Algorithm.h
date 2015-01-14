@@ -25,6 +25,8 @@
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
 
+#include <string>
+
 #include "ConnectorBase.h"
 #include "Connector.h"
 #include "ConnectorTransferable.h"
@@ -75,6 +77,58 @@ namespace di
              * \return the list of outputs.
              */
             const ConstSPtrSet< ConnectorBase >& getOutputs() const;
+
+            /**
+             * Query an input by name.
+             *
+             * \note This is thread-safe since no one has non-const access to the connector vector.
+             *
+             * \param name name of the input to get.
+             *
+             * \throw std::invalid_argument if the input does not exist.
+             *
+             * \return the input
+             */
+            ConstSPtr< ConnectorBase > getInput( const std::string& name ) const;
+
+            /**
+             * Query an input by index.
+             *
+             * \note This is thread-safe since no one has non-const access to the connector vector.
+             *
+             * \param index the index of the connector.
+             *
+             * \throw std::out_of_range if the connector index is invalid.
+             *
+             * \return the input
+             */
+            ConstSPtr< ConnectorBase > getInput( size_t index ) const;
+
+            /**
+             * Query an output by name.
+             *
+             * \note This is thread-safe since no one has non-const access to the connector vector.
+             *
+             * \param name name of the output to get.
+             *
+             * \throw std::invalid_argument if the input does not exist.
+             *
+             * \return the output
+             */
+            ConstSPtr< ConnectorBase > getOutput( const std::string& name ) const;
+
+            /**
+             * Query an output by index.
+             *
+             * \note This is thread-safe since no one has non-const access to the connector vector.
+             *
+             * \param index the index of the connector.
+             *
+             * \throw std::out_of_range if the connector index is invalid.
+             *
+             * \return the output
+             */
+            ConstSPtr< ConnectorBase > getOutput( size_t index ) const;
 
         protected:
             /**
@@ -139,6 +193,34 @@ namespace di
                 addOutput( theData );
                 return theData;
             }
+
+            /**
+             * Searches the specified connector name in the given set.
+             *
+             * \param where the set to search
+             * \param name the connector name
+             *
+             * \note This is thread-safe since no one has non-const access to the connector vector.
+             *
+             * \throw std::invalid_argument if the connector name does not exist.
+             *
+             * \return the connector
+             */
+            ConstSPtr< ConnectorBase > searchConnector( const ConstSPtrSet< ConnectorBase >& where, const std::string& name ) const;
+
+            /**
+             * Searches the specified connector in the given set.
+             *
+             * \param where the set to search
+             * \param index the connector index
+             *
+             * \note This is thread-safe since no one has non-const access to the connector vector.
+             *
+             * \throw std::out_of_range if the connector index is invalid.
+             *
+             * \return the connector
+             */
+            ConstSPtr< ConnectorBase > searchConnector( const ConstSPtrSet< ConnectorBase >& where, size_t index ) const;
 
         private:
             /**

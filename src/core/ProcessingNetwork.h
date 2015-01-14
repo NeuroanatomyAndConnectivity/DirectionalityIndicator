@@ -40,6 +40,7 @@
 // All commands provided as convenience wrapper.
 #include "commands/ReadFile.h"
 #include "commands/AddAlgorithm.h"
+#include "commands/Connect.h"
 
 namespace di
 {
@@ -89,7 +90,8 @@ namespace di
              * \param fileName the file to load
              * \param observer the observer that gets informed about changes. Can be omitted.
              *
-             * \return the command
+             * \return the command instance. Not needed to keep this.
+             *
              */
             virtual SPtr< di::commands::ReadFile > loadFile( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
 
@@ -100,8 +102,50 @@ namespace di
              *
              * \param algorithm the algorithm to add.
              * \param observer the observer that gets informed about the changes. Can be omitted.
+             *
+             * \return the command instance. Not needed to keep this.
              */
             virtual SPtr< di::commands::AddAlgorithm > addAlgorithm( SPtr< Algorithm > algorithm, SPtr< CommandObserver > observer = nullptr );
+
+            /**
+             * Create a connection between two algorithm connectors. This operation is asynchronous. If you need to get informed about success,
+             * specify a observer.
+             *
+             * \note equals to committing a di::commands::Connect( from, fromConnector, to, toConnector ) );
+             *
+             * \note command fails if any argument is invalid. The function itself does not fail. This is useful if the specified module not yet set
+             * its outputs properly (it is still in the queue).
+             *
+             * \param from the source algorithm
+             * \param fromConnector the connector name of the source connector
+             * \param to the target algorithm
+             * \param toConnector the connector name of the target connector
+             *
+             * \return the command instance. Not needed to keep this.
+             */
+            virtual SPtr< di::commands::Connect > connectAlgorithms( ConstSPtr< di::core::Algorithm > from,
+                                                                     const std::string& fromConnector,
+                                                                     ConstSPtr< di::core::Algorithm > to,
+                                                                     const std::string& toConnector
+                                                                   );
+
+            /**
+             * Create a connection between two algorithm connectors. This operation is asynchronous. If you need to get informed about success,
+             * specify a observer.
+             *
+             * \note equals to committing a di::commands::Connect( from, to );
+             *
+             * \note command fails if any argument is invalid. The function itself does not fail. This is useful if the specified module not yet set
+             * its outputs properly (it is still in the queue).
+             *
+             * \param from the source connector
+             * \param to the target connector
+             *
+             * \return the command instance. Not needed to keep this.
+             */
+            virtual SPtr< di::commands::Connect > connectAlgorithms( ConstSPtr< di::core::ConnectorBase > from,
+                                                                     ConstSPtr< di::core::ConnectorBase > to
+                                                                   );
 
         protected:
             /**

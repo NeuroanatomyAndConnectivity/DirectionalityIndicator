@@ -24,6 +24,9 @@
 
 #include <QApplication>
 
+#include "core/ProcessingNetwork.h"
+#include "core/Connection.h"
+
 #include "OGLWidget.h"
 #include "DataWidget.h"
 #include "ParameterWidget.h"
@@ -86,6 +89,10 @@ namespace di
             // Tell the data widget that the processing network is ready.
             m_dataWidget->prepareProcessingNetwork();
             m_parameterWidget->prepareProcessingNetwork();
+
+            // Hard-code a connection here. This should be done by a GUI or nice "use-case" class or something. For now, we need to get a VIS up and
+            // running.
+            m_dataWidget->connectDataToAlgo( m_parameterWidget->getAlgorithm() );
 
             // Finally, show the UI
             m_mainWindow->show();

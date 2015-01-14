@@ -22,48 +22,5 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <string>
+#include "Connection.h"
 
-#include "ReadFile.h"
-
-namespace di
-{
-    namespace commands
-    {
-        ReadFile::ReadFile( const std::string& filename, SPtr< di::core::CommandObserver > observer ):
-            Command( observer ),
-            m_filename( filename )
-        {
-        }
-
-        ReadFile::~ReadFile()
-        {
-        }
-
-        std::string ReadFile::getName() const
-        {
-            return "Read File";
-        }
-
-        std::string ReadFile::getDescription() const
-        {
-            return "Read a file from disk. This command tries to use the optimal loader.";
-        }
-
-        std::string ReadFile::getFilename() const
-        {
-            return m_filename;
-        }
-
-        SPtr< di::core::DataSetBase > ReadFile::getResult() const
-        {
-            return m_result;
-        }
-
-        void ReadFile::setResult( SPtr< di::core::DataSetBase > result )
-        {
-            m_result = result;
-        }
-
-    }
-}

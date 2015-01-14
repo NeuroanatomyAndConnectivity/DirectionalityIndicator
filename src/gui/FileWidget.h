@@ -76,6 +76,14 @@ namespace di
              * Allows this widget to prepare everything in the network. This is only a temporary solution.
              */
             void prepareProcessingNetwork();
+
+            /**
+             * The data inject algorithm used to place loaded data into the network.
+             *
+             * \return the algorithm
+             */
+            ConstSPtr< di::algorithms::DataInject > getDataInject() const;
+
         protected:
         private:
             /**

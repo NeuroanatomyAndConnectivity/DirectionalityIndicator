@@ -161,6 +161,11 @@ namespace di
 
             return QWidget::event( event );
         }
+
+        ConstSPtr< di::algorithms::DataInject > FileWidget::getDataInject() const
+        {
+            return m_dataInject;
+        }
     }
 }
 

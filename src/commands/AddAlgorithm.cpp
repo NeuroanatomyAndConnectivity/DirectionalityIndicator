@@ -40,7 +40,7 @@ namespace di
         {
         }
 
-        std::string AddAlgorithm::getTitle() const
+        std::string AddAlgorithm::getName() const
         {
             return "Add Algorithm";
         }

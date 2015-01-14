@@ -52,7 +52,11 @@ namespace di
             // To achieve our vis-goal now, we hard-code the right algorithm here.
             m_algorithm = SPtr< di::algorithms::DirectionalityVisualization >( new di::algorithms::DirectionalityVisualization() );
             Application::getProcessingNetwork()->addAlgorithm( m_algorithm );
+        }
 
+        ConstSPtr< di::core::Algorithm > ParameterWidget::getAlgorithm() const
+        {
+            return m_algorithm;
         }
     }
 }

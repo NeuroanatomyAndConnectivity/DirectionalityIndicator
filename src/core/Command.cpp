@@ -58,7 +58,7 @@ namespace di
                 return;
             }
 
-            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": busy." << LogEnd;
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": busy." << LogEnd;
 
             // Change state and notify
             m_isBusy = true;
@@ -82,7 +82,7 @@ namespace di
                 return;
             }
 
-            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": waiting." << LogEnd;
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": waiting." << LogEnd;
 
             // Change state and notify
             m_isWaiting = true;
@@ -105,7 +105,7 @@ namespace di
                 return;
             }
 
-            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": success." << LogEnd;
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": success." << LogEnd;
 
             // Change state and notify
             m_isSuccessful = true;
@@ -130,7 +130,7 @@ namespace di
                 return;
             }
 
-            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": abort." << LogEnd;
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": abort." << LogEnd;
 
             // Change state and notify
             m_isAborted = true;
@@ -156,7 +156,7 @@ namespace di
                 return;
             }
 
-            LogD << "Command \"" << getTitle() << "\", instance " << static_cast< void* >( this ) << ": failed - Reason: " << reason << "" << LogEnd;
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": failed - Reason: " << reason << "" << LogEnd;
 
             // Change state and notify
             m_isFailed = true;

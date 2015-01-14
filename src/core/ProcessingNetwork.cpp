@@ -78,6 +78,30 @@ namespace di
             );
         }
 
+        SPtr< di::commands::Connect > ProcessingNetwork::connectAlgorithms( ConstSPtr< di::core::Algorithm > from,
+                                                                            const std::string& fromConnector,
+                                                                            ConstSPtr< di::core::Algorithm > to,
+                                                                            const std::string& toConnector
+                                                                          )
+        {
+            return commit(
+                SPtr< di::commands::Connect >(
+                    new di::commands::Connect( from, fromConnector, to, toConnector )
+                )
+            );
+        }
+
+        SPtr< di::commands::Connect > ProcessingNetwork::connectAlgorithms( ConstSPtr< di::core::ConnectorBase > from,
+                                                                            ConstSPtr< di::core::ConnectorBase > to
+                                                                          )
+        {
+            return commit(
+              SPtr< di::commands::Connect >(
+                    new di::commands::Connect( from, to )
+                )
+            );
+        }
+
         void ProcessingNetwork::process( SPtr< Command > command )
         {
             // IMPORTANT: in the future, it is planned to make this dynamic... for now, it is sufficient to do it the hard-coded way as we need to get

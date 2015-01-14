@@ -31,6 +31,7 @@
 #include "Application.h"
 #include "ScaleLabel.h"
 
+#include "core/Algorithm.h"
 #define LogTag "gui/DataWidget"
 #include "core/Logger.h"
 
@@ -111,6 +112,12 @@ namespace di
             // We use DataInject algorithms to inject data we have loaded (or will load). Let the FileWidgets do it:
             m_meshLoad->prepareProcessingNetwork();
             m_labelLoad->prepareProcessingNetwork();
+        }
+
+        void DataWidget::connectDataToAlgo( ConstSPtr< di::core::Algorithm > to )
+        {
+            auto meshAlgo = m_meshLoad->getDataInject();
+            auto labelAlgo = m_labelLoad->getDataInject();
         }
     }
 }

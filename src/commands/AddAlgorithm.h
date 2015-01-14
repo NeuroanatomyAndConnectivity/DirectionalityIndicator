@@ -57,15 +57,15 @@ namespace di
             virtual ~AddAlgorithm();
 
             /**
-             * Get the human-readable title of this command. This should be something like "Calculating Gradients".
+             * Get the human-readable title of this command. This should be something like "Adding Algorithm".
              *
              * \return the title
              */
-            virtual std::string getTitle() const;
+            virtual std::string getName() const;
 
             /**
-             * Get the human-readable description of this command. This is a more detailed description of what is going on, like "Calculating the
-             * gradients using the differential quotient on scalar data.".
+             * Get the human-readable description of this command. This is a more detailed description of what is going on, like "Adding a algorithm
+             * to the network without connecting them".
              *
              * \return the description
              */

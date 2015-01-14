@@ -25,7 +25,11 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include "core/ProcessingNetwork.h"
+
 #include <QSettings>
+
+#include "Types.h"
 
 // Forward declarations
 class OGLWidget;
@@ -33,11 +37,13 @@ class DataWidget;
 class ParameterWidget;
 class MainWindow;
 
-#include "Types.h"
-#include "core/ProcessingNetwork.h"
-
 namespace di
 {
+    namespace core
+    {
+        class Connection;
+    }
+
     namespace gui
     {
         /**
@@ -139,6 +145,16 @@ namespace di
              * The processing container managed by this application instance.
              */
             SPtr< core::ProcessingNetwork > m_processingNetwork = nullptr;
+
+            /**
+             * The connection between triangle data and the algo
+             */
+            SPtr< di::core::Connection > m_connectionTrianglesToAlgo = nullptr;
+
+            /**
+             * The connection between label data and the algo
+             */
+            SPtr< di::core::Connection > m_connectionLabelsToAlgo = nullptr;
         };
     }
 }
