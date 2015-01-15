@@ -55,9 +55,20 @@ namespace di
             CommandQueue::start();
         }
 
-        void ProcessingNetwork::stop()
+        void ProcessingNetwork::stop( bool graceful )
         {
-            CommandQueue::stop();
+            CommandQueue::stop( graceful );
+        }
+
+        void ProcessingNetwork::addNetworkNode( SPtr< Algorithm > algorithm )
+        {
+            // if already inside ... nothing happens.
+            m_algorithms.insert( algorithm );
+        }
+
+        void ProcessingNetwork::addNetworkNodeEdge( SPtr< Connection > connection )
+        {
+            m_connections.insert( connection );
         }
 
         SPtr< di::commands::ReadFile > ProcessingNetwork::loadFile( const std::string& fileName, SPtr< CommandObserver > observer )
@@ -111,11 +122,11 @@ namespace di
             // big fast.
 
             // Is a ReadFile command?
-            SPtr< di::commands::ReadFile > readFile = std::dynamic_pointer_cast< di::commands::ReadFile >( command );
-            if( readFile )
+            SPtr< di::commands::ReadFile > readFileCmd = std::dynamic_pointer_cast< di::commands::ReadFile >( command );
+            if( readFileCmd )
             {
                 bool foundReader = false;    // did we find a reader?
-                std::string fn = readFile->getFilename();
+                std::string fn = readFileCmd->getFilename();
                 LogD << "Try loading: \"" << fn << "\"" << LogEnd;
                 // iterate all known readers to find the best:
                 for( auto aReader : m_reader )
@@ -123,7 +134,7 @@ namespace di
                     if( aReader->canLoad( fn ) )
                     {
                         // NOTE: exceptions get handled in CommandQueue
-                        readFile->setResult( aReader->load( fn ) );
+                        readFileCmd->setResult( aReader->load( fn ) );
                         foundReader = true;
                         break;
                     }
@@ -132,8 +143,40 @@ namespace di
                 // Inform about failed command, as no reader was present
                 if( !foundReader )
                 {
-                    readFile->fail( "No suitable reader found for \"" + fn  + "\"."  );
+                    readFileCmd->fail( "No suitable reader found for \"" + fn  + "\"."  );
                 }
+            }
+
+            // Add a new algorithm?
+            SPtr< di::commands::AddAlgorithm > addAlgorithmCmd = std::dynamic_pointer_cast< di::commands::AddAlgorithm >( command );
+            if( addAlgorithmCmd )
+            {
+                // is a null?
+                if( !addAlgorithmCmd->getAlgorithm() )
+                {
+                    addAlgorithmCmd->fail( "Null algorithms are not allowed." );
+                }
+
+                // add and done
+                addNetworkNode( addAlgorithmCmd->getAlgorithm() );
+            }
+
+            // Connect a algorithm?
+            SPtr< di::commands::Connect > connectCmd = std::dynamic_pointer_cast< di::commands::Connect >( command );
+            if( connectCmd )
+            {
+                // is a null?
+                if( !connectCmd->getFromConnector() )
+                {
+                    connectCmd->fail( "Need a source connector. Null pointer given." );
+                }
+                if( !connectCmd->getToConnector() )
+                {
+                    connectCmd->fail( "Need a target connector. Null pointer given." );
+                }
+
+                // add and done
+                addNetworkNodeEdge( std::make_shared< Connection >( connectCmd->getFromConnector(), connectCmd->getToConnector() ) );
             }
         }
     }

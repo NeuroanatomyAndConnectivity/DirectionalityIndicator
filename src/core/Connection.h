@@ -41,19 +41,44 @@ namespace di
         {
         public:
             /**
-             * Constructor. The data is initially unset.
+             * Constructor. Represents the connection between two connectors. Please keep in mind that the data flows from the source connector to the
+             * target connector only.
              *
-             * \param name the name of the input. Please specify something useful.
-             * \param description description of the input.
+             * \param from the source connector.
+             * \param to the target connector.
              */
-            Connection( const std::string& name, const std::string& description );
+            Connection( ConstSPtr< ConnectorBase > from, ConstSPtr< ConnectorBase > to );
 
             /**
              * Destructor.
              */
             virtual ~Connection();
+
+            /**
+             * Get the source connector.
+             *
+             * \return the source connector.
+             */
+            ConstSPtr< ConnectorBase > getSource() const;
+
+            /**
+             * Get the source connector.
+             *
+             * \return the source connector.
+             */
+            ConstSPtr< ConnectorBase > getTarget() const;
+
         protected:
         private:
+            /**
+             * Source connector.
+             */
+            ConstSPtr< ConnectorBase > m_source;
+
+            /**
+             * Target connector.
+             */
+            ConstSPtr< ConnectorBase > m_target;
         };
     }
 }

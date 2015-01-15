@@ -24,3 +24,31 @@
 
 #include "Connection.h"
 
+namespace di
+{
+    namespace core
+    {
+
+        Connection::Connection( ConstSPtr< ConnectorBase > from, ConstSPtr< ConnectorBase > to ):
+            m_source( from ),
+            m_target( to )
+        {
+        }
+
+        Connection::~Connection()
+        {
+        }
+
+
+        ConstSPtr< ConnectorBase > Connection::getSource() const
+        {
+            return m_source;
+        }
+
+        ConstSPtr< ConnectorBase > Connection::getTarget() const
+        {
+            return m_target;
+        }
+    }
+}
+

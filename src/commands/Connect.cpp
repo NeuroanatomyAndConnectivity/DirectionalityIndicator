@@ -30,7 +30,6 @@ namespace di
 {
     namespace commands
     {
-
         Connect::Connect( ConstSPtr< di::core::Algorithm > from, const std::string& fromConnector,
                           ConstSPtr< di::core::Algorithm > to, const std::string& toConnector,
                           SPtr< di::core::CommandObserver > observer ):
@@ -85,7 +84,7 @@ namespace di
             }
 
             // if not, we need to find it. Note: this might throw an exception. Handled by the command-queue.
-            return m_to->getOutput( m_toConnectorName );
+            return m_to->getInput( m_toConnectorName );
         }
     }
 }
