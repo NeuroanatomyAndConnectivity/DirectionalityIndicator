@@ -57,22 +57,29 @@ namespace di
             virtual const std::string& getDescription() const;
 
             /**
-             * Check if the specified thingy is compatible with this ConnectorBase instance
+             * Check if the specified thingy is compatible with this ConnectoBase instance
              *
              * \param checkAgainst the thing to check
              *
              * \return true if yes.
              */
-            virtual bool compatible( ConstSPtr< ConnectorTransferable > checkAgainst ) const = 0;
+            virtual bool isTransferable( ConstSPtr< ConnectorTransferable > checkAgainst ) const = 0;
 
             /**
-             * Set the compatible data. If the given thing is not compatible, nullptr is set as new data.
+             * Set the transferable data, if compatible. If the given thing is not compatible, nullptr is set as new data.
              *
              * \param data the data to set. Can be nullptr.
              *
              * \return true if the data was compatible and was set
              */
-            virtual bool setCompatibleData( ConstSPtr< ConnectorTransferable > data ) = 0;
+            virtual bool setTransferable( ConstSPtr< ConnectorTransferable > data ) = 0;
+
+            /**
+             * Get the current transferable data.
+             *
+             * \return the data. Can be nullptr.
+             */
+            virtual ConstSPtr< ConnectorTransferable > getTransferable() const = 0;
 
         protected:
             /**

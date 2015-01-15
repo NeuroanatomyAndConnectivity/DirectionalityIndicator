@@ -137,6 +137,7 @@ namespace di
 
                     // Inject to network
                     m_dataInject->inject( coe->getIssuer< di::commands::ReadFile >()->getResult() );
+                    Application::getProcessingNetwork()->runNetwork();
                 }
 
                 if( coe->getObserverStatus() == CommandObserverEvent::ABORT )
@@ -146,7 +147,6 @@ namespace di
                     // Update Text
                     ScaleLabel* label = dynamic_cast< ScaleLabel* >( coe->getObserver()->getAffected()[1] );
                     label->setText( "Abort" );
-
                 }
 
                 if( coe->getObserverStatus() == CommandObserverEvent::FAIL )

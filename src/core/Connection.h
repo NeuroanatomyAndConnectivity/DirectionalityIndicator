@@ -25,7 +25,10 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include <memory>
+
 #include "ConnectorBase.h"
+#include "ConnectorObserver.h"
 
 #include "Types.h"
 
@@ -35,7 +38,10 @@ namespace di
     {
         /**
          * Class represents a direct connection between two \ref Connector. As the connectors do not differentiate between in and out, the direction
-         * of this connection defines the direction of the data flow.
+         * of this connection defines the direction of the data flow. A connection is basically an observer of the source \ref ConnectorBase. This
+         * way, the connection gets to know when it is "dirty" and needs an update.
+         *
+         * \note For now, it uses poll to check status. This will change to a push-based system using observers.
          */
         class Connection
         {
@@ -47,7 +53,7 @@ namespace di
              * \param from the source connector.
              * \param to the target connector.
              */
-            Connection( ConstSPtr< ConnectorBase > from, ConstSPtr< ConnectorBase > to );
+            Connection( ConstSPtr< ConnectorBase > from, SPtr< ConnectorBase > to );
 
             /**
              * Destructor.
@@ -66,8 +72,14 @@ namespace di
              *
              * \return the source connector.
              */
-            ConstSPtr< ConnectorBase > getTarget() const;
+            SPtr< ConnectorBase > getTarget() const;
 
+            /**
+             * Propagate changes from the source to the target.
+             *
+             * \return true if data changed.
+             */
+            bool propagate();
         protected:
         private:
             /**
@@ -78,7 +90,7 @@ namespace di
             /**
              * Target connector.
              */
-            ConstSPtr< ConnectorBase > m_target;
+            SPtr< ConnectorBase > m_target;
         };
     }
 }

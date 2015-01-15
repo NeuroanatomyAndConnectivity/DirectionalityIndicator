@@ -25,6 +25,8 @@
 #ifndef VISUALIZATION_H
 #define VISUALIZATION_H
 
+#include <atomic>
+
 #include "Types.h"
 
 namespace di
@@ -32,11 +34,57 @@ namespace di
     namespace core
     {
         /**
-         * Interface to define the basic operations of all visualizations.
+         * Interface to define the basic operations of all visualizations. If your algorithm wants to output graphics, derive from this class and
+         * implement the methods accordingly. The calling order will always be prepare(), loop: update(), render() and finally: finalize().
          */
         class Visualization
         {
         public:
+            /**
+             * Prepare your visualization. This includes creation of resources, buffers, and others.
+             * If an error occurs, throw an exception accordingly.
+             *
+             * \note this runs in the OpenGL thread and the context is bound.
+             */
+            virtual void prepare() = 0;
+
+            /**
+             * Finalize your OpenGL resources here. Free buffers and shaders.
+             * If an error occurs, throw an exception accordingly.
+             *
+             * \note this runs in the OpenGL thread and the context is bound.
+             */
+            virtual void finalize() = 0;
+
+            /**
+             * Do actual rendering.
+             * If an error occurs, throw an exception accordingly.
+             *
+             * \note this runs in the OpenGL thread and the context is current.
+             */
+            virtual void render() = 0;
+
+            /**
+             * This method is called between the frames. Use this to update resources. Immediately return if nothing needs to update. If you do not
+             * want to update anything at all, do not overwrite.
+             * If an error occurs, throw an exception accordingly.
+             *
+             * \note this runs in the OpenGL thread and the context is current.
+             */
+            virtual void update();
+
+            /**
+             * Request an update of the rendering. Since the rendering system is not permanently updating/rendering, this is needed to force a
+             * wake-up.
+             */
+            virtual void renderRequest();
+
+            /**
+             * Is an update()/render() cycle requested?
+             *
+             * \return true if graphics need a refresh.
+             */
+            virtual bool isRenderingRequested() const;
         protected:
             /**
              * Constructor.
@@ -48,6 +96,10 @@ namespace di
              */
             virtual ~Visualization();
         private:
+            /**
+             * A rendering was requested.
+             */
+            std::atomic< bool > m_renderingRequested;
         };
     }
 }

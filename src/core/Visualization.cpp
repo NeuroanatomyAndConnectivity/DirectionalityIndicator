@@ -28,6 +28,32 @@ namespace di
 {
     namespace core
     {
+        Visualization::Visualization()
+        {
+            // nothing to do
+            m_renderingRequested.store( false );
+        }
+
+        Visualization::~Visualization()
+        {
+            // nothing to do
+        }
+
+        void Visualization::update()
+        {
+            // nothing to do
+        }
+
+        void Visualization::renderRequest()
+        {
+            // This is a temporary solution. This will be replaced with a push-based approach soon.
+            m_renderingRequested.store( true );
+        }
+
+        bool Visualization::isRenderingRequested() const
+        {
+            return m_renderingRequested.load();
+        }
     }
 }
 

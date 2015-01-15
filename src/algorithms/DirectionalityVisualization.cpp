@@ -37,7 +37,8 @@ namespace di
             Algorithm( "Directionality Visualization",
                        "This algorithm takes a triangle mesh and scalar information defined on the mesh. "
                        "It the creates directional information from the scalar data and displays it on "
-                       "the mesh itself visually." )
+                       "the mesh itself visually." ),
+            Visualization()
         {
             // We require some inputs.
 
@@ -55,7 +56,32 @@ namespace di
 
         void DirectionalityVisualization::process()
         {
-            // process.
+            // Get input data
+            auto data = m_triangleDataInput->getData();
+            LogD << "Got data instance " << static_cast< const void* >( data.get() ) << "." << LogEnd;
+
+            // Provide the needed information to the visualizer itself.
+            m_visTriangleData = data;
+
+            // As the rendering system does not render permanently, inform about the update.
+            renderRequest();
+        }
+
+        void DirectionalityVisualization::prepare()
+        {
+
+        }
+
+        void DirectionalityVisualization::finalize()
+        {
+        }
+
+        void DirectionalityVisualization::render()
+        {
+        }
+
+        void DirectionalityVisualization::update()
+        {
         }
     }
 }

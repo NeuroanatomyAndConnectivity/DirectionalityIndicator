@@ -42,6 +42,7 @@
 #include "commands/ReadFile.h"
 #include "commands/AddAlgorithm.h"
 #include "commands/Connect.h"
+#include "commands/RunNetwork.h"
 
 namespace di
 {
@@ -122,13 +123,15 @@ namespace di
              * \param fromConnector the connector name of the source connector
              * \param to the target algorithm
              * \param toConnector the connector name of the target connector
+             * \param observer the observer that gets informed about the changes. Can be omitted.
              *
              * \return the command instance. Not needed to keep this.
              */
             virtual SPtr< di::commands::Connect > connectAlgorithms( ConstSPtr< di::core::Algorithm > from,
                                                                      const std::string& fromConnector,
                                                                      ConstSPtr< di::core::Algorithm > to,
-                                                                     const std::string& toConnector
+                                                                     const std::string& toConnector,
+                                                                     SPtr< CommandObserver > observer = nullptr
                                                                    );
 
             /**
@@ -142,13 +145,23 @@ namespace di
              *
              * \param from the source connector
              * \param to the target connector
+             * \param observer the observer that gets informed about the changes. Can be omitted.
              *
              * \return the command instance. Not needed to keep this.
              */
             virtual SPtr< di::commands::Connect > connectAlgorithms( ConstSPtr< di::core::ConnectorBase > from,
-                                                                     ConstSPtr< di::core::ConnectorBase > to
+                                                                     SPtr< di::core::ConnectorBase > to,
+                                                                     SPtr< CommandObserver > observer = nullptr
                                                                    );
 
+            /**
+             * Call to re-run the whole network. This is only a temporary solution. Will be replaced by a proper scheduler soon.
+             *
+             * \param observer the observer that gets informed about the changes. Can be omitted.
+             *
+             * \return the command instance. Not needed to keep this.
+             */
+            virtual SPtr< di::commands::RunNetwork > runNetwork( SPtr< CommandObserver > observer = nullptr );
         protected:
             /**
              * Process the specified command. Use Command::handle to mark the command as being handled.
@@ -179,6 +192,12 @@ namespace di
              * \param connection the connection to setup.
              */
             virtual void addNetworkNodeEdge( SPtr< Connection > connection );
+
+            /**
+             * Re-run the whole network. Do not get used to this function. It is a temporary solution and will be replaced by a more sophisticated
+             * scheduler soon.
+             */
+            virtual void runNetworkImpl();
 
         private:
             /**

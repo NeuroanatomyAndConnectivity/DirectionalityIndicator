@@ -77,16 +77,23 @@ namespace di
              *
              * \return true if yes.
              */
-            virtual bool compatible( ConstSPtr< ConnectorTransferable > checkAgainst ) const;
+            virtual bool isTransferable( ConstSPtr< ConnectorTransferable > checkAgainst ) const;
 
             /**
-             * Set the compatible data, if compatible. If the given thing is not compatible, nullptr is set as new data.
+             * Set the transferable data, if compatible. If the given thing is not compatible, nullptr is set as new data.
              *
              * \param data the data to set. Can be nullptr.
              *
              * \return true if the data was compatible and was set
              */
-            virtual bool setCompatibleData( ConstSPtr< ConnectorTransferable > data );
+            virtual bool setTransferable( ConstSPtr< ConnectorTransferable > data );
+
+            /**
+             * Get the current transferable data.
+             *
+             * \return the data. Can be nullptr.
+             */
+            virtual ConstSPtr< ConnectorTransferable > getTransferable() const;
 
         protected:
         private:
@@ -122,7 +129,7 @@ namespace di
         }
 
         template< typename DataType >
-        bool Connector< DataType >::compatible( ConstSPtr< ConnectorTransferable > checkAgainst ) const
+        bool Connector< DataType >::isTransferable( ConstSPtr< ConnectorTransferable > checkAgainst ) const
         {
             // it is compatible if it can be cast:
             auto result = std::dynamic_pointer_cast< const DataType >( checkAgainst );
@@ -130,11 +137,17 @@ namespace di
         }
 
         template< typename DataType >
-        bool Connector< DataType >::setCompatibleData( ConstSPtr< ConnectorTransferable > data )
+        bool Connector< DataType >::setTransferable( ConstSPtr< ConnectorTransferable > data )
         {
             auto result = std::dynamic_pointer_cast< const DataType >( data );
             setData( result ); // NOTE: if incompatible, the pointer cast returns a nullptr. This will be set.
             return ( result != nullptr );
+        }
+
+        template< typename DataType >
+        ConstSPtr< ConnectorTransferable > Connector< DataType >::getTransferable() const
+        {
+            return m_data;
         }
     }
 }

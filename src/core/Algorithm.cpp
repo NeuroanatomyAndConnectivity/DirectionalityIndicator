@@ -45,7 +45,7 @@ namespace di
             // cleanup
         }
 
-        const ConstSPtrSet< ConnectorBase >& Algorithm::getInputs() const
+        const SPtrSet< ConnectorBase >& Algorithm::getInputs() const
         {
             return m_inputs;
         }
@@ -75,43 +75,12 @@ namespace di
             return m_description;
         }
 
-        ConstSPtr< ConnectorBase > Algorithm::searchConnector( const ConstSPtrSet< ConnectorBase >& where, const std::string& name ) const
-        {
-            // search for the output with the specified name
-            auto iter = std::find_if( where.begin(), where.end(),
-                    [ &name ]( const ConstSPtr< di::core::ConnectorBase >& arg )
-                    {
-                        return arg->getName() == name;
-                    }
-            );
-
-            // Not found? Throw exception
-            if( iter == where.end() )
-            {
-                throw std::invalid_argument( "Could not find connector \"" + name + "\" in algorithm \"" + getName() + "\"." );
-            }
-
-            return *iter;
-        }
-
-        ConstSPtr< ConnectorBase > Algorithm::searchConnector( const ConstSPtrSet< ConnectorBase >& where, size_t index ) const
-        {
-            // is index in bounds?
-            if( index >= where.size() )
-            {
-                throw std::out_of_range( "The connector index " + std::to_string( index ) + " is invalid for algorithm \"" + getName() + "\"." );
-            }
-
-            // get the indexed element.
-            return *std::next( where.begin(), index );
-        }
-
-        ConstSPtr< ConnectorBase > Algorithm::getInput( const std::string& name ) const
+        SPtr< ConnectorBase > Algorithm::getInput( const std::string& name ) const
         {
             return searchConnector( getInputs(), name );
         }
 
-        ConstSPtr< ConnectorBase > Algorithm::getInput( size_t index ) const
+        SPtr< ConnectorBase > Algorithm::getInput( size_t index ) const
         {
             return searchConnector( getInputs(), index );
         }
@@ -124,6 +93,21 @@ namespace di
         ConstSPtr< ConnectorBase > Algorithm::getOutput( size_t index ) const
         {
             return searchConnector( getOutputs(), index );
+        }
+
+        void Algorithm::requestUpdate()
+        {
+            // nothing yet
+        }
+
+        bool Algorithm::isSource() const
+        {
+            return ( getInputs().empty() && !getOutputs().empty() );
+        }
+
+        bool Algorithm::isSink() const
+        {
+            return ( getOutputs().empty() && !getInputs().empty() );
         }
     }
 }

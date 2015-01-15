@@ -25,6 +25,7 @@
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
 
+#include <algorithm>
 #include <string>
 
 #include "ConnectorBase.h"
@@ -65,11 +66,25 @@ namespace di
             virtual void process() = 0;
 
             /**
+             * Method checks whether this algorithm is a source. This means, whether it only has outputs and no inputs.
+             *
+             * \return true if it only has outputs.
+             */
+            virtual bool isSource() const;
+
+            /**
+             * Method checks whether this algorithm is a sink. This means, whether it only has inputs and no outputs.
+             *
+             * \return true if it only has inputs.
+             */
+            virtual bool isSink() const;
+
+            /**
              * Get the list of inputs of this algorithm.
              *
              * \return the list of inputs.
              */
-            const ConstSPtrSet< ConnectorBase >& getInputs() const;
+            const SPtrSet< ConnectorBase >& getInputs() const;
 
             /**
              * Get the list of outputs of this algorithm.
@@ -89,7 +104,7 @@ namespace di
              *
              * \return the input
              */
-            ConstSPtr< ConnectorBase > getInput( const std::string& name ) const;
+            SPtr< ConnectorBase > getInput( const std::string& name ) const;
 
             /**
              * Query an input by index.
@@ -102,7 +117,7 @@ namespace di
              *
              * \return the input
              */
-            ConstSPtr< ConnectorBase > getInput( size_t index ) const;
+            SPtr< ConnectorBase > getInput( size_t index ) const;
 
             /**
              * Query an output by name.
@@ -206,7 +221,25 @@ namespace di
              *
              * \return the connector
              */
-            ConstSPtr< ConnectorBase > searchConnector( const ConstSPtrSet< ConnectorBase >& where, const std::string& name ) const;
+            template< typename ContainerType >
+            typename ContainerType::value_type searchConnector( const ContainerType& where, const std::string& name ) const
+            {
+                // search for the output with the specified name
+                auto iter = std::find_if( where.begin(), where.end(),
+                        [ &name ]( const ConstSPtr< di::core::ConnectorBase >& arg )
+                        {
+                            return arg->getName() == name;
+                        }
+                );
+
+                // Not found? Throw exception
+                if( iter == where.end() )
+                {
+                    throw std::invalid_argument( "Could not find connector \"" + name + "\" in algorithm \"" + getName() + "\"." );
+                }
+
+                return *iter;
+            }
 
             /**
              * Searches the specified connector in the given set.
@@ -220,13 +253,29 @@ namespace di
              *
              * \return the connector
              */
-            ConstSPtr< ConnectorBase > searchConnector( const ConstSPtrSet< ConnectorBase >& where, size_t index ) const;
+            template< typename ContainerType >
+            typename ContainerType::value_type searchConnector( const ContainerType& where, size_t index ) const
+            {
+                // is index in bounds?
+                if( index >= where.size() )
+                {
+                    throw std::out_of_range( "The connector index " + std::to_string( index ) + " is invalid for algorithm \"" + getName() + "\"." );
+                }
 
+                // get the indexed element.
+                return *std::next( where.begin(), index );
+            }
+
+            /**
+             * This method should be called by an algorithm that somehow thinks it needs to be run again. This is the case when algorithm parameters
+             * have been changed for example.
+             */
+            void requestUpdate();
         private:
             /**
              * Algorithm inputs. Fill during construction.
              */
-            ConstSPtrSet< ConnectorBase > m_inputs;
+            SPtrSet< ConnectorBase > m_inputs;
 
             /**
              * Algorithm outputs. Fill during construction.

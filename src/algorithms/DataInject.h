@@ -81,6 +81,11 @@ namespace di
              * The data to inject
              */
             ConstSPtr< di::core::ConnectorTransferable > m_injectionData;
+
+            /**
+             * If true, the injected data has been changed.
+             */
+            bool m_dirty = true;
         };
     }
 }

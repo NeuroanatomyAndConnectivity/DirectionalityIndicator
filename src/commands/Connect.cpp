@@ -41,7 +41,7 @@ namespace di
         {
         }
 
-        Connect::Connect( ConstSPtr< di::core::ConnectorBase > from, ConstSPtr< di::core::ConnectorBase > to,
+        Connect::Connect( ConstSPtr< di::core::ConnectorBase > from, SPtr< di::core::ConnectorBase > to,
                           SPtr< di::core::CommandObserver > observer ):
             di::core::Command( observer ),
             m_fromConnector( from ),
@@ -75,7 +75,7 @@ namespace di
             return m_from->getOutput( m_fromConnectorName );
         }
 
-        ConstSPtr< di::core::ConnectorBase > Connect::getToConnector() const
+        SPtr< di::core::ConnectorBase > Connect::getToConnector() const
         {
             // if the connector was already specified ... return
             if( m_toConnector )

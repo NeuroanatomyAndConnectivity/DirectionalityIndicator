@@ -92,23 +92,34 @@ namespace di
         SPtr< di::commands::Connect > ProcessingNetwork::connectAlgorithms( ConstSPtr< di::core::Algorithm > from,
                                                                             const std::string& fromConnector,
                                                                             ConstSPtr< di::core::Algorithm > to,
-                                                                            const std::string& toConnector
+                                                                            const std::string& toConnector,
+                                                                            SPtr< CommandObserver > observer
                                                                           )
         {
             return commit(
                 SPtr< di::commands::Connect >(
-                    new di::commands::Connect( from, fromConnector, to, toConnector )
+                    new di::commands::Connect( from, fromConnector, to, toConnector, observer )
                 )
             );
         }
 
         SPtr< di::commands::Connect > ProcessingNetwork::connectAlgorithms( ConstSPtr< di::core::ConnectorBase > from,
-                                                                            ConstSPtr< di::core::ConnectorBase > to
+                                                                            SPtr< di::core::ConnectorBase > to,
+                                                                            SPtr< CommandObserver > observer
                                                                           )
         {
             return commit(
               SPtr< di::commands::Connect >(
-                    new di::commands::Connect( from, to )
+                    new di::commands::Connect( from, to, observer )
+                )
+            );
+        }
+
+        SPtr< di::commands::RunNetwork > ProcessingNetwork::runNetwork( SPtr< CommandObserver > observer )
+        {
+            return commit(
+              SPtr< di::commands::RunNetwork >(
+                    new di::commands::RunNetwork( observer )
                 )
             );
         }
@@ -177,6 +188,49 @@ namespace di
 
                 // add and done
                 addNetworkNodeEdge( std::make_shared< Connection >( connectCmd->getFromConnector(), connectCmd->getToConnector() ) );
+            }
+
+            // Run the network again?
+            SPtr< di::commands::RunNetwork > runCmd = std::dynamic_pointer_cast< di::commands::RunNetwork >( command );
+            if( runCmd )
+            {
+                // Call the proper function. Keep in mind that this is a temporary solution. The will be done by a scheduler in the future.
+                runNetworkImpl();
+            }
+        }
+
+        void ProcessingNetwork::runNetworkImpl()
+        {
+            LogD << "Running processing network. Propagating changes." << LogEnd;
+
+            // Find sources ( algorithms without input connectors )
+            for( auto algo : m_algorithms )
+            {
+                if( algo->isSource() )
+                {
+                    LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
+                    algo->process();
+                }
+            }
+
+            // Propagate along the connections.
+            bool change = false;
+            for( auto connection : m_connections )
+            {
+                change = change || connection->propagate();
+            }
+
+            // Any connection did an update?
+            if( change )
+            {
+                for( auto algo : m_algorithms )
+                {
+                    if( !algo->isSource() )
+                    {
+                        LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
+                        algo->process();
+                    }
+                }
             }
         }
     }

@@ -66,7 +66,7 @@ namespace di
              * \param to to this connector
              * \param observer an object that gets notified upon changes in this command's state
              */
-            Connect( ConstSPtr< di::core::ConnectorBase > from, ConstSPtr< di::core::ConnectorBase > to,
+            Connect( ConstSPtr< di::core::ConnectorBase > from, SPtr< di::core::ConnectorBase > to,
                      SPtr< di::core::CommandObserver > observer = nullptr );
 
             /**
@@ -105,7 +105,7 @@ namespace di
              *
              * \return the connector
              */
-            virtual ConstSPtr< di::core::ConnectorBase > getToConnector() const;
+            virtual SPtr< di::core::ConnectorBase > getToConnector() const;
 
         protected:
         private:
@@ -137,7 +137,7 @@ namespace di
             /**
              * Target connector.
              */
-            ConstSPtr< di::core::ConnectorBase > m_toConnector = nullptr;
+            SPtr< di::core::ConnectorBase > m_toConnector = nullptr;
         };
     }
 }

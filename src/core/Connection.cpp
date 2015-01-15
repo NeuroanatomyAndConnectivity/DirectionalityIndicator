@@ -29,7 +29,7 @@ namespace di
     namespace core
     {
 
-        Connection::Connection( ConstSPtr< ConnectorBase > from, ConstSPtr< ConnectorBase > to ):
+        Connection::Connection( ConstSPtr< ConnectorBase > from, SPtr< ConnectorBase > to ):
             m_source( from ),
             m_target( to )
         {
@@ -45,9 +45,20 @@ namespace di
             return m_source;
         }
 
-        ConstSPtr< ConnectorBase > Connection::getTarget() const
+        SPtr< ConnectorBase > Connection::getTarget() const
         {
             return m_target;
+        }
+
+        bool Connection::propagate()
+        {
+            // only propagate if needed
+            if( m_target->getTransferable() != m_source->getTransferable() )
+            {
+                m_target->setTransferable( m_source->getTransferable() );
+                return true;
+            }
+            return false;
         }
     }
 }
