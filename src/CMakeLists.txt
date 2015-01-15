@@ -177,6 +177,30 @@ ADD_CUSTOM_TARGET( stylecheck )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
+# OpenGL
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# We do not explicitly search for OpenGL. This is already done by QT5OpenGL. Doing so anyways would cause compilation errors. I am not exactly sure
+# why.
+# When enabling, I get
+#     "No rule to make target '/usr/lib/x86_64-linux-gnu/libXext.so,', needed by 'DirectionalityIndicator'.  Stop."
+# Do you know the reason?
+
+# As we use this later: add GL explicitly to the link list
+IF( CMAKE_HOST_SYSTEM MATCHES "Linux" )
+    SET( OPENGL_LIBRARIES "GL" )
+ELSE()
+    FIND_PACKAGE( OpenGL REQUIRED )
+ENDIF()
+
+FIND_PACKAGE( GLEW REQUIRED )
+
+
+# Includes
+INCLUDE_DIRECTORIES( SYSTEM ${OPENGL_INCLUDE_DIR} )
+INCLUDE_DIRECTORIES( SYSTEM ${GLEW_INCLUDE_DIRS} )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
 # Setup QT5
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -265,6 +289,8 @@ IF( CMAKE_HOST_SYSTEM MATCHES "Linux" )
     SET( ADDITIONAL_TARGET_LINK_LIBRARIES "X11" )
 ENDIF()
 TARGET_LINK_LIBRARIES( ${BinName} ${CMAKE_STANDARD_LIBRARIES}
+                                  ${OPENGL_LIBRARIES}
+                                  ${GLEW_LIBRARIES}
                                   Qt5::Widgets Qt5::OpenGL Qt5::WebKitWidgets 
                                   ${ADDITIONAL_TARGET_LINK_LIBRARIES} )
 
@@ -275,4 +301,4 @@ TARGET_LINK_LIBRARIES( ${BinName} ${CMAKE_STANDARD_LIBRARIES}
 # setup the stylechecker. Ignore the platform specific stuff.
 SETUP_STYLECHECKER( "${BinName}"
                     "${TARGET_CPP_FILES};${TARGET_H_FILES}"  # add all these files to the stylechecker
-                    "" )                                     # exlude some ugly files
+                    "ext/*" )                                # exclude some ugly files

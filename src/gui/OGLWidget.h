@@ -25,6 +25,8 @@
 #ifndef OGLWIDGET_H
 #define OGLWIDGET_H
 
+#include <GL/gl.h>
+
 #include <QWidget>
 // NOTE: QGLWidget is obsolete in Qt5, but the replacement QOpenGLWidget is only available in Qt 5.4+ - we keep QGLWidget for now.
 // #include <QOpenGLWidget>
@@ -53,8 +55,53 @@ namespace di
              * Destroy and clean up.
              */
             virtual ~OGLWidget();
+
+            /**
+             * Get a default GL format. In our case, this is a OpenGL 3.3 core format.
+             *
+             * \return the format
+             */
+            static QGLFormat getDefaultFormat();
         protected:
+            /**
+             * Do the necessary setup.
+             */
+            virtual void initializeGL();
+
+            /**
+             * Resize. Needed for camera setup, viewports and similar.
+             *
+             * \param w the width
+             * \param h the height
+             */
+            virtual void resizeGL( int w, int h );
+
+            /**
+             * Paint. This iterates the visualizations and lets them draw.
+             */
+            virtual void paintGL();
+
+            /**
+             * Widget is going to be destroyed.
+             *
+             * \param event the event
+             */
+            virtual void closeEvent( QCloseEvent* event );
         private:
+            /**
+             * The VBO used for the background.
+             */
+            GLuint m_backgroundVBO = 0;
+
+            /**
+             * The Vertex Attribute Array Object (VAO) used for the background.
+             */
+            GLuint m_backgroundVAO = 0;
+
+            /**
+             * The shader used for bg rendering
+             */
+            GLuint m_backgroundShaderProgram = 0;
         };
     }
 }
