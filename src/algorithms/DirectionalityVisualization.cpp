@@ -69,19 +69,22 @@ namespace di
 
         void DirectionalityVisualization::prepare()
         {
-
+            LogD << "Vis Prepare" << LogEnd;
         }
 
         void DirectionalityVisualization::finalize()
         {
+            LogD << "Vis Finalize" << LogEnd;
         }
 
         void DirectionalityVisualization::render()
         {
+            LogD << "Vis Render" << LogEnd;
         }
 
         void DirectionalityVisualization::update()
         {
+            LogD << "Vis Update" << LogEnd;
         }
     }
 }

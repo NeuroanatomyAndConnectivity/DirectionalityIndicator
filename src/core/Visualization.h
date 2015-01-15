@@ -49,12 +49,13 @@ namespace di
             virtual void prepare() = 0;
 
             /**
-             * Finalize your OpenGL resources here. Free buffers and shaders.
+             * This method is called between the frames. Use this to update resources. Immediately return if nothing needs to update. If you do not
+             * want to update anything at all, do not overwrite.
              * If an error occurs, throw an exception accordingly.
              *
-             * \note this runs in the OpenGL thread and the context is bound.
+             * \note this runs in the OpenGL thread and the context is current.
              */
-            virtual void finalize() = 0;
+            virtual void update();
 
             /**
              * Do actual rendering.
@@ -65,13 +66,12 @@ namespace di
             virtual void render() = 0;
 
             /**
-             * This method is called between the frames. Use this to update resources. Immediately return if nothing needs to update. If you do not
-             * want to update anything at all, do not overwrite.
+             * Finalize your OpenGL resources here. Free buffers and shaders.
              * If an error occurs, throw an exception accordingly.
              *
-             * \note this runs in the OpenGL thread and the context is current.
+             * \note this runs in the OpenGL thread and the context is bound.
              */
-            virtual void update();
+            virtual void finalize() = 0;
 
             /**
              * Request an update of the rendering. Since the rendering system is not permanently updating/rendering, this is needed to force a
