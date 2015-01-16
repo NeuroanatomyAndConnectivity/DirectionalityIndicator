@@ -25,18 +25,24 @@
 #ifndef TRIANGLEDATASET_H
 #define TRIANGLEDATASET_H
 
+#include <string>
 #include <tuple>
 #include <vector>
 
 #include "core/data/DataSet.h"
 #include "core/data/TriangleMesh.h"
+
 #include "MathTypes.h"
 #include "GfxTypes.h"
+#include "Types.h"
 
 namespace di
 {
     namespace core
     {
+        /**
+         * A basic encapsulation of a triangle mesh in combination with a RGBA color attribute.
+         */
         class TriangleDataSet: public DataSet< TriangleMesh, RGBAArray > // triangle mesh as grid, no attributes
         {
         public:

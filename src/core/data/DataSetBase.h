@@ -46,7 +46,7 @@ namespace di
              *
              * \param name a useful name to help the user identify this data.
              */
-            DataSetBase( const std::string& name );
+            explicit DataSetBase( const std::string& name );
 
             /**
              * Destructor. Does NOT free the contained data. Data is freed automatically if no one keeps a reference anymore.

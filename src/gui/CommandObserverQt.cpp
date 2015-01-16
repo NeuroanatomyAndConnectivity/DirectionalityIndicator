@@ -22,10 +22,14 @@
 //
 //---------------------------------------------------------------------------------------
 
-#define LogTag "gui/CommandObserverQt"
-#include "core/Logger.h"
+#include <vector>
+#include <memory>
+#include <functional>
 
 #include <QCoreApplication>
+
+#define LogTag "gui/CommandObserverQt"
+#include "core/Logger.h"
 
 #include "events/CommandObserverEvent.h"
 

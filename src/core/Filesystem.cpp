@@ -33,7 +33,7 @@ namespace di
         std::string getFileExtension( const std::string& filename )
         {
             // NOTE: not very robust. Needs to be improved
-            // TODO[Sebastian] improve and make robust
+            // TODO(Sebastian) improve and make robust
             return filename.substr( filename.find_last_of( "." ) + 1 );
         }
     }

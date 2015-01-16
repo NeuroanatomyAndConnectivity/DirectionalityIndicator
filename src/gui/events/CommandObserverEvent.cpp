@@ -1,3 +1,11 @@
+//---------------------------------------------------------------------------------------
+//
+// Project: DirectionalityIndicator
+//
+// Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)
+//           2014-2015 Max Planck Research Group "Neuroanatomy and Connectivity"
+//
+// This file is part of DirectionalityIndicator.
 //
 // DirectionalityIndicator is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by

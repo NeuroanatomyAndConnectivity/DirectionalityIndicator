@@ -72,6 +72,8 @@ namespace di
              * Commit the command to the queue.
              *
              * \param command the command to commit.
+             *
+             * \return the command itself. Useful for one-line creation and storage.
              */
             template< typename CommandType >
             SPtr< CommandType > commit( SPtr< CommandType > command )

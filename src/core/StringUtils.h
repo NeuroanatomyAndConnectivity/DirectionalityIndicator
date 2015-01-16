@@ -22,6 +22,9 @@
 //
 //---------------------------------------------------------------------------------------
 
+#ifndef STRINGUTILS_H
+#define STRINGUTILS_H
+
 #include <string>
 
 // This file implements some utils we all love from boost::filesystem
@@ -40,4 +43,6 @@ namespace di
         std::string toLower( const std::string& str );
     }
 }
+
+#endif  // STRINGUTILS_H
 

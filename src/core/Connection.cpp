@@ -28,7 +28,6 @@ namespace di
 {
     namespace core
     {
-
         Connection::Connection( ConstSPtr< ConnectorBase > from, SPtr< ConnectorBase > to ):
             m_source( from ),
             m_target( to )

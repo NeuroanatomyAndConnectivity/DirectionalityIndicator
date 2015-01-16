@@ -22,10 +22,10 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <algorithm>
+
 #include <GL/glew.h>
 #include <GL/gl.h>
-
-#include <algorithm>
 
 #define LogTag "gui/OGLWidget"
 #include "core/Logger.h"
@@ -184,13 +184,13 @@ namespace di
                 GL_FLOAT, // floats
                 GL_FALSE, // not normalized
                 0,        // no stride
-                (void*)0  // no buffer offset
+                nullptr   // no buffer offset
             );
 
             // Draw the BG
             glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
 
-            glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray( 0 );
 
             // Draw scenes
         }

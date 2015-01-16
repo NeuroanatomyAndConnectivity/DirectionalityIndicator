@@ -81,7 +81,6 @@ namespace di
              * The algorithm handled by this widget.
              */
             SPtr< di::algorithms::DirectionalityVisualization > m_algorithm  = nullptr;
-
         };
     }
 }

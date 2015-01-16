@@ -38,7 +38,10 @@ namespace di
             /**
              * Destructor.
              */
-            virtual ~BaseVisitor() {};
+            virtual ~BaseVisitor()
+            {
+                // nothing to do
+            }
         };
 
         /**
@@ -55,7 +58,16 @@ namespace di
              *
              * \param visitable the visitable
              */
-            virtual void visit( VisitableType& visitable ) = 0;
+            virtual void visit( VisitableType& visitable ) = 0;  // NOLINT: this is a non-const reference on purpose
+
+        protected:
+            /**
+             * Destructor
+             */
+            virtual ~Visitor()
+            {
+                // nothing to do
+            }
         };
 
         /**
@@ -74,7 +86,7 @@ namespace di
              * \param visitor the visitor to use
              */
             template< typename VisitorType >
-            void accept( VisitorType& visitor)
+            void accept( VisitorType& visitor ) // NOLINT: this is a non-const reference on purpose
             {
                 visitor.visit( static_cast< VisitableType& >( *this ) );
             }

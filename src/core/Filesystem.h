@@ -22,6 +22,9 @@
 //
 //---------------------------------------------------------------------------------------
 
+#ifndef FILESYSTEM_H
+#define FILESYSTEM_H
+
 #include <string>
 
 // This file implements some utils we all love from boost::filesystem
@@ -40,3 +43,6 @@ namespace di
         std::string getFileExtension( const std::string& filename );
     }
 }
+
+#endif  // FILESYSTEM_H
+

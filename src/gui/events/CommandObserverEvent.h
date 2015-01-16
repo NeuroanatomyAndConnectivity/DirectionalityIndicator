@@ -46,9 +46,17 @@ namespace di
         {
         public:
             /**
-             * All CommandObserver events.
+             * All CommandObserver events. Represents the events found there.
              */
-            enum CommandObserverStatus{ BUSY, WAITING, SUCCESS, ABORT, FAIL, GENERIC };
+            enum CommandObserverStatus
+            {
+                BUSY,
+                WAITING,
+                SUCCESS,
+                ABORT,
+                FAIL,
+                GENERIC
+            };
 
             /**
              * Constructor. Does nothing.

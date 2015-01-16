@@ -165,7 +165,6 @@ namespace di
 
         SPtr< di::core::DataSetBase > PlyReader::load( const std::string& filename ) const
         {
-
             // Use C style numeric locale to ensure that all loaders work properly.
             // Keep old locale
             const char* oldLocale = setlocale( LC_NUMERIC, NULL );

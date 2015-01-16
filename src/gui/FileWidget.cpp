@@ -91,7 +91,12 @@ namespace di
             // Use deferred loading:
             Application::getProcessingNetwork()->loadFile( selected.toStdString(),
                                                        SPtr< CommandObserverQt >(
-                                                           new CommandObserverQt( this, { m_fileLoadLabel, m_fileLoadLabel } )
+                                                           new CommandObserverQt( this,
+                                                                                  {
+                                                                                      m_fileLoadLabel,
+                                                                                      m_fileLoadLabel
+                                                                                  }
+                                                                                )
                                                        )
                                                       );
         }

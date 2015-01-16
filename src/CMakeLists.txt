@@ -301,4 +301,4 @@ TARGET_LINK_LIBRARIES( ${BinName} ${CMAKE_STANDARD_LIBRARIES}
 # setup the stylechecker. Ignore the platform specific stuff.
 SETUP_STYLECHECKER( "${BinName}"
                     "${TARGET_CPP_FILES};${TARGET_H_FILES}"  # add all these files to the stylechecker
-                    "ext/*" )                                # exclude some ugly files
+                    "ext/*;io/PlyReader.cpp" )                                # exclude some ugly files

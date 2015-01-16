@@ -116,7 +116,7 @@ namespace di
             size_t getNumTriangles() const;
 
             /**
-             * The number of vertices currently defined. Please keep in mind that the number of triangles may not be 3 * \ref getNumtriangles().
+             * The number of vertices currently defined. Please keep in mind that the number of triangles may not be 3 * \ref getNumTriangles().
              *
              * \return the number of vertices.
              */

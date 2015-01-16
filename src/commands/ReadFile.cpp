@@ -64,6 +64,5 @@ namespace di
         {
             m_result = result;
         }
-
     }
 }

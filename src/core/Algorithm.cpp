@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <algorithm>
+#include <string>
 
 #define  LogTag "core/Algorithm"
 #include "Logger.h"

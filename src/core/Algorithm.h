@@ -151,6 +151,8 @@ namespace di
              *
              * \param name name of this algorithm. Everything is allowed in the string. Please keep in mind that the user needs to grasp the
              * purpose of your algorithm using this name.
+             * \param description the algorithm description. This provides more detail into the algorithm. Maybe also add a Paper reference if
+             * appropriate.
              */
             Algorithm( const std::string& name, const std::string& description );
 

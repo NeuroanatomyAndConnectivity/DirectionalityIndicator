@@ -22,6 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <string>
+
 #include "TriangleDataSet.h"
 
 namespace di
@@ -40,3 +42,4 @@ namespace di
         }
     }
 }
+
