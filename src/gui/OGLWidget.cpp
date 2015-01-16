@@ -27,10 +27,9 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#include "Application.h"
-
 #define LogTag "gui/OGLWidget"
 #include "core/Logger.h"
+#include "Application.h"
 
 #include "OGLWidget.h"
 
@@ -44,7 +43,7 @@ namespace di
             setAutoBufferSwap( true );
 
             m_redrawTimer = new QTimer();
-            m_redrawTimer->setInterval( 500 );
+            m_redrawTimer->setInterval( 100 );
             QObject::connect( m_redrawTimer, SIGNAL( timeout() ), this, SLOT( update() ), Qt::QueuedConnection );
         }
 
@@ -165,7 +164,12 @@ namespace di
             glLinkProgram( m_backgroundShaderProgram );
 
             // Allow all visualizations to prepare:
-            Application::getProcessingNetwork()->visitVisualizations( []( SPtr< di::core::Visualization > vis ){ vis->prepare(); } );
+            Application::getProcessingNetwork()->visitVisualizations(
+                []( SPtr< di::core::Visualization > vis )
+                {
+                    vis->prepare();
+                }
+            );
 
             m_redrawTimer->start();
         }
@@ -180,7 +184,12 @@ namespace di
         void OGLWidget::paintGL()
         {
             // Allow all visualizations to update:
-            Application::getProcessingNetwork()->visitVisualizations( []( SPtr< di::core::Visualization > vis ){ vis->update(); } );
+            Application::getProcessingNetwork()->visitVisualizations(
+                []( SPtr< di::core::Visualization > vis )
+                {
+                    vis->update();
+                }
+            );
 
             // Cleanup buffers
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -208,7 +217,12 @@ namespace di
 
             // Draw scenes
             // Allow all visualizations to render:
-            Application::getProcessingNetwork()->visitVisualizations( []( SPtr< di::core::Visualization > vis ){ vis->render(); } );
+            Application::getProcessingNetwork()->visitVisualizations(
+                []( SPtr< di::core::Visualization > vis )
+                {
+                    vis->render();
+                }
+            );
         }
 
         void OGLWidget::closeEvent( QCloseEvent* event )
@@ -216,7 +230,12 @@ namespace di
             m_redrawTimer->stop();
 
             // Allow all visualizations to finalize:
-            Application::getProcessingNetwork()->visitVisualizations( []( SPtr< di::core::Visualization > vis ){ vis->update(); } );
+            Application::getProcessingNetwork()->visitVisualizations(
+                []( SPtr< di::core::Visualization > vis )
+                {
+                    vis->finalize();
+                }
+            );
 
             // Clean up properly
             glDeleteBuffers( 1, &m_backgroundVBO );

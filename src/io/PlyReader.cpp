@@ -137,25 +137,18 @@ namespace di
         int colorCallback( p_ply_argument argument )
         {
             // get the indices of this face
-            long length;
             long index;
-            ply_get_argument_property( argument, NULL, &length, &index );
-            if( ( index < 0 ) || ( index > 3 ) )
-            {
-                return 1;
-            }
-
             // get the idata and pdata (user data allowed by rply)
             void* colorsPlain = nullptr;
             // query
-            ply_get_argument_user_data( argument, &colorsPlain, NULL );
+            ply_get_argument_user_data( argument, &colorsPlain, &index );
             // the pointer was a color array
             RGBAArray* colors = reinterpret_cast< RGBAArray* >( colorsPlain );
 
             // always use this vector. Static variable.
-            static glm::vec4 color = { 0.0, 0.0, 0.0, 1.0 };
-            color[ index ] = ply_get_argument_value( argument );
-            if( index == 3 )
+            static glm::vec4 color = { 1.0, 0.0, 0.0, 1.0 };
+            color[ index ] = ( 1.0 / 255.0 ) * ply_get_argument_value( argument );  // we normalize here
+            if( index == 2 )
             {
                 // It is a std::vector
                 colors->push_back( color );
@@ -203,9 +196,9 @@ namespace di
                           ply_set_read_cb( ply, "vertex", "z", vertexCallback, mesh.get(), 2 );
 
             // also load colors
-            numColors = ply_set_read_cb( ply, "vertex", "red", colorCallback, colors.get(), 1 );
+            numColors = ply_set_read_cb( ply, "vertex", "red", colorCallback, colors.get(), 0 );
                         ply_set_read_cb( ply, "vertex", "green", colorCallback, colors.get(), 1 );
-                        ply_set_read_cb( ply, "vertex", "blue", colorCallback, colors.get(), 1 );
+                        ply_set_read_cb( ply, "vertex", "blue", colorCallback, colors.get(), 2 );
 
             // finally, read face indices
             numTriangles = ply_set_read_cb( ply, "face", "vertex_index", faceCallback, mesh.get(), 0 );

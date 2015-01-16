@@ -11,6 +11,7 @@ Build-Dependencies
 * Qt5OpenGL for 3D graphics
 * CMake >= 3.0
 * CLang or GCC, supporting basic C++11 functionality.
+* GLEW >= 1.7.0
 
 Runtime-Dependencies
 --------------------

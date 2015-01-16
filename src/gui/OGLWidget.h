@@ -27,11 +27,11 @@
 
 #include <GL/gl.h>
 
+#include <QTimer>
 #include <QWidget>
 // NOTE: QGLWidget is obsolete in Qt5, but the replacement QOpenGLWidget is only available in Qt 5.4+ - we keep QGLWidget for now.
 // #include <QOpenGLWidget>
 #include <QGLWidget>
-#include <QTimer>
 
 namespace di
 {

@@ -79,7 +79,7 @@ namespace di
              * \tparam Index the attribute index if any. Do not use this function on datasets without attributes.
              * \return the attributes
              */
-            template< int Index >
+            template< int Index = 0 >
             typename std::tuple_element< Index, AttributesTuple >::type getAttributes() const
             {
                 return std::get< Index >( m_attributes );

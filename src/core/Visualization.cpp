@@ -50,6 +50,12 @@ namespace di
             m_renderingRequested.store( true );
         }
 
+        void Visualization::resetRenderingRequest()
+        {
+            // This is a temporary solution. This will be replaced with a push-based approach soon.
+            m_renderingRequested.store( false );
+        }
+
         bool Visualization::isRenderingRequested() const
         {
             return m_renderingRequested.load();

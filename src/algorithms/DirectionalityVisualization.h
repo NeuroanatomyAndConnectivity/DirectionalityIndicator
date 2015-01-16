@@ -25,6 +25,8 @@
 #ifndef DIRECTIONALITYVISUALIZATION_H
 #define DIRECTIONALITYVISUALIZATION_H
 
+#include <GL/gl.h>
+
 #include "core/Algorithm.h"
 #include "core/Visualization.h"
 
@@ -109,6 +111,31 @@ namespace di
              * The triangle data to visualize. We keep the pointer separate since process() and update()/render() work in different threads.
              */
             ConstSPtr< di::core::TriangleDataSet > m_visTriangleData = nullptr;
+
+            /**
+             * The VBO used for the triangle vertices.
+             */
+            GLuint m_triVBO = 0;
+
+            /**
+             * The VBO used for the triangle colors.
+             */
+            GLuint m_colorVBO = 0;
+
+            /**
+             * Index buffer
+             */
+            GLuint m_triIBO = 0;
+
+            /**
+             * The Vertex Attribute Array Object (VAO) used for the data.
+             */
+            GLuint m_VAO = 0;
+
+            /**
+             * The shader used for rendering
+             */
+            GLuint m_shaderProgram = 0;
         };
     }
 }

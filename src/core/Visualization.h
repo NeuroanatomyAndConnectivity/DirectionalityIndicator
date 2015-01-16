@@ -95,6 +95,11 @@ namespace di
              * Destructor.
              */
             virtual ~Visualization();
+
+            /**
+             * Reset the request again. It is your job to do this. If not, you will be permanently redrawn.
+             */
+            virtual void resetRenderingRequest();
         private:
             /**
              * A rendering was requested.

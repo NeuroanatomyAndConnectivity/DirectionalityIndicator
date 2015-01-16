@@ -71,7 +71,7 @@ namespace di
              *
              * \return the index of the vertex.
              */
-            size_t addVertex( double x, double y, double z );
+            size_t addVertex( float x, float y, float z );
 
             /**
              * Add the given indices to the index list to define a new triangle.

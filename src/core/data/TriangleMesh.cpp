@@ -44,7 +44,7 @@ namespace di
             return m_triangles.size() - 1;
         }
 
-        size_t TriangleMesh::addVertex( double x, double y, double z )
+        size_t TriangleMesh::addVertex( float x, float y, float z )
         {
             return addVertex(
                 {

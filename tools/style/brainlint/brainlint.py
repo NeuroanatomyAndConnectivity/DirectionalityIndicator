@@ -265,6 +265,7 @@ _OTHER_HEADERS = frozenset([
 'QGLWidget',
 'QShortcut',
 'QDir',
+'QTimer',
 'QShowEvent', 'QSlider', 'QSplashScreen', 'QSplitter', 'QStackedWidget', 'QStyleOptionGraphicsItem', 'QTabWidget',
 'QTextCharFormat', 'QTextCursor', 'QTextEdit', 'QtGui', 'QToolBar', 'QToolBox', 'QToolButton',
 'QTreeWidget', 'QTreeWidgetItem', 'QVBoxLayout', 'QWebFrame', 'QWebPage', 'QWebView', 'QWheelEvent', 'QWidget', 'QWidgetAction'
