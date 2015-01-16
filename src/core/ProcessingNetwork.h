@@ -25,6 +25,7 @@
 #ifndef PROCESSINGNETWORK_H
 #define PROCESSINGNETWORK_H
 
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -36,6 +37,7 @@
 #include "CommandObserver.h"
 #include "CommandQueue.h"
 #include "Algorithm.h"
+#include "Visualization.h"
 #include "Connection.h"
 
 // All commands provided as convenience wrapper.
@@ -81,6 +83,28 @@ namespace di
              * \param graceful if false, the queue will be stopped immediately. No further commands will be processed.
              */
             virtual void stop( bool graceful = true );
+
+            /**
+             * This allows to visit each algorithm inside the network. The list of algorithms is locked and copied before visiting. This means, the
+             * visitor is called for a snapshot of the algorithms at the time of calling. This prohibits long-running visitors to block the whole
+             * command queue.
+             *
+             * \tparam VisitorType the visitor type. Something that takes a SPtr< di::core::Algorithm > as parameter.
+             * \param visitor the visitor instance itself.
+             */
+            template< typename VisitorType >
+            void visitAlgorithms( VisitorType visitor );
+
+            /**
+             * This allows to visit each algorithm, which is a visualization inside the network. The list of algorithms is locked and copied before
+             * visiting. This means, the visitor is called for a snapshot of the algorithms at the time of calling. This prohibits long-running
+             * visitors to block the whole command queue.
+             *
+             * \tparam VisitorType the visitor type. Something that takes a SPtr< di::core::Visualization > as parameter.
+             * \param visitor the visitor instance itself.
+             */
+            template< typename VisitorType >
+            void visitVisualizations( VisitorType visitor );
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Some convenience methods. The wrap around command-creation. The specific command is mentioned as a note.
@@ -211,10 +235,49 @@ namespace di
             SPtrSet< Algorithm > m_algorithms;
 
             /**
+             * Mutex to secure access to m_algorithms
+             */
+            std::mutex m_algorithmsMutex;
+
+            /**
              * The list of all connections. In other words, the edges of the multigraph.
              */
             SPtrSet< Connection > m_connections;
         };
+
+        template< typename VisitorType >
+        void ProcessingNetwork::visitAlgorithms( VisitorType visitor )
+        {
+            // Avoid concurrent access:
+            std::unique_lock< std::mutex > lock( m_algorithmsMutex );
+
+            // Copy
+            SPtrSet< Algorithm > algorithmsSnapshot( m_algorithms );
+
+            // Unlock to avoid long-running visitors to block the network
+            lock.unlock();
+
+            // Iterate and call visitor on each
+            for( auto algo : algorithmsSnapshot )
+            {
+                visitor( algo );
+            }
+        }
+
+        template< typename VisitorType >
+        void ProcessingNetwork::visitVisualizations( VisitorType visitor )
+        {
+            // Wrap
+            visitAlgorithms( [&]( SPtr< Algorithm > algorithm )
+                             {
+                                 auto vis = std::dynamic_pointer_cast< Visualization >( algorithm );
+                                 if( vis )
+                                 {
+                                     visitor( vis );
+                                 }
+                             }
+            );
+        }
     }
 }
 

@@ -62,6 +62,8 @@ namespace di
 
         void ProcessingNetwork::addNetworkNode( SPtr< Algorithm > algorithm )
         {
+            // Avoid concurrent access:
+            std::lock_guard< std::mutex > lock( m_algorithmsMutex );
             // if already inside ... nothing happens.
             m_algorithms.insert( algorithm );
         }
@@ -201,6 +203,9 @@ namespace di
 
         void ProcessingNetwork::runNetworkImpl()
         {
+            // Avoid concurrent access:
+            std::lock_guard< std::mutex > lock( m_algorithmsMutex );
+
             LogD << "Running processing network. Propagating changes." << LogEnd;
 
             // Find sources ( algorithms without input connectors )

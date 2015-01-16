@@ -27,6 +27,8 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
+#include "Application.h"
+
 #define LogTag "gui/OGLWidget"
 #include "core/Logger.h"
 
@@ -40,6 +42,10 @@ namespace di
             QGLWidget( getDefaultFormat(), parent )
         {
             setAutoBufferSwap( true );
+
+            m_redrawTimer = new QTimer();
+            m_redrawTimer->setInterval( 500 );
+            QObject::connect( m_redrawTimer, SIGNAL( timeout() ), this, SLOT( update() ), Qt::QueuedConnection );
         }
 
         OGLWidget::~OGLWidget()
@@ -157,6 +163,11 @@ namespace di
             glAttachShader( m_backgroundShaderProgram, fs );
             glAttachShader( m_backgroundShaderProgram, vs );
             glLinkProgram( m_backgroundShaderProgram );
+
+            // Allow all visualizations to prepare:
+            Application::getProcessingNetwork()->visitVisualizations( []( SPtr< di::core::Visualization > vis ){ vis->prepare(); } );
+
+            m_redrawTimer->start();
         }
 
         void OGLWidget::resizeGL( int w, int h )
@@ -168,6 +179,9 @@ namespace di
 
         void OGLWidget::paintGL()
         {
+            // Allow all visualizations to update:
+            Application::getProcessingNetwork()->visitVisualizations( []( SPtr< di::core::Visualization > vis ){ vis->update(); } );
+
             // Cleanup buffers
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -193,10 +207,17 @@ namespace di
             glDisableVertexAttribArray( 0 );
 
             // Draw scenes
+            // Allow all visualizations to render:
+            Application::getProcessingNetwork()->visitVisualizations( []( SPtr< di::core::Visualization > vis ){ vis->render(); } );
         }
 
         void OGLWidget::closeEvent( QCloseEvent* event )
         {
+            m_redrawTimer->stop();
+
+            // Allow all visualizations to finalize:
+            Application::getProcessingNetwork()->visitVisualizations( []( SPtr< di::core::Visualization > vis ){ vis->update(); } );
+
             // Clean up properly
             glDeleteBuffers( 1, &m_backgroundVBO );
             // glDeleteVertexArrays( 1, &m_backgroundVAO );

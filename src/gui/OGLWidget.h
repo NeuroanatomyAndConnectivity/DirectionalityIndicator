@@ -31,6 +31,7 @@
 // NOTE: QGLWidget is obsolete in Qt5, but the replacement QOpenGLWidget is only available in Qt 5.4+ - we keep QGLWidget for now.
 // #include <QOpenGLWidget>
 #include <QGLWidget>
+#include <QTimer>
 
 namespace di
 {
@@ -102,6 +103,11 @@ namespace di
              * The shader used for bg rendering
              */
             GLuint m_backgroundShaderProgram = 0;
+
+            /**
+             * Redraw periodically. Only temporary solution.
+             */
+            QTimer* m_redrawTimer;
         };
     }
 }
