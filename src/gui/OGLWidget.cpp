@@ -26,6 +26,7 @@
 
 #define LogTag "gui/OGLWidget"
 #include "core/Logger.h"
+#include "core/Filesystem.h"
 #include "gfx/GL.h"
 
 #include "Application.h"
@@ -110,59 +111,17 @@ namespace di
             // Set the data
             glBufferData( GL_ARRAY_BUFFER, 2 * 9 * sizeof( float ), points, GL_STATIC_DRAW );
 
-            // Create and bind the shader for it.
-            const char* vertexShaderCode =
-            "#version 330\n"
-            ""
-            "layout(location = 0) in vec3 vp;"
-            "out float vert;"
-            "void main () "
-            "{"
-            "  vert = ( vp.y + 1 ) / 2.0;"
-            "  gl_Position = vec4 (vp, 1.0);"
-            "}";
-
-            const char* fragmentShaderCode =
-            "#version 330\n"
-            "in float vert;"
-            ""
-            "vec4 u_bottom1Color = vec4( 1.0 );"
-            "vec4 u_bottom2Color = vec4( vec3( 0.82 ), 1.0 );"
-            ""
-            "vec4 u_top1Color = vec4( vec3( 0.85 ), 1.0 );"
-            "vec4 u_top2Color = vec4( vec3( 0.95 ), 1.0 );"
-            ""
-            "float u_horizon = 33;"
-            ""
-            "out vec4 fragColor;"
-            ""
-            "void main () "
-            "{"
-            "    vec4 color = vec4( 1.0 );"
-            "    float horizonLine = u_horizon / 100.0;"
-            "    float bottom = float( vert <= horizonLine );"
-            "    float horizon = horizonLine + 0.0001;"
-            "    float topScale = ( vert - horizon ) / ( 1.0 - horizon );"
-            "    color = bottom           * mix( u_bottom1Color, u_bottom2Color, vert / horizon ) +"
-            "           ( 1.0 - bottom ) * mix( u_top1Color, u_top2Color, topScale );"
-            "    fragColor = vec4( color.rgb, 1.0 );"
-            "}";
-
-            // Create the vertex shader and compile
-            GLuint vs = glCreateShader( GL_VERTEX_SHADER );
-            glShaderSource( vs, 1, &vertexShaderCode, NULL );
-            glCompileShader( vs );
-
-            // Same for the vertex shader
-            GLuint fs = glCreateShader( GL_FRAGMENT_SHADER );
-            glShaderSource( fs, 1, &fragmentShaderCode, NULL );
-            glCompileShader( fs );
+            std::string localShaderPath = core::getRuntimePath() + "/gfx/shaders/";
+            m_bgVertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
+                                                               core::readTextFile( localShaderPath + "CameraEffectHorizon-vertex.glsl" ) );
+            m_bgFragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                                 core::readTextFile( localShaderPath + "CameraEffectHorizon-fragment.glsl" ) );
 
             // Link them to build the program itself
-            m_backgroundShaderProgram = glCreateProgram();
-            glAttachShader( m_backgroundShaderProgram, fs );
-            glAttachShader( m_backgroundShaderProgram, vs );
-            glLinkProgram( m_backgroundShaderProgram );
+            // m_bgShaderProgram = std::make_shared< di::core::Program >( { m_bgVertexShader, m_bgFragmentShader } );
+            // NOTE: the above code does not compile on CLang.
+            m_bgShaderProgram = SPtr< di::core::Program >( new di::core::Program( { m_bgVertexShader, m_bgFragmentShader } ) );
+            m_bgShaderProgram->realize();
 
             // Allow all visualizations to prepare:
             Application::getProcessingNetwork()->visitVisualizations(
@@ -196,7 +155,7 @@ namespace di
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
             // Draw background first:
-            glUseProgram( m_backgroundShaderProgram );
+            m_bgShaderProgram->bind();
 
             glBindVertexArray( m_backgroundVAO );
             glEnableVertexAttribArray( 0 );
@@ -241,7 +200,7 @@ namespace di
             // Clean up properly
             glDeleteBuffers( 1, &m_backgroundVBO );
             // glDeleteVertexArrays( 1, &m_backgroundVAO );
-            glDeleteProgram( m_backgroundShaderProgram );
+            // glDeleteProgram( m_backgroundShaderProgram );
 
             QGLWidget::closeEvent( event );
         }

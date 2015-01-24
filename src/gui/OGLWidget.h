@@ -25,7 +25,7 @@
 #ifndef OGLWIDGET_H
 #define OGLWIDGET_H
 
-#include <GL/gl.h>
+#include "gfx/GL.h"
 
 #include <QTimer>
 #include <QWidget>
@@ -100,9 +100,19 @@ namespace di
             GLuint m_backgroundVAO = 0;
 
             /**
-             * The shader used for bg rendering
+             * The shader used for rendering
              */
-            GLuint m_backgroundShaderProgram = 0;
+            SPtr< di::core::Program > m_bgShaderProgram = nullptr;
+
+            /**
+             * Vertex shader.
+             */
+            SPtr< di::core::Shader > m_bgVertexShader = nullptr;
+
+            /**
+             * Fragment shader.
+             */
+            SPtr< di::core::Shader > m_bgFragmentShader = nullptr;
 
             /**
              * Redraw periodically. Only temporary solution.
