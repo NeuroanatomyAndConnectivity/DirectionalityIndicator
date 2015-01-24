@@ -22,50 +22,16 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#ifndef GL_H
+#define GL_H
 
-#include <string>
+#include "GfxTypes.h"
 
-// This file implements some utils we all love from boost::filesystem
+#include "OpenGL.h"
+#include "Shader.h"
+#include "Program.h"
 
-namespace di
-{
-    namespace core
-    {
-        /**
-         * Get the extension if a filename.
-         *
-         * \param filename the filename
-         *
-         * \return the extension. Can be empty.
-         */
-        std::string getFileExtension( const std::string& filename );
+#include "GLError.h"
 
-        /**
-         * Read a whole text file in to a string.
-         *
-         * \param filename the filename
-         *
-         * \return the string
-         */
-        std::string readTextFile( const std::string& filename );
-
-        /**
-         * The runtime path of the program
-         *
-         * \return the path.
-         */
-        const std::string& getRuntimePath();
-
-        /**
-         * Initialize runtime path. Call this as soon as possible.
-         *
-         * \param path the path to use as system path. Use absolute paths.
-         */
-        void initRuntimePath( const std::string& path );
-    }
-}
-
-#endif  // FILESYSTEM_H
+#endif  // GL_H
 

@@ -22,50 +22,29 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#include <iostream>
 
-#include <string>
+#include "GLError.h"
 
-// This file implements some utils we all love from boost::filesystem
+#include "OpenGL.h"
 
-namespace di
+void logGLErrorImpl( const char* file, int line )
 {
-    namespace core
+    GLenum err = glGetError();
+    while( err != GL_NO_ERROR )
     {
-        /**
-         * Get the extension if a filename.
-         *
-         * \param filename the filename
-         *
-         * \return the extension. Can be empty.
-         */
-        std::string getFileExtension( const std::string& filename );
+        std::string error;
+        switch( err )
+        {
+            case GL_INVALID_OPERATION:      error="INVALID_OPERATION";      break;
+            case GL_INVALID_ENUM:           error="INVALID_ENUM";           break;
+            case GL_INVALID_VALUE:          error="INVALID_VALUE";          break;
+            case GL_OUT_OF_MEMORY:          error="OUT_OF_MEMORY";          break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:  error="INVALID_FRAMEBUFFER_OPERATION";  break;
+        }
 
-        /**
-         * Read a whole text file in to a string.
-         *
-         * \param filename the filename
-         *
-         * \return the string
-         */
-        std::string readTextFile( const std::string& filename );
-
-        /**
-         * The runtime path of the program
-         *
-         * \return the path.
-         */
-        const std::string& getRuntimePath();
-
-        /**
-         * Initialize runtime path. Call this as soon as possible.
-         *
-         * \param path the path to use as system path. Use absolute paths.
-         */
-        void initRuntimePath( const std::string& path );
+        std::cerr << "GL_" << error.c_str() << " - " << file << ":" << line << std::endl;
+        err = glGetError();
     }
 }
-
-#endif  // FILESYSTEM_H
 

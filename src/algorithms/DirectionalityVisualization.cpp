@@ -24,15 +24,14 @@
 
 #include <vector>
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-
 #define LogTag "algorithms/DirectionalityVisualization"
 #include "core/Logger.h"
 
 #include "core/data/TriangleDataSet.h"
+#include "core/Filesystem.h"
 
-#include "GfxTypes.h"
+#include "gfx/GL.h"
+#include "gfx/GLError.h"
 
 #include "DirectionalityVisualization.h"
 
@@ -82,88 +81,18 @@ namespace di
         {
             LogD << "Vis Prepare" << LogEnd;
 
-            // Create and bind the shader for it.
-            const char* vertexShaderCode =
-            "#version 330\n"
-            ""
-            "layout(location = 0) in vec3 position;"
-            "layout(location = 1) in vec4 color;"
-            "out vec4 v_color;"
-            "void main () "
-            "{"
-            "  v_color = color;"
-            "  gl_Position = vec4 (position * 0.005, 1.0);"
-            "}";
-
-            const char* fragmentShaderCode =
-            "#version 330\n"
-            ""
-            "in vec4 v_color;"
-            "out vec4 fragColor;"
-            ""
-            "void main () "
-            "{"
-            "    fragColor = vec4( v_color.rgb, 1.0 );"
-            "}";
-
-            // Create the vertex shader and compile
-            GLuint vs = glCreateShader( GL_VERTEX_SHADER );
-            glShaderSource( vs, 1, &vertexShaderCode, NULL );
-            glCompileShader( vs );
-
-            GLint isCompiled = 0;
-            glGetShaderiv( vs, GL_COMPILE_STATUS, &isCompiled );
-            if( isCompiled == GL_FALSE )
-            {
-                GLint maxLength = 0;
-                glGetShaderiv( vs, GL_INFO_LOG_LENGTH, &maxLength );
-
-                // The maxLength includes the NULL character
-                std::vector< GLchar > errorLog( maxLength );
-                glGetShaderInfoLog( vs, maxLength, &maxLength, &errorLog[0] );
-
-                LogE << "Vertex shader compilation failed. Log: " << LogEnd
-                LogE << errorLog.data() << LogEnd;
-
-                // Provide the infolog in whatever manor you deem best.
-                // Exit with failure.
-                glDeleteShader( vs ); // Don't leak the shader.
-
-                return;
-            }
-
-            // Same for the vertex shader
-            GLuint fs = glCreateShader( GL_FRAGMENT_SHADER );
-            glShaderSource( fs, 1, &fragmentShaderCode, NULL );
-            glCompileShader( fs );
-
-            isCompiled = 0;
-            glGetShaderiv( fs, GL_COMPILE_STATUS, &isCompiled );
-            if( isCompiled == GL_FALSE )
-            {
-                GLint maxLength = 0;
-                glGetShaderiv( fs, GL_INFO_LOG_LENGTH, &maxLength );
-
-                // The maxLength includes the NULL character
-                std::vector< GLchar > errorLog( maxLength );
-                glGetShaderInfoLog( fs, maxLength, &maxLength, &errorLog[0] );
-
-                LogE << "Fragment shader compilation failed. Log: " << LogEnd
-                LogE << errorLog.data() << LogEnd;
-
-                // Provide the infolog in whatever manor you deem best.
-                // Exit with failure.
-                glDeleteShader( fs ); // Don't leak the shader.
-
-                return;
-            }
+            std::string localShaderPath = core::getRuntimePath() + "/algorithms/shaders/";
+            m_vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
+                                                               core::readTextFile( localShaderPath + "MeshRender-vertex.glsl" ) );
+            m_fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                                 core::readTextFile( localShaderPath + "MeshRender-fragment.glsl" ) );
 
             // Link them to build the program itself
-            m_shaderProgram = glCreateProgram();
-            glAttachShader( m_shaderProgram, fs );
-            glAttachShader( m_shaderProgram, vs );
-            glLinkProgram( m_shaderProgram );
-        }
+            // m_shaderProgram = std::make_shared< di::core::Program >( { m_vertexShader, m_fragmentShader } );
+            // NOTE: the above code does not compile on CLang.
+            m_shaderProgram = SPtr< di::core::Program >( new di::core::Program( { m_vertexShader, m_fragmentShader } ) );
+            m_shaderProgram->realize();
+       }
 
         void DirectionalityVisualization::finalize()
         {
@@ -178,7 +107,7 @@ namespace di
             }
             // LogD << "Vis Render" << LogEnd;
 
-            glUseProgram( m_shaderProgram );
+            m_shaderProgram->bind();
             glBindVertexArray( m_VAO );
             glDrawElements( GL_TRIANGLES, m_visTriangleData->getGrid()->getTriangles().size() * 3, GL_UNSIGNED_INT, NULL );
         }
@@ -198,8 +127,9 @@ namespace di
             resetRenderingRequest();
 
             // get the location of attribute "position" in program
-            GLint vertexLoc = glGetAttribLocation( m_shaderProgram, "position" );
-            GLint colorLoc = glGetAttribLocation( m_shaderProgram, "color" );
+            GLint vertexLoc = m_shaderProgram->getAttribLocation( "position" );
+            GLint colorLoc = m_shaderProgram->getAttribLocation( "color" );
+                LogE << "Attrib Location: " << vertexLoc << LogEnd;
 
             // Create the VAO
             glGenVertexArrays( 1, &m_VAO );

@@ -22,50 +22,40 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#ifndef GLBINDABLE_H
+#define GLBINDABLE_H
 
-#include <string>
-
-// This file implements some utils we all love from boost::filesystem
+#include "OpenGL.h"
+#include "GLObject.h"
 
 namespace di
 {
     namespace core
     {
         /**
-         * Get the extension if a filename.
-         *
-         * \param filename the filename
-         *
-         * \return the extension. Can be empty.
+         * Basic class to represent an bindable OpenGL object.
          */
-        std::string getFileExtension( const std::string& filename );
+        class GLBindable: public GLObject
+        {
+        public:
+            /**
+             * Bind the object.
+             */
+            virtual void bind() = 0;
+        protected:
 
-        /**
-         * Read a whole text file in to a string.
-         *
-         * \param filename the filename
-         *
-         * \return the string
-         */
-        std::string readTextFile( const std::string& filename );
+            /**
+             * Constructor.
+             */
+            GLBindable():
+                GLObject()
+            {
+            };
 
-        /**
-         * The runtime path of the program
-         *
-         * \return the path.
-         */
-        const std::string& getRuntimePath();
-
-        /**
-         * Initialize runtime path. Call this as soon as possible.
-         *
-         * \param path the path to use as system path. Use absolute paths.
-         */
-        void initRuntimePath( const std::string& path );
+        private:
+        };
     }
 }
 
-#endif  // FILESYSTEM_H
+#endif  // GLBINDABLE_H
 

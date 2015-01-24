@@ -25,7 +25,7 @@
 #ifndef DIRECTIONALITYVISUALIZATION_H
 #define DIRECTIONALITYVISUALIZATION_H
 
-#include <GL/gl.h>
+#include "gfx/GL.h"
 
 #include "core/Algorithm.h"
 #include "core/Visualization.h"
@@ -135,7 +135,17 @@ namespace di
             /**
              * The shader used for rendering
              */
-            GLuint m_shaderProgram = 0;
+            SPtr< di::core::Program > m_shaderProgram = nullptr;
+
+            /**
+             * Vertex shader.
+             */
+            SPtr< di::core::Shader > m_vertexShader = nullptr;
+
+            /**
+             * Fragment shader.
+             */
+            SPtr< di::core::Shader > m_fragmentShader = nullptr;
         };
     }
 }

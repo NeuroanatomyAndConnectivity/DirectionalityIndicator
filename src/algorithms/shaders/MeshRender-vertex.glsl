@@ -22,50 +22,18 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#version 330
 
-#include <string>
+// Attribute data
+in vec3 position;
+in vec4 color;
 
-// This file implements some utils we all love from boost::filesystem
+// Varying out
+out vec4 v_color;
 
-namespace di
+void main()
 {
-    namespace core
-    {
-        /**
-         * Get the extension if a filename.
-         *
-         * \param filename the filename
-         *
-         * \return the extension. Can be empty.
-         */
-        std::string getFileExtension( const std::string& filename );
-
-        /**
-         * Read a whole text file in to a string.
-         *
-         * \param filename the filename
-         *
-         * \return the string
-         */
-        std::string readTextFile( const std::string& filename );
-
-        /**
-         * The runtime path of the program
-         *
-         * \return the path.
-         */
-        const std::string& getRuntimePath();
-
-        /**
-         * Initialize runtime path. Call this as soon as possible.
-         *
-         * \param path the path to use as system path. Use absolute paths.
-         */
-        void initRuntimePath( const std::string& path );
-    }
+    v_color = color;
+    gl_Position = vec4( position * 0.005, 1.0 );
 }
-
-#endif  // FILESYSTEM_H
 

@@ -22,50 +22,65 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#ifndef GLOBJECT_H
+#define GLOBJECT_H
 
-#include <string>
-
-// This file implements some utils we all love from boost::filesystem
+#include "OpenGL.h"
 
 namespace di
 {
     namespace core
     {
         /**
-         * Get the extension if a filename.
-         *
-         * \param filename the filename
-         *
-         * \return the extension. Can be empty.
+         * Basic class to represent an arbitrary OpenGL object. All of these objects can be realized and removed..
          */
-        std::string getFileExtension( const std::string& filename );
+        class GLObject
+        {
+        public:
+            /**
+             * Realize the object.
+             *
+             * \return true if successful.
+             */
+            virtual bool realize() = 0;
 
-        /**
-         * Read a whole text file in to a string.
-         *
-         * \param filename the filename
-         *
-         * \return the string
-         */
-        std::string readTextFile( const std::string& filename );
+            /**
+             * Check if the object was realized.
+             *
+             * \return true if realized
+             */
+            bool isRealized() const
+            {
+                return ( m_object != 0 );
+            }
 
-        /**
-         * The runtime path of the program
-         *
-         * \return the path.
-         */
-        const std::string& getRuntimePath();
+            /**
+             * Return the object ID. This is an OpenGL ID.
+             *
+             * \return the id.
+             */
+            GLuint getObjectID() const
+            {
+                return m_object;
+            }
+        protected:
 
-        /**
-         * Initialize runtime path. Call this as soon as possible.
-         *
-         * \param path the path to use as system path. Use absolute paths.
-         */
-        void initRuntimePath( const std::string& path );
+            /**
+             * Constructor.
+             */
+            GLObject()
+            {
+            };
+
+            /**
+             * The ID used by OpenGL.
+             */
+            GLuint m_object = 0;
+        private:
+        };
     }
 }
 
-#endif  // FILESYSTEM_H
+#endif  // GLOBJECT_H
+
 

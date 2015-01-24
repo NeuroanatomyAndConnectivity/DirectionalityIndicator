@@ -26,6 +26,7 @@
 
 #include "core/ProcessingNetwork.h"
 #include "core/Connection.h"
+#include "core/Filesystem.h"
 
 #include "OGLWidget.h"
 #include "DataWidget.h"
@@ -59,6 +60,9 @@ namespace di
 
             // Create QApplication
             QApplication application( m_argc, m_argv, true );
+
+            // We need this for shader loading and others.
+            di::core::initRuntimePath( QCoreApplication::applicationDirPath().toStdString() );
 
             // Load settings
             m_settings = new QSettings( "SE", "DirectionalityIndicator" );

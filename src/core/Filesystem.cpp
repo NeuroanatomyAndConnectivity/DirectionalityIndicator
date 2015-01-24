@@ -23,6 +23,8 @@
 //---------------------------------------------------------------------------------------
 
 #include <string>
+#include <fstream>
+#include <streambuf>
 
 #include "Filesystem.h"
 
@@ -35,6 +37,35 @@ namespace di
             // NOTE: not very robust. Needs to be improved
             // TODO(Sebastian) improve and make robust
             return filename.substr( filename.find_last_of( "." ) + 1 );
+        }
+
+        std::string readTextFile( const std::string& filename )
+        {
+            std::ifstream t( filename );
+            std::string str;
+
+            // We use this to reserve the required mem beforehand
+            t.seekg( 0, std::ios::end );
+            str.reserve( t.tellg() );
+            t.seekg( 0, std::ios::beg );
+
+            // Finally, read.
+            str.assign( ( std::istreambuf_iterator< char >( t ) ),
+                          std::istreambuf_iterator< char >() );
+
+            return str;
+        }
+
+        std::string g_runtimePath = "";
+
+        const std::string& getRuntimePath()
+        {
+            return g_runtimePath;
+        }
+
+        void initRuntimePath( const std::string& path )
+        {
+            g_runtimePath = path;
         }
     }
 }

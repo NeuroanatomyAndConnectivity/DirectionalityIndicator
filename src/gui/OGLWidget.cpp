@@ -24,11 +24,10 @@
 
 #include <algorithm>
 
-#include <GL/glew.h>
-#include <GL/gl.h>
-
 #define LogTag "gui/OGLWidget"
 #include "core/Logger.h"
+#include "gfx/GL.h"
+
 #include "Application.h"
 
 #include "OGLWidget.h"
@@ -75,6 +74,8 @@ namespace di
                 LogE << "Error during GLEW initialization: " << glewGetErrorString( err ) << ". Expect problems." << LogEnd;
                 exit( 1 );
             }
+
+            logGLError();
 
             LogI << "GL Renderer: " << renderer << LogEnd;
             LogI << "GL Version: " << version << LogEnd;
