@@ -64,11 +64,17 @@ namespace di
                 return m_object;
             }
         protected:
-
             /**
              * Constructor.
              */
             GLObject()
+            {
+            };
+
+            /**
+             * Constructor.
+             */
+            virtual ~GLObject()
             {
             };
 

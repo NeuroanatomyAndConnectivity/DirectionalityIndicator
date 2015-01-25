@@ -22,15 +22,16 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <algorithm>
-
-#include <QMouseEvent>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+
+#include <algorithm>
+#include <string>
+
+#include <QMouseEvent>
 
 #define LogTag "gui/OGLWidget"
 #include "core/Logger.h"
@@ -129,7 +130,12 @@ namespace di
             // Link them to build the program itself
             // m_bgShaderProgram = std::make_shared< di::core::Program >( { m_bgVertexShader, m_bgFragmentShader } );
             // NOTE: the above code does not compile on CLang.
-            m_bgShaderProgram = SPtr< di::core::Program >( new di::core::Program( { m_bgVertexShader, m_bgFragmentShader } ) );
+            m_bgShaderProgram = SPtr< di::core::Program >( new di::core::Program(
+                        {
+                            m_bgVertexShader,
+                            m_bgFragmentShader
+                        }
+            ) );
             m_bgShaderProgram->realize();
 
             // Allow all visualizations to prepare:
@@ -280,7 +286,7 @@ namespace di
             }
             if( m_arcballYAxis )
             {
-                coord.y = -(2 * y - height() ) / height();
+                coord.y = -( 2 * y - height() ) / height();
             }
 
             /* Clamp it to border of the windows, comment these codes to allow rotation when cursor is not over window */

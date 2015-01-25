@@ -22,6 +22,7 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <string>
 #include <vector>
 
 #define LogTag "algorithms/DirectionalityVisualization"
@@ -102,7 +103,12 @@ namespace di
             // Link them to build the program itself
             // m_shaderProgram = std::make_shared< di::core::Program >( { m_vertexShader, m_fragmentShader } );
             // NOTE: the above code does not compile on CLang.
-            m_shaderProgram = SPtr< di::core::Program >( new di::core::Program( { m_vertexShader, m_fragmentShader } ) );
+            m_shaderProgram = SPtr< di::core::Program >( new di::core::Program(
+                        {
+                            m_vertexShader,
+                            m_fragmentShader
+                        }
+            ) );
             m_shaderProgram->realize();
        }
 

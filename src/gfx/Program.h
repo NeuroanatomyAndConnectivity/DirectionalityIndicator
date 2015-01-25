@@ -26,6 +26,7 @@
 #define PROGRAM_H
 
 #include <initializer_list>
+#include <string>
 #include <vector>
 #include <map>
 
@@ -52,14 +53,14 @@ namespace di
              *
              * \param shaders the shaders to attach.
              */
-            Program( const std::vector< SPtr< Shader > >& shaders );
+            explicit Program( const std::vector< SPtr< Shader > >& shaders );
 
             /**
              * Create program, consisting of the given shaders.
              *
              * \param shaders the shaders to attach.
              */
-            Program( std::initializer_list< SPtr< Shader > > shaders );
+            explicit Program( std::initializer_list< SPtr< Shader > > shaders );
 
             /**
              * Destructor.

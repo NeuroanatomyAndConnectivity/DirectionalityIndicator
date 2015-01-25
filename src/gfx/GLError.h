@@ -29,5 +29,5 @@ void logGLErrorImpl( const char* file, int line );
 
 #define logGLError() logGLErrorImpl( __FILE__, __LINE__ )
 
-#endif // GLERROR_H
+#endif  // GLERROR_H
 

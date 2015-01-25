@@ -27,6 +27,9 @@
 
 // NOTE: This file is mostly used to include some standard math types like matrix and vector.
 
+// GLM utils
+#include <glm/gtc/type_ptr.hpp>
+
 // vectors
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
@@ -36,8 +39,6 @@
 #include "glm/mat3x3.hpp"
 #include "glm/mat4x4.hpp"
 
-// GLM utils
-#include <glm/gtc/type_ptr.hpp>
 
 #endif  // MATHTYPES_H
 

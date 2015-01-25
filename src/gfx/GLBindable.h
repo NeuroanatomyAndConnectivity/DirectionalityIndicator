@@ -43,12 +43,18 @@ namespace di
              */
             virtual void bind() = 0;
         protected:
-
             /**
              * Constructor.
              */
             GLBindable():
                 GLObject()
+            {
+            };
+
+            /**
+             * Destructor.
+             */
+            virtual ~GLBindable()
             {
             };
 
