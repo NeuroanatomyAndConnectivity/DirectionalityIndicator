@@ -40,6 +40,7 @@ namespace di
 
         size_t TriangleMesh::addVertex( const glm::vec3& vertex )
         {
+            m_boundingBox.include( vertex );
             m_vertices.push_back( vertex );
             return m_triangles.size() - 1;
         }
@@ -92,6 +93,11 @@ namespace di
         {
             bool enoughTris = ( getNumTriangles() >= 1 );
             return enoughTris;
+        }
+
+        const BoundingBox& TriangleMesh::getBoundingBox() const
+        {
+            return m_boundingBox;
         }
     }
 }

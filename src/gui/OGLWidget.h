@@ -33,6 +33,8 @@
 // #include <QOpenGLWidget>
 #include <QGLWidget>
 
+#include "GfxTypes.h"
+
 namespace di
 {
     namespace gui
@@ -41,7 +43,7 @@ namespace di
          * A wrapper around the Qt OpenGL widget. This specific widget implements the basic interaction and visualization functionalities of this
          * application.
          */
-        class OGLWidget: public QGLWidget
+        class OGLWidget: public QGLWidget, public core::View
         {
             Q_OBJECT
         public:
@@ -63,11 +65,33 @@ namespace di
              * \return the format
              */
             static QGLFormat getDefaultFormat();
+
+            /**
+             * Get the origin of the viewport.
+             *
+             * \return the origin
+             */
+            glm::vec2 getViewportOrigin() const override;
+
+            /**
+             * Gets the size of the viewport in x and y directions. Keep in mind that the physical pixel coordinate of the upper-right corner will be
+             * origin + size - (1,1). Alternatively, use \ref getViewport() to query this directly.
+             *
+             * \return
+             */
+            glm::vec2 getViewportSize() const override;
+
+            /**
+             * Get the camera of this view.
+             *
+             * \return the camera.
+             */
+            const core::Camera& getCamera() const override;
         protected:
             /**
              * Do the necessary setup.
              */
-            virtual void initializeGL();
+            void initializeGL() override;
 
             /**
              * Resize. Needed for camera setup, viewports and similar.
@@ -75,19 +99,51 @@ namespace di
              * \param w the width
              * \param h the height
              */
-            virtual void resizeGL( int w, int h );
+            void resizeGL( int w, int h ) override;
 
             /**
              * Paint. This iterates the visualizations and lets them draw.
              */
-            virtual void paintGL();
+            void paintGL() override;
 
             /**
              * Widget is going to be destroyed.
              *
              * \param event the event
              */
-            virtual void closeEvent( QCloseEvent* event );
+            void closeEvent( QCloseEvent* event ) override;
+
+            /**
+             * Mouse button pressed.
+             *
+             * \param event the event
+             */
+            void mousePressEvent( QMouseEvent* event ) override;
+
+            /**
+             * Mouse button released.
+             *
+             * \param event the event
+             */
+            void mouseReleaseEvent( QMouseEvent* event ) override;
+
+            /**
+             * Mouse move.
+             *
+             * \param event the move event
+             */
+            void mouseMoveEvent( QMouseEvent* event ) override;
+
+            /**
+             * Convert the given mouse coordinates to normalized screen coordinates.
+             *
+             * \param x x mouse coordinate
+             * \param y y mouse coordinate
+             *
+             * \return screen coordinate
+             */
+            glm::vec3 toScreenCoord( double x, double y );
+
         private:
             /**
              * The VBO used for the background.
@@ -118,6 +174,61 @@ namespace di
              * Redraw periodically. Only temporary solution.
              */
             QTimer* m_redrawTimer;
+
+            /**
+             * Use the arcball functionality.
+             */
+            int m_arcballState = 0;
+
+            /**
+             * Previous position.
+             */
+            glm::vec3 m_arcballPrevPos;
+
+            /**
+             * Current position.
+             */
+            glm::vec3 m_arcballCurrPos;
+
+            /**
+             * Camera axis to use.
+             */
+            glm::vec3 m_arcballCamAxis = glm::vec3( 0.0f, 1.0f, 0.0f );
+
+            /**
+             * Roll speed.
+             */
+            GLfloat m_arcballRollSpeed = 0.10;
+
+            /**
+             * Current angle.
+             */
+            GLfloat m_arcballAngle = 0.0;
+
+            /**
+             * Arcball on X axis.
+             */
+            bool m_arcballXAxis = true;
+
+            /**
+             * Arcball on Y axis.
+             */
+            bool m_arcballYAxis = true;
+
+            /**
+             * The current arcball matrix.
+             */
+            glm::mat4 m_arcballMatrix;
+
+            /**
+             * The previous arcball matrix.
+             */
+            glm::mat4 m_arcballPrevMatrix;
+
+            /**
+             * The camera of the view.
+             */
+            core::Camera m_camera;
         };
     }
 }

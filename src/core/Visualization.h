@@ -27,12 +27,16 @@
 
 #include <atomic>
 
+#include "core/BoundingBox.h"
+
 #include "Types.h"
 
 namespace di
 {
     namespace core
     {
+        class View;
+
         /**
          * Interface to define the basic operations of all visualizations. If your algorithm wants to output graphics, derive from this class and
          * implement the methods accordingly. The calling order will always be prepare(), loop: update(), render() and finally: finalize().
@@ -62,8 +66,10 @@ namespace di
              * If an error occurs, throw an exception accordingly.
              *
              * \note this runs in the OpenGL thread and the context is current.
+             *
+             * \param view the view to render to. This contains probably useful information.
              */
-            virtual void render() = 0;
+            virtual void render( const View& view ) = 0;
 
             /**
              * Finalize your OpenGL resources here. Free buffers and shaders.
@@ -72,6 +78,14 @@ namespace di
              * \note this runs in the OpenGL thread and the context is bound.
              */
             virtual void finalize() = 0;
+
+            /**
+             * Each visualization needs to know the rendering area it will use. In most cases, this is the bounding box of the rendered geometry.
+             * Avoid long running functions, since they block the OpenGL thread.
+             *
+             * \return bounding box of this visualization
+             */
+            virtual BoundingBox getBoundingBox() const = 0;
 
             /**
              * Request an update of the rendering. Since the rendering system is not permanently updating/rendering, this is needed to force a

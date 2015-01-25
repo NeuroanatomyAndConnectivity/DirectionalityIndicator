@@ -77,6 +77,18 @@ namespace di
             }
         }
 
+        core::BoundingBox DirectionalityVisualization::getBoundingBox() const
+        {
+            if( m_visTriangleData )
+            {
+                return m_visTriangleData->getGrid()->getBoundingBox();
+            }
+            else
+            {
+                return core::BoundingBox();
+            }
+        }
+
         void DirectionalityVisualization::prepare()
         {
             LogD << "Vis Prepare" << LogEnd;
@@ -99,7 +111,7 @@ namespace di
             LogD << "Vis Finalize" << LogEnd;
         }
 
-        void DirectionalityVisualization::render()
+        void DirectionalityVisualization::render( const core::View& view )
         {
             if( !( m_VAO && m_triVBO && m_triIBO && m_shaderProgram ) )
             {
@@ -108,6 +120,9 @@ namespace di
             // LogD << "Vis Render" << LogEnd;
 
             m_shaderProgram->bind();
+            m_shaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
+            m_shaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
+
             glBindVertexArray( m_VAO );
             glDrawElements( GL_TRIANGLES, m_visTriangleData->getGrid()->getTriangles().size() * 3, GL_UNSIGNED_INT, NULL );
         }

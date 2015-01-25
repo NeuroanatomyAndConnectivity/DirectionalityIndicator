@@ -27,11 +27,13 @@
 
 #include <initializer_list>
 #include <vector>
+#include <map>
 
 #include "OpenGL.h"
 #include "GLBindable.h"
 
 #include "Types.h"
+#include "GfxTypes.h"
 
 namespace di
 {
@@ -84,12 +86,28 @@ namespace di
              * \return the location
              */
             GLint getAttribLocation( const std::string& name ) const;
+
+            /**
+             * Set the given value to the specified uniform.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             *
+             * \return true if successful
+             */
+            bool setUniform( const std::string name, const glm::mat4& value );
+
         protected:
         private:
             /**
              * The shaders to attach.
              */
             std::vector< SPtr< Shader > > m_shaders;
+
+            /**
+             * Keep track of queried uniform locations to avoid this every frame.
+             */
+            std::map< std::string, GLint > m_uniformLocationCache;
         };
     }
 }

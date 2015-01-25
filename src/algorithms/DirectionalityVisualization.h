@@ -35,6 +35,7 @@ namespace di
     namespace core
     {
         class TriangleDataSet;
+        class View;
     }
 
     namespace algorithms
@@ -88,8 +89,10 @@ namespace di
              * If an error occurs, throw an exception accordingly.
              *
              * \note this runs in the OpenGL thread and the context is current.
+             *
+             * \param view the view to render to. This contains probably useful information.
              */
-            virtual void render();
+            virtual void render( const core::View& view );
 
             /**
              * This method is called between the frames. Use this to update resources. Immediately return if nothing needs to update. If you do not
@@ -99,6 +102,14 @@ namespace di
              * \note this runs in the OpenGL thread and the context is current.
              */
             virtual void update();
+
+            /**
+             * Each visualization needs to know the rendering area it will use. In most cases, this is the bounding box of the rendered geometry.
+             * Avoid long running functions, since they block the OpenGL thread.
+             *
+             * \return bounding box of this visualization
+             */
+            virtual core::BoundingBox getBoundingBox() const;
 
         protected:
         private:

@@ -22,18 +22,41 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef GL_H
-#define GL_H
-
-#include "GfxTypes.h"
-
-#include "OpenGL.h"
-#include "Shader.h"
-#include "Program.h"
-#include "View.h"
 #include "Camera.h"
 
-#include "GLError.h"
+namespace di
+{
+    namespace core
+    {
+        Camera::Camera()
+        {
+            // nothing
+        }
 
-#endif  // GL_H
+        Camera::~Camera()
+        {
+            // nothing
+        }
+
+        glm::mat4 Camera::getViewMatrix() const
+        {
+            return m_view;
+        }
+
+        glm::mat4 Camera::getProjectionMatrix() const
+        {
+            return m_projection;
+        }
+
+        void Camera::setViewMatrix( const glm::mat4& matrix )
+        {
+            m_view = matrix;
+        }
+
+        void Camera::setProjectionMatrix( const glm::mat4& matrix )
+        {
+            m_projection = matrix;
+        }
+    }
+}
 

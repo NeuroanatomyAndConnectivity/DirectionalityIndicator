@@ -22,18 +22,31 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef GL_H
-#define GL_H
-
-#include "GfxTypes.h"
-
-#include "OpenGL.h"
-#include "Shader.h"
-#include "Program.h"
 #include "View.h"
-#include "Camera.h"
 
-#include "GLError.h"
+namespace di
+{
+    namespace core
+    {
+        View::View()
+        {
+            // nothing
+        }
 
-#endif  // GL_H
+        View::~View()
+        {
+            // nothing
+        }
+
+        std::pair< glm::vec2, glm::vec2 > View::getViewport() const
+        {
+            return std::make_pair( getViewportOrigin(), getViewportOrigin() + getViewportSize() - glm::vec2( 1, 1 ) );
+        }
+
+        double View::getAspectRatio() const
+        {
+            return getViewportSize().x / getViewportSize().y;
+        }
+    }
+}
 

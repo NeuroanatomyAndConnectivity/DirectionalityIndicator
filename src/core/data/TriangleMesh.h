@@ -27,6 +27,8 @@
 
 #include <vector>
 
+#include "core/BoundingBox.h"
+
 #include "MathTypes.h"
 #include "GfxTypes.h"
 
@@ -128,6 +130,14 @@ namespace di
              * \return true if reasonable data is present.
              */
             bool sanityCheck() const;
+
+            /**
+             * Get the bounding volume of this triangle mesh.
+             *
+             * \return the bounding box.
+             */
+            const BoundingBox& getBoundingBox() const;
+
         protected:
         private:
             /**
@@ -139,6 +149,11 @@ namespace di
              * Triangle index list. Index the triangle to query its 3 vertices.
              */
             IndexVec3Array m_triangles = {};
+
+            /**
+             * The bounding box.
+             */
+            BoundingBox m_boundingBox;
         };
     }
 }

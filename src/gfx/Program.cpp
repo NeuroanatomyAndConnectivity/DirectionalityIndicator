@@ -123,6 +123,35 @@ namespace di
             logGLError();
             return result;
         }
+
+        bool Program::setUniform( const std::string name, const glm::mat4& value )
+        {
+            GLint loc = -1;
+
+            // Check the cache if there is a location stored already
+            if( !m_uniformLocationCache.count( name ) )
+            {
+                // Not yet existing. Add
+                loc = glGetUniformLocation( m_object, name.c_str() );
+                logGLError();
+                if( loc < 0 )
+                {
+                    return false;
+                }
+
+                // store.
+                m_uniformLocationCache[ name ] = loc;
+            }
+            else
+            {
+                loc = m_uniformLocationCache[ name ];
+            }
+
+            // get location
+            glUniformMatrix4fv( loc, 1, GL_FALSE, glm::value_ptr( value ) );
+            logGLError();
+            return true;
+        }
     }
 }
 

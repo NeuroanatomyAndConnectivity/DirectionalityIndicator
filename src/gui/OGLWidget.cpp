@@ -24,9 +24,18 @@
 
 #include <algorithm>
 
+#include <QMouseEvent>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+
 #define LogTag "gui/OGLWidget"
 #include "core/Logger.h"
 #include "core/Filesystem.h"
+#include "core/BoundingBox.h"
 #include "gfx/GL.h"
 
 #include "Application.h"
@@ -43,7 +52,7 @@ namespace di
             setAutoBufferSwap( true );
 
             m_redrawTimer = new QTimer();
-            m_redrawTimer->setInterval( 100 );
+            m_redrawTimer->setInterval( 33 );
             QObject::connect( m_redrawTimer, SIGNAL( timeout() ), this, SLOT( update() ), Qt::QueuedConnection );
         }
 
@@ -132,6 +141,11 @@ namespace di
             );
 
             m_redrawTimer->start();
+
+            // set a nice default projection matrix:
+            /* m_camera.setProjectionMatrix(
+                glm::frustum( -getAspectRatio(), getAspectRatio(), -1.0, 1.0, 0.0001, 100.0 )
+            );*/
         }
 
         void OGLWidget::resizeGL( int w, int h )
@@ -144,10 +158,12 @@ namespace di
         void OGLWidget::paintGL()
         {
             // Allow all visualizations to update:
+            core::BoundingBox sceneBB;
             Application::getProcessingNetwork()->visitVisualizations(
-                []( SPtr< di::core::Visualization > vis )
+                [ &sceneBB ]( SPtr< di::core::Visualization > vis )
                 {
                     vis->update();
+                    sceneBB.include( vis->getBoundingBox() );
                 }
             );
 
@@ -175,12 +191,20 @@ namespace di
 
             glDisableVertexAttribArray( 0 );
 
+            // Calculate scene
+            double maxExtend = std::max( sceneBB.getSize().x, std::max( sceneBB.getSize().y, sceneBB.getSize().z ) );
+
+            glm::mat4 rotationPointTranslate = glm::translate( -sceneBB.getCenter() );
+            glm::mat4 scaleToFit = glm::scale( glm::vec3( 1.0 / ( 0.6 * maxExtend ) ) );
+
+            m_camera.setViewMatrix( m_arcballMatrix * scaleToFit * rotationPointTranslate );
+
             // Draw scenes
             // Allow all visualizations to render:
             Application::getProcessingNetwork()->visitVisualizations(
-                []( SPtr< di::core::Visualization > vis )
+                [ this ]( SPtr< di::core::Visualization > vis )
                 {
-                    vis->render();
+                    vis->render( *this );
                 }
             );
         }
@@ -203,6 +227,90 @@ namespace di
             // glDeleteProgram( m_backgroundShaderProgram );
 
             QGLWidget::closeEvent( event );
+        }
+
+        void OGLWidget::mousePressEvent( QMouseEvent* event )
+        {
+            if( event->button() == Qt::LeftButton )
+            {
+                m_arcballState = 1;
+                m_arcballPrevMatrix = m_arcballMatrix;
+            }
+        }
+
+        void OGLWidget::mouseReleaseEvent( QMouseEvent* event )
+        {
+            if( event->button() == Qt::LeftButton )
+            {
+                m_arcballState = 0;
+            }
+        }
+
+        void OGLWidget::mouseMoveEvent( QMouseEvent* event )
+        {
+            if( m_arcballState == 0 )
+            {
+                return;
+            }
+            else if( m_arcballState == 1 )
+            {
+                // Store initial position only.
+                m_arcballPrevPos = toScreenCoord( event->x(), event->y() );
+                m_arcballState = 2;
+                return;
+            }
+
+            // Tracking the subsequent
+            m_arcballCurrPos = toScreenCoord( event->x(), event->y() );
+            // Calculate the angle in radians, and clamp it between 0 and 90 degrees
+            m_arcballAngle = acos( std::min( 1.0f, glm::dot( m_arcballPrevPos, m_arcballCurrPos ) ) );
+            // Cross product to get the rotation axis, but it's still in camera coordinate
+            m_arcballCamAxis = glm::cross( m_arcballPrevPos, m_arcballCurrPos );
+
+            m_arcballMatrix = glm::rotate( glm::degrees( m_arcballAngle ) * m_arcballRollSpeed, -m_arcballCamAxis ) *
+                              m_arcballPrevMatrix;
+        }
+
+        glm::vec3 OGLWidget::toScreenCoord( double x, double y )
+        {
+            glm::vec3 coord( 0.0f );
+            if( m_arcballXAxis )
+            {
+                coord.x = ( 2 * x - width() ) / width();
+            }
+            if( m_arcballYAxis )
+            {
+                coord.y = -(2 * y - height() ) / height();
+            }
+
+            /* Clamp it to border of the windows, comment these codes to allow rotation when cursor is not over window */
+            coord.x = glm::clamp( coord.x, -1.0f, 1.0f );
+            coord.y = glm::clamp( coord.y, -1.0f, 1.0f );
+            float length_squared = coord.x * coord.x + coord.y * coord.y;
+            if( length_squared <= 1.0 )
+            {
+                coord.z = sqrt( 1.0 - length_squared );
+            }
+            else
+            {
+                coord = glm::normalize( coord );
+            }
+            return coord;
+        }
+
+        glm::vec2 OGLWidget::getViewportOrigin() const
+        {
+            return glm::vec2( 0, 0 );
+        }
+
+        glm::vec2 OGLWidget::getViewportSize() const
+        {
+            return glm::vec2( width(), height() );
+        }
+
+        const core::Camera& OGLWidget::getCamera() const
+        {
+            return m_camera;
         }
     }
 }
