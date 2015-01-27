@@ -241,8 +241,11 @@ namespace di
 
             /**
              * Camera zoom.
+             *
+             * The default is 1.732 (~sqrt(3)) - 0.1. This copes with the fact that the down-scaler to fit to the scene calculates the diagonal of the scene
+             * cube. The default zoom ensures a maximally zoomed initial scene.
              */
-            double m_zoom = 1.0;
+            double m_zoom = 1.732;
 
             /**
              * The camera of the view.
