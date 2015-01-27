@@ -18,7 +18,7 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
@@ -31,11 +31,20 @@
 #include "Application.h"
 #include "ScaleLabel.h"
 
+#include "core/Algorithm.h"
+#define LogTag "gui/DataWidget"
+#include "core/Logger.h"
+
 // include some icons as XPM. This will be replaced by a proper file loading.
 #include "icons/iconMesh.xpm"
 #include "icons/iconLabels.xpm"
 
+#include "CommandObserverQt.h"
+#include "events/CommandObserverEvent.h"
+#include "FileWidget.h"
+
 #include "DataWidget.h"
+
 namespace di
 {
     namespace gui
@@ -59,78 +68,59 @@ namespace di
             contentWidget->setLayout( contentLayout );
 
             // Add the mesh-load-button thingy
-            QWidget* meshLoad( new QWidget );
-            QHBoxLayout* meshLoadLayout( new QHBoxLayout );
-            meshLoad->setLayout( meshLoadLayout );
-            QToolButton* meshLoadBtn( new QToolButton );
-            meshLoadBtn->setIcon( QIcon( QPixmap( iconMesh_xpm ) ) );
-            meshLoadBtn->setIconSize( QSize( 64, 64 ) );
-            m_meshLoadLabel = new ScaleLabel;
-            meshLoadLayout->addWidget( meshLoadBtn );
-            meshLoadLayout->addWidget( m_meshLoadLabel );
-            m_meshLoadLabel->setText( tr( "No Data Loaded" ) );
-
+            m_meshLoad = new FileWidget( QIcon( QPixmap( iconMesh_xpm ) ),
+                                         QString( "Stanford Poly Format (*.ply)"
+                                         /* Not yet implemented
+                                                                   "Mesh File (*.gii *.asc *.ply);;
+                                                                   GIfTI File (*.gii);; " +
+                                                                   "ASCII Mesh File (*.asc);; " +
+                                                                   "Stanford Poly Format (*.ply)" );
+                                                                   */
+                                         ),
+                                         contentWidget );
             // Add the label-load-button thingy
-            QWidget* labelLoad( new QWidget );
-            QHBoxLayout* labelLoadLayout( new QHBoxLayout );
-            labelLoad->setLayout( labelLoadLayout );
-            QToolButton* labelLoadBtn( new QToolButton );
-            labelLoadBtn->setIcon( QIcon( QPixmap( iconLabels_xpm ) ) );
-            labelLoadBtn->setIconSize( QSize( 64, 64 ) );
-            m_labelLoadLabel = new ScaleLabel;
-            labelLoadLayout->addWidget( labelLoadBtn );
-            labelLoadLayout->addWidget( m_labelLoadLabel );
-            m_labelLoadLabel->setText( tr( "No Data Loaded" ) );
+            m_labelLoad = new FileWidget( QIcon( QPixmap( iconLabels_xpm ) ),
+                                          QString( "Label File (*.dpv)" ),
+                                          contentWidget );
 
-            contentLayout->addWidget( meshLoad );
-            contentLayout->addWidget( labelLoad );
+            // Add the data status indicator
+            /* QWidget* statusIndicator( new QWidget );
+            QHBoxLayout* statusIndicatorLayout( new QHBoxLayout );
+            statusIndicator->setLayout( statusIndicatorLayout );
+
+            m_statusLabel = new ScaleLabel;
+            m_statusLabel->setText( tr( "Not Complete" ) );
+            ScaleLabel* statusInfoLabel = new ScaleLabel;   // only shows the static text
+            statusInfoLabel->setText( tr( "Data Status: " ) );
+
+            statusIndicatorLayout->addWidget( statusInfoLabel );
+            statusIndicatorLayout->addWidget( m_statusLabel );
+            */
+
+            contentLayout->addWidget( m_meshLoad );
+            contentLayout->addWidget( m_labelLoad );
+            // contentLayout->addWidget( statusIndicator );
             contentLayout->setAlignment( Qt::AlignTop );
-
-            // setSizePolicy( QSizePolicy( QSizePolicy::Minimum, QSizePolicy::Minimum ) );
-
-            // Connect the tool buttons to an actual file dialog
-            connect( meshLoadBtn, SIGNAL( clicked( bool ) ), this, SLOT( loadMesh() ) );
-            connect( labelLoadBtn, SIGNAL( clicked( bool ) ), this, SLOT( loadLabels() ) );
         }
 
         DataWidget::~DataWidget()
         {
         }
 
-        void DataWidget::loadMesh()
+        void DataWidget::prepareProcessingNetwork()
         {
-            QString lastPath = Application::getSettings()->value( "LastMeshPath", "" ).toString();
-            QString selected = QFileDialog::getOpenFileName( this, "Load Mesh File", lastPath,
-                                                                   "Mesh File (*.gii *.asc);; GIfTI File (*.gii);; ASCII Mesh File (*.asc)" );
-            if( selected == "" )
-            {
-                return;
-            }
-
-            // Store the last path
-            QFileInfo fi( selected );
-            Application::getSettings()->setValue( "LastMeshPath", fi.path() );
-
-            // Use deferred loading:
-            Application::getVisualization()->loadMesh( selected.toStdString() );
+            // We use DataInject algorithms to inject data we have loaded (or will load). Let the FileWidgets do it:
+            m_meshLoad->prepareProcessingNetwork();
+            m_labelLoad->prepareProcessingNetwork();
         }
 
-        void DataWidget::loadLabels()
+        void DataWidget::connectDataToAlgo( ConstSPtr< di::core::Algorithm > to )
         {
-            QString lastPath = Application::getSettings()->value( "LastLabelPath", "" ).toString();
-            QString selected = QFileDialog::getOpenFileName( this, "Load Label File", lastPath,
-                                                                   "Label File (*.labels)" );
-            if( selected == "" )
-            {
-                return;
-            }
+            auto meshAlgo = m_meshLoad->getDataInject();
+            auto labelAlgo = m_labelLoad->getDataInject();
 
-            // Store the last path
-            QFileInfo fi( selected );
-            Application::getSettings()->setValue( "LastLabelPath", fi.path() );
-
-            // Use deferred loading:
-            Application::getVisualization()->loadLabels( selected.toStdString() );
+            Application::getProcessingNetwork()->connectAlgorithms( meshAlgo, "Data", to, "Triangle Mesh" );
+            // Application::getProcessingNetwork()->connectAlgorithms( labelAlgo, "Data", to, "Triangle Labels" );
         }
     }
 }

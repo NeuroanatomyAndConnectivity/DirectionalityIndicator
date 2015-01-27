@@ -18,11 +18,9 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
-
-#include <string>
 
 #include "Visualization.h"
 
@@ -30,35 +28,38 @@ namespace di
 {
     namespace core
     {
-        Visualization::Visualization():
-            CommandQueue()
+        Visualization::Visualization()
         {
+            // nothing to do
+            m_renderingRequested.store( false );
         }
 
         Visualization::~Visualization()
         {
+            // nothing to do
         }
 
-        void Visualization::start()
+        void Visualization::update()
         {
-            CommandQueue::start();
+            // nothing to do
         }
 
-        void Visualization::stop()
+        void Visualization::renderRequest()
         {
-            CommandQueue::stop();
+            // This is a temporary solution. This will be replaced with a push-based approach soon.
+            m_renderingRequested.store( true );
         }
 
-        void Visualization::loadMesh( const std::string& fileName )
+        void Visualization::resetRenderingRequest()
         {
+            // This is a temporary solution. This will be replaced with a push-based approach soon.
+            m_renderingRequested.store( false );
         }
 
-        void Visualization::loadLabels( const std::string& fileName )
+        bool Visualization::isRenderingRequested() const
         {
-        }
-
-        void Visualization::process( SPtr< Command > command )
-        {
+            return m_renderingRequested.load();
         }
     }
 }
+

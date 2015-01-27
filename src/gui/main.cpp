@@ -18,7 +18,7 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
@@ -49,7 +49,11 @@ int main( int argc, char** argv )
 {
     printVersion();
 
+    // Run GUI App
     di::gui::Application app( argc, argv );
-    return app.run();
+    int ret = app.run();
+
+    // Done.
+    return ret;
 }
 

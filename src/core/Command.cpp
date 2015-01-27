@@ -18,23 +18,25 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
 #include <string>
 
+#define LogTag "core/Command"
+#include "Logger.h"
+
 #include "Command.h"
+
+#include "Types.h"
 
 namespace di
 {
     namespace core
     {
-        Command::Command()
-        {
-        }
-
         Command::Command( SPtr< CommandObserver > observer ):
+            std::enable_shared_from_this< Command >(),
             m_observer( observer )
         {
         }
@@ -56,9 +58,15 @@ namespace di
                 return;
             }
 
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": busy." << LogEnd;
+
             // Change state and notify
             m_isBusy = true;
-            m_observer->busy();
+            m_isWaiting = false;
+            if( m_observer )
+            {
+                m_observer->busy( shared_from_this() );
+            }
         }
 
         bool Command::isBusy() const
@@ -74,9 +82,14 @@ namespace di
                 return;
             }
 
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": waiting." << LogEnd;
+
             // Change state and notify
             m_isWaiting = true;
-            m_observer->waiting();
+            if( m_observer )
+            {
+                m_observer->waiting( shared_from_this() );
+            }
         }
 
         bool Command::isWaiting() const
@@ -92,9 +105,16 @@ namespace di
                 return;
             }
 
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": success." << LogEnd;
+
             // Change state and notify
             m_isSuccessful = true;
-            m_observer->success();
+            m_isWaiting = false;
+            m_isBusy = false;
+            if( m_observer )
+            {
+                m_observer->success( shared_from_this() );
+            }
         }
 
         bool Command::isSuccessful() const
@@ -110,9 +130,17 @@ namespace di
                 return;
             }
 
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": abort." << LogEnd;
+
             // Change state and notify
             m_isAborted = true;
-            m_observer->abort();
+            m_isWaiting = false;
+            m_isBusy = false;
+            m_isSuccessful = false;
+            if( m_observer )
+            {
+                m_observer->abort( shared_from_this() );
+            }
         }
 
         bool Command::isAborted() const
@@ -128,10 +156,19 @@ namespace di
                 return;
             }
 
+            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": failed - Reason: " << reason << "" << LogEnd;
+
             // Change state and notify
             m_isFailed = true;
+            m_isAborted = true;
+            m_isWaiting = false;
+            m_isBusy = false;
+            m_isSuccessful = false;
             m_failureReason = reason;
-            m_observer->fail();
+            if( m_observer )
+            {
+                m_observer->fail( shared_from_this() );
+            }
         }
 
         void Command::fail( const std::exception& reason )

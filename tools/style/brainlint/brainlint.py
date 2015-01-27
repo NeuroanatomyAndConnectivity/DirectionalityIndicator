@@ -223,7 +223,7 @@ _STL_HEADERS = frozenset([
     'function.h', 'functional', 'hash_map', 'hash_map.h', 'hash_set',
     'hash_set.h', 'iterator', 'list', 'list.h', 'map', 'memory', 'new',
     'pair.h', 'pthread_alloc', 'queue', 'set', 'set.h', 'sstream', 'streambuf',
-    'stack', 'stl_alloc.h', 'stl_relops.h', 'type_traits.h', 'utility',
+    'stack', 'stl_alloc.h', 'stl_relops.h', 'tuple', 'type_traits.h', 'utility',
     'vector', 'vector.h',
     'thread', 'memory', 'condition_variable', 'mutex'
     ])
@@ -232,12 +232,12 @@ _STL_HEADERS = frozenset([
 # Non-STL C++ system headers.
 _CPP_HEADERS = frozenset([
     'algo.h', 'builtinbuf.h', 'bvector.h', 'cassert', 'cctype', 'cerrno',
-    'cfloat', 'ciso646', 'climits', 'clocale', 'cmath', 'complex', 'complex.h',
+    'cfloat', 'chrono', 'ciso646', 'climits', 'clocale', 'cmath', 'complex', 'complex.h',
     'csetjmp', 'csignal', 'cstdarg', 'cstddef', 'cstdio', 'cstdlib', 'cstring',
     'ctime', 'cwchar', 'cwctype', 'defalloc.h', 'deque.h', 'editbuf.h',
     'exception', 'fstream', 'fstream.h', 'hashtable.h', 'heap.h', 'indstream.h',
     'iomanip', 'iomanip.h', 'ios', 'iosfwd', 'iostream', 'iostream.h',
-    'istream', 'istream.h', 'iterator.h', 'limits', 'map.h', 'multimap.h',
+    'istream', 'istream.h', 'iterator.h', 'limits', 'locale', 'map.h', 'multimap.h',
     'multiset.h', 'numeric', 'ostream', 'ostream.h', 'parsestream.h',
     'pfstream.h', 'PlotFile.h', 'procbuf.h', 'pthread_alloc.h', 'rope',
     'rope.h', 'ropeimpl.h', 'SFile.h', 'slist', 'slist.h', 'stack.h',
@@ -253,7 +253,7 @@ _CPP_HEADERS = frozenset([
 _OTHER_HEADERS = frozenset([
     'QtGui', 'QtCore', 'QtWebKit', 'QtOpenGL', 'GL', 'cxxtest', 'boost', 'osg','osgText', 'osgViewer', 'osgDB', 'osgUtil', 'osgGA', 'osgSim', 'Eigen',
     'matrix', 'core', 'CL',
-'QAction', 'QApplication', 'QCheckBox', 'QCloseEvent', 'QColor', 'QColorDialog', 'QComboBox', 'QDialog', 'QDialogButtonBox',
+'QAction', 'QApplication', 'QCheckBox', 'QCloseEvent', 'QColor', 'QColorDialog', 'QComboBox', 'QCoreApplication', 'QDialog', 'QDialogButtonBox',
 'QDockWidget', 'QDragEnterEvent', 'QDropEvent', 'QFileDialog', 'QFrame', 'QGraphicsItem', 'QGraphicsItemAnimation', 'QGraphicsItemGroup',
 'QGraphicsLineItem', 'QGraphicsObject', 'QGraphicsPathItem', 'QGraphicsPolygonItem', 'QGraphicsRectItem', 'QGraphicsScene',
 'QGraphicsSceneDragDropEvent', 'QGraphicsSceneMouseEvent', 'QGraphicsTextItem', 'QGraphicsView', 'QGridLayout', 'QGroupBox',
@@ -265,6 +265,7 @@ _OTHER_HEADERS = frozenset([
 'QGLWidget',
 'QShortcut',
 'QDir',
+'QTimer',
 'QShowEvent', 'QSlider', 'QSplashScreen', 'QSplitter', 'QStackedWidget', 'QStyleOptionGraphicsItem', 'QTabWidget',
 'QTextCharFormat', 'QTextCursor', 'QTextEdit', 'QtGui', 'QToolBar', 'QToolBox', 'QToolButton',
 'QTreeWidget', 'QTreeWidgetItem', 'QVBoxLayout', 'QWebFrame', 'QWebPage', 'QWebView', 'QWheelEvent', 'QWidget', 'QWidgetAction'

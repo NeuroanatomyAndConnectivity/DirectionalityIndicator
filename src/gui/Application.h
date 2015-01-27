@@ -18,14 +18,18 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include "core/ProcessingNetwork.h"
+
 #include <QSettings>
+
+#include "Types.h"
 
 // Forward declarations
 class OGLWidget;
@@ -33,11 +37,13 @@ class DataWidget;
 class ParameterWidget;
 class MainWindow;
 
-#include "Types.h"
-#include "core/Visualization.h"
-
 namespace di
 {
+    namespace core
+    {
+        class Connection;
+    }
+
     namespace gui
     {
         /**
@@ -87,11 +93,11 @@ namespace di
             static Application* getInstance();
 
             /**
-             * Get the visualization container controlled by this UI
+             * Get the processing container controlled by this UI
              *
-             * \return the vis container.
+             * \return the container.
              */
-            static SPtr< core::Visualization > getVisualization();
+            static SPtr< di::core::ProcessingNetwork > getProcessingNetwork();
 
         protected:
         private:
@@ -136,9 +142,19 @@ namespace di
             ParameterWidget* m_parameterWidget = nullptr;
 
             /**
-             * The visualization container managed by this application instance.
+             * The processing container managed by this application instance.
              */
-            SPtr< core::Visualization > m_visualization = nullptr;
+            SPtr< core::ProcessingNetwork > m_processingNetwork = nullptr;
+
+            /**
+             * The connection between triangle data and the algo
+             */
+            SPtr< di::core::Connection > m_connectionTrianglesToAlgo = nullptr;
+
+            /**
+             * The connection between label data and the algo
+             */
+            SPtr< di::core::Connection > m_connectionLabelsToAlgo = nullptr;
         };
     }
 }

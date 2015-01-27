@@ -18,7 +18,7 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
@@ -28,29 +28,14 @@ namespace di
 {
     namespace core
     {
-        void CommandObserver::busy()
+        CommandObserver::CommandObserver()
         {
-            notify();
+            // nothing to do.
         }
 
-        void CommandObserver::waiting()
+        CommandObserver::~CommandObserver()
         {
-            notify();
-        }
-
-        void CommandObserver::success()
-        {
-            notify();
-        }
-
-        void CommandObserver::abort()
-        {
-            notify();
-        }
-
-        void CommandObserver::fail()
-        {
-            notify();
+            // nothing to do.
         }
     }
 }

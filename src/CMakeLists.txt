@@ -22,7 +22,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+# along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 #
 #----------------------------------------------------------------------------------------
 
@@ -90,6 +90,72 @@ SET( CMAKE_EXPORT_COMPILE_COMMAND ON FORCE )
 
 # Use src/ as include search path
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#
+# GLSL Setup
+#
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# sorry, linking not available properly on windows, Cygwin supports this but we do not want special rules for thousands of environments.
+# ==> keep it clean
+IF( NOT CMAKE_HOST_SYSTEM MATCHES "Windows" )
+    OPTION( DI_LINK_SHADERS "If turned on, shaders will not be copied but will be linked. This is a nice option for developers." ON )
+ENDIF()
+
+# Recursively searches shader files with extension glsl.
+# _DirString where to search
+# _GLSLFiles the list of files found
+FUNCTION( COLLECT_SHADER_FILES _DirString _GLSLFiles )
+    # recursively get all files
+    FILE( GLOB_RECURSE GLSL_FILES ${_DirString}/*.glsl )
+    SET( ${_GLSLFiles} "${GLSL_FILES}" PARENT_SCOPE )
+ENDFUNCTION( COLLECT_SHADER_FILES )
+
+# This function sets up the build system to ensure that the specified list of shaders is available after build in the target directory. It
+# additionally setups the install targets. Since build and install structure are the same, specify only relative targets here which are used for
+# both.
+# _Shaders list of shaders
+# _TargetDir the directory where to put the shaders. Relative to ${PROJECT_BINARY_DIR} and install dir. You should avoid ".." stuff. This can
+# break the install targets
+FUNCTION( SETUP_SHADERS _Shaders _TargetDir )
+    EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E make_directory ${_TargetDir} )
+
+    # should we copy or link them?
+    SET( ShaderOperation "copy_if_different" )
+    IF ( DI_LINK_SHADERS ) # link
+         SET( ShaderOperation "create_symlink" )
+     ENDIF( DI_LINK_SHADERS )
+
+    # now do the operation for each shader into build dir
+    FOREACH( fname ${_Shaders} )
+        # We need the plain filename (create_symlink needs it)
+        STRING( REGEX REPLACE "^.*/" "" StrippedFileName "${fname}" )
+
+        # construct final filename
+        SET( targetFile "${PROJECT_BINARY_DIR}/${_TargetDir}/${StrippedFileName}" )
+
+        # if the file already exists as non-symlink and we use the "create_symlink" command, we first need to remove the files
+        IF( NOT IS_SYMLINK ${targetFile} AND DI_LINK_SHADERS )
+            # before creating the symlink, remove the old files or cmake will not create the symlinks (as intended)
+            EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E remove -f ${targetFile} )
+        ELSEIF( IS_SYMLINK ${targetFile} AND NOT DI_LINK_SHADERS )
+            # also handle the inverse case. The files exist as symlinks but copies should be used. Remove symlinks!
+            EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E remove -f ${targetFile} )
+        ENDIF()
+
+        # let cmake do it
+        EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E ${ShaderOperation} ${fname} ${targetFile} )
+    ENDFOREACH( fname )
+ENDFUNCTION( SETUP_SHADERS )
+
+# Use the above utility code to setup the GFX core shaders.
+COLLECT_SHADER_FILES( ${CMAKE_CURRENT_SOURCE_DIR}/gfx/shaders GFX_GLSL_FILES )
+SETUP_SHADERS( "${GFX_GLSL_FILES}" "gfx/shaders" )
+
+# Also setup algorithm shaders.
+COLLECT_SHADER_FILES( ${CMAKE_CURRENT_SOURCE_DIR}/algorithms ALGORITHM_GLSL_FILES )
+SETUP_SHADERS( "${ALGORITHM_GLSL_FILES}" "algorithms/shaders" )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 #
@@ -181,6 +247,30 @@ ADD_CUSTOM_TARGET( stylecheck )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
+# OpenGL
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# We do not explicitly search for OpenGL. This is already done by QT5OpenGL. Doing so anyways would cause compilation errors. I am not exactly sure
+# why.
+# When enabling, I get
+#     "No rule to make target '/usr/lib/x86_64-linux-gnu/libXext.so,', needed by 'DirectionalityIndicator'.  Stop."
+# Do you know the reason?
+
+# As we use this later: add GL explicitly to the link list
+IF( CMAKE_HOST_SYSTEM MATCHES "Linux" )
+    SET( OPENGL_LIBRARIES "GL" )
+ELSE()
+    FIND_PACKAGE( OpenGL REQUIRED )
+ENDIF()
+
+FIND_PACKAGE( GLEW REQUIRED )
+
+
+# Includes
+INCLUDE_DIRECTORIES( SYSTEM ${OPENGL_INCLUDE_DIR} )
+INCLUDE_DIRECTORIES( SYSTEM ${GLEW_INCLUDE_DIRS} )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
 # Setup QT5
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 set (CMAKE_PREFIX_PATH "/usr/local/Cellar/qt5/5.3.2/")
@@ -223,6 +313,27 @@ INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 #
+# External Code Setup (/ext)
+#
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Add /ext directory to include search path
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Setup GLM
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Is header-only. Use /ext as include search path (see above)
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Setup RPly
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+FILE( GLOB_RECURSE TARGET_EXT_RPLY_CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/*.c )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#
 # Code Setup
 #
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -242,13 +353,15 @@ FILE( GLOB_RECURSE TARGET_H_FILES   ${CMAKE_CURRENT_SOURCE_DIR}/*.h )
 SET( CMAKE_AUTOMOC ON )
 
 # Setup the target
-ADD_EXECUTABLE( ${BinName} ${TARGET_CPP_FILES} ${TARGET_H_FILES} )
+ADD_EXECUTABLE( ${BinName} ${TARGET_CPP_FILES} ${TARGET_H_FILES} ${TARGET_EXT_RPLY_CPP_FILES} )
 
 # Some Linux distributions need to explicitly link against X11. We add this lib here.
 IF( CMAKE_HOST_SYSTEM MATCHES "Linux" )
     SET( ADDITIONAL_TARGET_LINK_LIBRARIES "X11" )
 ENDIF()
 TARGET_LINK_LIBRARIES( ${BinName} ${CMAKE_STANDARD_LIBRARIES}
+                                  ${OPENGL_LIBRARIES}
+                                  ${GLEW_LIBRARIES}
                                   Qt5::Widgets Qt5::OpenGL Qt5::WebKitWidgets 
                                   ${ADDITIONAL_TARGET_LINK_LIBRARIES} )
 
@@ -259,4 +372,4 @@ TARGET_LINK_LIBRARIES( ${BinName} ${CMAKE_STANDARD_LIBRARIES}
 # setup the stylechecker. Ignore the platform specific stuff.
 SETUP_STYLECHECKER( "${BinName}"
                     "${TARGET_CPP_FILES};${TARGET_H_FILES}"  # add all these files to the stylechecker
-                    "" )                                     # exlude some ugly files
+                    "ext/*;io/PlyReader.cpp" )                                # exclude some ugly files

@@ -18,13 +18,14 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include <memory>
 #include <exception>
 #include <string>
 
@@ -45,20 +46,15 @@ namespace di
          *
          * Derive to implement specific commands.
          */
-        class Command
+        class Command: public std::enable_shared_from_this< Command >
         {
         public:
-            /**
-             * Create an empty command. Derive to add a meaning.
-             */
-            Command();
-
             /**
              * Create an empty command. Derive to add a meaning.
              *
              * \param observer an object that gets notified upon changes in this command's state.
              */
-            explicit Command( SPtr< CommandObserver > observer );
+            explicit Command( SPtr< CommandObserver > observer = nullptr );
 
             /**
              * Clean up.
@@ -66,15 +62,15 @@ namespace di
             virtual ~Command();
 
             /**
-             * Get the human-readable title of this command. This should be something like "Calculating Gradients".
+             * Get the human-readable title of this command. This should be something like "Adding Algorithm".
              *
              * \return the title
              */
-            virtual std::string getTitle() const = 0;
+            virtual std::string getName() const = 0;
 
             /**
-             * Get the human-readable description of this command. This is a more detailed description of what is going on, like "Calculating the
-             * gradients using the differential quotient on scalar data.".
+             * Get the human-readable description of this command. This is a more detailed description of what is going on, like "Adding a algorithm
+             * to the network without connecting them".
              *
              * \return the description
              */

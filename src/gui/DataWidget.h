@@ -18,24 +18,30 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
 #ifndef DATAWIDGET_H
 #define DATAWIDGET_H
 
-#include <QWidget>
 #include <QDockWidget>
 
-class ScaleLabel;
+#include "Types.h"
+
+class FileWidget;
 
 namespace di
 {
+    namespace core
+    {
+        class Algorithm;
+    }
+
     namespace gui
     {
         /**
-         * A simple widget to provide the data-loading functionality.
+         * A simple widget to provide the data-loading functionality. For now, it hard-codes the required files of our use-case.
          */
         class DataWidget: public QDockWidget
         {
@@ -53,28 +59,31 @@ namespace di
              */
             virtual ~DataWidget();
 
+            /**
+             * Allows this widget to prepare everything in the network. This is only a temporary solution.
+             */
+            void prepareProcessingNetwork();
+
+            /**
+             * Connect the data to the algorithm.
+             *
+             * \note Hard-coded. Ugly. Do not copy.
+             *
+             * \param to to this algorithm.
+             */
+            void connectDataToAlgo( ConstSPtr< di::core::Algorithm > to );
+
         protected:
         private:
-            /**
-             * The label used for the labeling data
+             /**
+             * The mesh load widget.
              */
-            ScaleLabel* m_labelLoadLabel = nullptr;
+            FileWidget* m_meshLoad = nullptr;
 
             /**
-             * The label used for the mesh data
+             * The label load widget.
              */
-            ScaleLabel* m_meshLoadLabel = nullptr;
-
-        private slots:
-            /**
-             * Load the mesh data.
-             */
-            void loadMesh();
-
-            /**
-             * Load the label data.
-             */
-            void loadLabels();
+            FileWidget* m_labelLoad = nullptr;
         };
     }
 }

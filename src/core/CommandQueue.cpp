@@ -18,11 +18,14 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
 #include <string>
+
+#define LogTag "core/CommandQueue"
+#include "Logger.h"
 
 #include "CommandQueue.h"
 
@@ -47,6 +50,11 @@ namespace di
             // loop and handle ...
             while( m_running )
             {
+                if( m_commandQueue.empty() )
+                {
+                    LogD << "Empty queue. Sleeping." << LogEnd;
+                }
+
                 // was the thread notified again?
                 if( !m_notified )
                 {
@@ -54,7 +62,7 @@ namespace di
                     m_commandQueueCond.wait( lock,
                                              [ this ]  // keep waiting if not explicitly notified
                                              {
-                                                 return m_notified;
+                                                 return m_notified || !m_commandQueue.empty();
                                              }
                                            );
                 }
@@ -66,6 +74,12 @@ namespace di
                     // if stopping, process the remaining commands:
                     for( auto command : m_commandQueue )
                     {
+                        // be fool-proof
+                        if( !command )
+                        {
+                            continue;
+                        }
+
                         // If we stop gracefully, we allow each command to be processed.
                         if( m_gracefulStop )
                         {
@@ -86,10 +100,13 @@ namespace di
                     if( !m_commandQueue.empty() )
                     {
                         command = m_commandQueue.front();
-                        m_commandQueue.pop_back();
+                        m_commandQueue.pop_front();
                     }
-                    // as the command might take some time, we unlock the command queue to allow the system to add more commands.
-                    lock.unlock();
+                    // be fool-proof
+                    if( !command )
+                    {
+                        continue;
+                    }
 
                     // process
                     processCommand( command );
@@ -147,21 +164,6 @@ namespace di
                 m_thread->join();
                 m_thread = nullptr;
             }
-        }
-
-        void CommandQueue::commit( SPtr< Command > command )
-        {
-            // grab lock
-            std::lock_guard< std::mutex > theLock( m_commandQueueMutex );
-
-            // add and notify processing thread ...
-            m_commandQueue.push_back( command );
-
-            // Change command state.
-            command->waiting();
-
-            // Notify thread
-            notifyThread();
         }
 
         void CommandQueue::notifyThread()

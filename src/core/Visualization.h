@@ -18,81 +18,107 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with DirectionalityIndicator. If not, see <http:#www.gnu.org/licenses/>.
+// along with DirectionalityIndicator. If not, see <http://www.gnu.org/licenses/>.
 //
 //---------------------------------------------------------------------------------------
 
 #ifndef VISUALIZATION_H
 #define VISUALIZATION_H
 
-#include <string>
-#include <thread>
+#include <atomic>
+
+#include "core/BoundingBox.h"
 
 #include "Types.h"
-
-#include "Command.h"
-#include "CommandQueue.h"
 
 namespace di
 {
     namespace core
     {
+        class View;
+
         /**
-         * Container class to control a data-flow visualization network. For now, there is only one data-flow possible. It is hard-coded.
-         * This will change to a dynamic network if the application gets extended.
-         *
-         * The container itself runs in its own thread and controls the pipeline. It propagates updates and newly loaded data through the network
-         * without blocking. All operations on the network are done via commands.
-        */
-        class Visualization: public CommandQueue
+         * Interface to define the basic operations of all visualizations. If your algorithm wants to output graphics, derive from this class and
+         * implement the methods accordingly. The calling order will always be prepare(), loop: update(), render() and finally: finalize().
+         */
+        class Visualization
         {
         public:
             /**
-             * Create an empty visualization container.
+             * Prepare your visualization. This includes creation of resources, buffers, and others.
+             * If an error occurs, throw an exception accordingly.
+             *
+             * \note this runs in the OpenGL thread and the context is bound.
+             */
+            virtual void prepare() = 0;
+
+            /**
+             * This method is called between the frames. Use this to update resources. Immediately return if nothing needs to update. If you do not
+             * want to update anything at all, do not overwrite.
+             * If an error occurs, throw an exception accordingly.
+             *
+             * \note this runs in the OpenGL thread and the context is current.
+             */
+            virtual void update();
+
+            /**
+             * Do actual rendering.
+             * If an error occurs, throw an exception accordingly.
+             *
+             * \note this runs in the OpenGL thread and the context is current.
+             *
+             * \param view the view to render to. This contains probably useful information.
+             */
+            virtual void render( const View& view ) = 0;
+
+            /**
+             * Finalize your OpenGL resources here. Free buffers and shaders.
+             * If an error occurs, throw an exception accordingly.
+             *
+             * \note this runs in the OpenGL thread and the context is bound.
+             */
+            virtual void finalize() = 0;
+
+            /**
+             * Each visualization needs to know the rendering area it will use. In most cases, this is the bounding box of the rendered geometry.
+             * Avoid long running functions, since they block the OpenGL thread.
+             *
+             * \return bounding box of this visualization
+             */
+            virtual BoundingBox getBoundingBox() const = 0;
+
+            /**
+             * Request an update of the rendering. Since the rendering system is not permanently updating/rendering, this is needed to force a
+             * wake-up.
+             */
+            virtual void renderRequest();
+
+            /**
+             * Is an update()/render() cycle requested?
+             *
+             * \return true if graphics need a refresh.
+             */
+            virtual bool isRenderingRequested() const;
+        protected:
+            /**
+             * Constructor.
              */
             Visualization();
 
             /**
-             * Clean up. This stops all visualizations if any and cleans up memory.
+             * Destructor.
              */
             virtual ~Visualization();
 
             /**
-             * Start the visualization container. Does nothing if the thread is already running.
+             * Reset the request again. It is your job to do this. If not, you will be permanently redrawn.
              */
-            virtual void start();
-
-            /**
-             * Stop the visualization container. This causes all algorithms to be informed about the shutdown. The function blocks until the thread
-             * stopped. The function immediately returns if not thread is running (anymore).
-             *
-             * \note call from outside the container's thread only.
-             */
-            virtual void stop();
-
-            /**
-             * Load the specified mesh file. This operation is non-blocking and runs in this container's thread.
-             *
-             * \param fileName the file to load
-             */
-            virtual void loadMesh( const std::string& fileName );
-
-            /**
-             * Load the specified label file. This operation is non-blocking and runs in this container's thread.
-             *
-             * \param fileName the file to load
-             */
-            virtual void loadLabels( const std::string& fileName );
-
-        protected:
-            /**
-             * Process the specified command. Use Command::handle to mark the command as being handled.
-             *
-             * \param command the command to handle
-             */
-            virtual void process( SPtr< Command > command );
-
+            virtual void resetRenderingRequest();
         private:
+            /**
+             * A rendering was requested.
+             */
+            std::atomic< bool > m_renderingRequested;
         };
     }
 }
