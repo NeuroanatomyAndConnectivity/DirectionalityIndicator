@@ -25,9 +25,23 @@
 #ifndef GLERROR_H
 #define GLERROR_H
 
-void logGLErrorImpl( const char* file, int line );
+#include "core/Logger.h"
 
-#define logGLError() logGLErrorImpl( __FILE__, __LINE__ )
+#ifndef LogTag
+#define LogTag "Unknown LogTag"
+#endif
+
+/**
+ * Simply forward GL errors to a stream.
+ *
+ * \param to the stream to log to
+ * \param tag as this log call uses the Logger functionality, we need the tag
+ * \param file the filename of caller
+ * \param line linenumber of caller
+ */
+void logGLErrorImpl( std::ostream& to, const std::string& tag, const char* file, int line );
+
+#define logGLError() logGLErrorImpl( LogGL, LogTag, __FILE__, __LINE__ )
 
 #endif  // GLERROR_H
 

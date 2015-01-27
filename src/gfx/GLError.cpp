@@ -29,12 +29,12 @@
 
 #include "OpenGL.h"
 
-void logGLErrorImpl( const char* file, int line )
+void logGLErrorImpl( std::ostream& to, const std::string& tag, const char* file, int line )
 {
     GLenum err = glGetError();
     while( err != GL_NO_ERROR )
     {
-        std::string error;
+        std::string error = "UNKNOWN";
         switch( err )
         {
             case GL_INVALID_OPERATION:      error="INVALID_OPERATION";      break;
@@ -44,7 +44,7 @@ void logGLErrorImpl( const char* file, int line )
             case GL_INVALID_FRAMEBUFFER_OPERATION:  error="INVALID_FRAMEBUFFER_OPERATION";  break;
         }
 
-        std::cerr << "GL_" << error.c_str() << " - " << file << ":" << line << std::endl;
+        to << "OPENGL [" << tag << "]: << GL_" << error.c_str() << " - " << file << ":" << line << std::endl;
         err = glGetError();
     }
 }
