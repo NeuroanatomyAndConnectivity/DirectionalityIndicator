@@ -1,3 +1,7 @@
+# To compile: 
+# cmake -L/usr/local/opt/qt5/lib -I/usr/local/opt/qt5/include -L/usr/local/Cellar/qt5/5.3.2/lib/cmake/Qt5Widgets/ src/* -o src/
+# make
+#
 #----------------------------------------------------------------------------------------
 #
 # Project: DirectionalityIndicator
@@ -179,6 +183,7 @@ ADD_CUSTOM_TARGET( stylecheck )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 # Setup QT5
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
+set (CMAKE_PREFIX_PATH "/usr/local/Cellar/qt5/5.3.2/")
 
 # Package dependencies:
 FIND_PACKAGE( Qt5Widgets REQUIRED )
