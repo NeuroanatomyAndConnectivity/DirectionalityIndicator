@@ -135,6 +135,20 @@ namespace di
             void mouseMoveEvent( QMouseEvent* event ) override;
 
             /**
+             * Mouse wheel - used for zoom
+             *
+             * \param event the wheel event
+             */
+            void wheelEvent( QWheelEvent* event ) override;
+
+            /**
+             * Key events. Used to implement interactions with cam and so on.
+             *
+             * \param event the event
+             */
+            void keyReleaseEvent( QKeyEvent* event ) override;
+
+            /**
              * Convert the given mouse coordinates to normalized screen coordinates.
              *
              * \param x x mouse coordinate
@@ -224,6 +238,11 @@ namespace di
              * The previous arcball matrix.
              */
             glm::mat4 m_arcballPrevMatrix;
+
+            /**
+             * Camera zoom.
+             */
+            double m_zoom = 1.0;
 
             /**
              * The camera of the view.

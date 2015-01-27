@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <string>
+#include <cmath>
 
 #include <QMouseEvent>
 
@@ -51,6 +52,7 @@ namespace di
             QGLWidget( getDefaultFormat(), parent )
         {
             setAutoBufferSwap( true );
+            setFocusPolicy( Qt::StrongFocus );
 
             m_redrawTimer = new QTimer();
             m_redrawTimer->setInterval( 33 );
@@ -147,11 +149,6 @@ namespace di
             );
 
             m_redrawTimer->start();
-
-            // set a nice default projection matrix:
-            /* m_camera.setProjectionMatrix(
-                glm::frustum( -getAspectRatio(), getAspectRatio(), -1.0, 1.0, 0.0001, 100.0 )
-            );*/
         }
 
         void OGLWidget::resizeGL( int w, int h )
@@ -198,12 +195,29 @@ namespace di
             glDisableVertexAttribArray( 0 );
 
             // Calculate scene
-            double maxExtend = std::max( sceneBB.getSize().x, std::max( sceneBB.getSize().y, sceneBB.getSize().z ) );
+            double maxExtend = sqrt( 3.0 ) *
+                               std::max( sceneBB.getSize().x,
+                                         std::max( sceneBB.getSize().y,
+                                                   sceneBB.getSize().z ) );
+            double near = 0.3; // the near plane
+            double far = m_zoom * sqrt( 3.0 ) + near;    // the diagonal of the cube needs to fit (sqrt(3))
 
+            // Move scene to rotation point
             glm::mat4 rotationPointTranslate = glm::translate( -sceneBB.getCenter() );
-            glm::mat4 scaleToFit = glm::scale( glm::vec3( 1.0 / ( 0.6 * maxExtend ) ) );
+            // Scale scene down to match screen size. The scene is now inside a unit sized cube
+            glm::mat4 scaleToFit = glm::scale( glm::vec3( 1.0 / ( 1.0 * maxExtend ) ) );
+            // Zoom
+            glm::mat4 zoom = glm::scale( glm::vec3( m_zoom ) );
 
-            m_camera.setViewMatrix( m_arcballMatrix * scaleToFit * rotationPointTranslate );
+            // move scene into the visible area
+            glm::mat4 moveToVisibleArea = glm::translate( glm::vec3( 0.0, 0.0, -( m_zoom * 0.5 + near ) ) );
+
+            m_camera.setViewMatrix( moveToVisibleArea * zoom * scaleToFit * m_arcballMatrix * rotationPointTranslate );
+
+            // set a nice default projection matrix:
+            m_camera.setProjectionMatrix(
+                glm::ortho( 0.5 * -getAspectRatio(), 0.5 * getAspectRatio(), -0.5, 0.5, near, far )
+            );
 
             // Draw scenes
             // Allow all visualizations to render:
@@ -242,6 +256,7 @@ namespace di
                 m_arcballState = 1;
                 m_arcballPrevMatrix = m_arcballMatrix;
             }
+            event->accept();
         }
 
         void OGLWidget::mouseReleaseEvent( QMouseEvent* event )
@@ -250,12 +265,14 @@ namespace di
             {
                 m_arcballState = 0;
             }
+            event->accept();
         }
 
         void OGLWidget::mouseMoveEvent( QMouseEvent* event )
         {
             if( m_arcballState == 0 )
             {
+                event->ignore();
                 return;
             }
             else if( m_arcballState == 1 )
@@ -263,6 +280,7 @@ namespace di
                 // Store initial position only.
                 m_arcballPrevPos = toScreenCoord( event->x(), event->y() );
                 m_arcballState = 2;
+                event->ignore();
                 return;
             }
 
@@ -275,6 +293,75 @@ namespace di
 
             m_arcballMatrix = glm::rotate( glm::degrees( m_arcballAngle ) * m_arcballRollSpeed, -m_arcballCamAxis ) *
                               m_arcballPrevMatrix;
+
+            event->accept();
+        }
+
+        void OGLWidget::wheelEvent( QWheelEvent* event )
+        {
+            const double stepSize = 0.075;
+            if( event->delta() < 0 )
+            {
+                m_zoom -= stepSize;
+            }
+            else
+            {
+                m_zoom += stepSize;
+            }
+
+            // avoid values below 0.
+            m_zoom = m_zoom < stepSize ? stepSize : m_zoom;
+            event->accept();
+        }
+
+        void OGLWidget::keyReleaseEvent( QKeyEvent* event )
+        {
+            switch( event->key() )
+            {
+                case Qt::Key_Space:
+                    m_arcballMatrix = glm::mat4();
+                    break;
+                case Qt::Key_X: // rotate along x
+                    if( event->modifiers() == Qt::ShiftModifier )
+                    {
+                        m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) ) * m_arcballMatrix;
+                    }
+                    else
+                    {
+                        m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) ) * m_arcballMatrix;
+                    }
+                    break;
+                case Qt::Key_Y: // rotate along y
+                    if( event->modifiers() == Qt::ShiftModifier )
+                    {
+                        m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) * m_arcballMatrix;
+                    }
+                    else
+                    {
+                        m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) * m_arcballMatrix;
+                    }
+                    break;
+                case Qt::Key_Z: // rotate along z
+                    if( event->modifiers() == Qt::ShiftModifier )
+                    {
+                        m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) * m_arcballMatrix;
+                    }
+                    else
+                    {
+                        m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) * m_arcballMatrix;
+                    }
+                    break;
+                case Qt::Key_D:
+                    // restore default for our current data. Just a convenient shortcut for now. Later this will not be needed as project
+                    // files store the cam too.
+                    m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) )
+                                      * glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) )
+                                      ;
+                    break;
+
+            }
+
+            event->accept();
         }
 
         glm::vec3 OGLWidget::toScreenCoord( double x, double y )
