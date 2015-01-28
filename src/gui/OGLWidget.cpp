@@ -291,7 +291,7 @@ namespace di
             // Cross product to get the rotation axis, but it's still in camera coordinate
             m_arcballCamAxis = glm::cross( m_arcballPrevPos, m_arcballCurrPos );
 
-            m_arcballMatrix = glm::rotate( glm::degrees( m_arcballAngle ) * m_arcballRollSpeed, -m_arcballCamAxis ) *
+            m_arcballMatrix = glm::rotate( glm::degrees( m_arcballAngle ) * m_arcballRollSpeed, m_arcballCamAxis ) *
                               m_arcballPrevMatrix;
 
             event->accept();

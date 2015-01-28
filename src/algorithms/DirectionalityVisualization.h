@@ -134,6 +134,11 @@ namespace di
             GLuint m_colorVBO = 0;
 
             /**
+             * Normals for the mesh
+             */
+            GLuint m_normalVBO = 0;
+
+            /**
              * Index buffer
              */
             GLuint m_triIBO = 0;

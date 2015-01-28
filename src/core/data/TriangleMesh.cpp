@@ -22,6 +22,12 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <vector>
+#include <map>
+
+#define LogTag "core/data/TriangleMesh"
+#include "core/Logger.h"
+
 #include "TriangleMesh.h"
 
 namespace di
@@ -89,15 +95,83 @@ namespace di
             return m_vertices.size();
         }
 
+        size_t TriangleMesh::getNumNormals() const
+        {
+            return m_normals.size();
+        }
+
         bool TriangleMesh::sanityCheck() const
         {
             bool enoughTris = ( getNumTriangles() >= 1 );
-            return enoughTris;
+            bool enoughNormals = ( getNumNormals() == 0 ) || ( getNumNormals() == getNumTriangles() );  // either a normal for every vertex or none.
+            return enoughTris && enoughNormals;
         }
 
         const BoundingBox& TriangleMesh::getBoundingBox() const
         {
             return m_boundingBox;
+        }
+
+        const NormalArray& TriangleMesh::getNormals() const
+        {
+            return m_normals;
+        }
+
+        TriangleMesh::Triangle TriangleMesh::getVertices( size_t triangleID ) const
+        {
+            auto vertexIDs = m_triangles[ triangleID ];
+            return std::make_tuple( m_vertices[ vertexIDs.x ],
+                                    m_vertices[ vertexIDs.y ],
+                                    m_vertices[ vertexIDs.z ] );
+        }
+
+        void TriangleMesh::calculateNormals()
+        {
+            m_normals.clear();
+
+            // we want to keep track of the triangles that share a vertex
+            std::map< IndexVec3Array::value_type::value_type, std::vector< size_t > > vertexTriMap;
+
+            // iterate all triangles and map between vertex and triangle
+            for( size_t triID = 0; triID < m_triangles.size(); ++triID )
+            {
+                auto tri = m_triangles[ triID ];
+
+                // temporarily store a map between the vertex id and the corresponding triangle index. A reverse index so to say.
+                vertexTriMap[ tri.x ].push_back( triID );
+                vertexTriMap[ tri.y ].push_back( triID );
+                vertexTriMap[ tri.z ].push_back( triID );
+            }
+
+            // we can now go through each vertex and
+            for( size_t vertID = 0; vertID < m_vertices.size(); ++vertID )
+            {
+                // store all triangle normals of all triangles associated with this vertex in here:
+                std::vector< glm::vec3 > neighbourNormals;
+
+                // and iterate each triangle it belongs:
+                for( auto triID : vertexTriMap[ vertID ] )
+                {
+                    Triangle vertices = getVertices( triID );
+
+                    // do the typical cross-product style normal calculation:
+                    auto v1 = std::get< 1 >( vertices ) - std::get< 0 >( vertices );
+                    auto v2 = std::get< 2 >( vertices ) - std::get< 1 >( vertices );
+
+                    // cross product
+                    neighbourNormals.push_back( glm::normalize( glm::cross( v1, v2 ) ) );
+                }
+
+                // we now have all triangle normals of the triangles that use this vertex. Merge the normals to get a smooth vertex normal:
+                glm::vec3 smoothNormal( 0.0, 0.0, 0.0 );
+                for( auto normal : neighbourNormals )
+                {
+                    smoothNormal += normal;
+                }
+
+                // store the smooth normal for this vertex:
+                m_normals.push_back( glm::normalize( smoothNormal ) );
+            }
         }
     }
 }

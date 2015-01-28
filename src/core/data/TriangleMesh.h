@@ -26,6 +26,7 @@
 #define TRIANGLEMESH_H
 
 #include <vector>
+#include <tuple>
 
 #include "core/BoundingBox.h"
 
@@ -104,6 +105,37 @@ namespace di
             const Vec3Array& getVertices() const;
 
             /**
+             * Abbreviation for 3 vertices of a triangle.
+             */
+            typedef std::tuple< glm::vec3, glm::vec3, glm::vec3 > Triangle;
+
+            /**
+             * Get the vertices for the specified triangle id.
+             *
+             * \throw std::out_of_range if the index is invalid.
+             *
+             * \param triangleID the id of the triangle to retrieve the vertices for.
+             *
+             * \return the vertices
+             */
+            Triangle getVertices( size_t triangleID ) const;
+
+            /**
+             * Get the triangle normal array. There is a normal for each vertex. Per-triangle normals are not supported. To achieve this, ensure that
+             * no vertex is used by multiple triangles. Than store the same normal for each of the three vertices of a single triangle.
+             *
+             * \return the normal array.
+             */
+            const NormalArray& getNormals() const;
+
+            /**
+             * Get the amount of normals for this mesh. A valid mesh will contain either 0 or exactly 1 for each vertex.
+             *
+             * \return the number of normals.
+             */
+            size_t getNumNormals() const;
+
+            /**
              * Get the triangle index array.
              *
              * \return the index array.
@@ -125,7 +157,8 @@ namespace di
             size_t getNumVertices() const;
 
             /**
-             * Checks if the data is reasonable. Basically, this ensures that there is at least one triangle and that there are enough vertices.
+             * Checks if the data is reasonable. Basically, this ensures that there is at least one triangle and that there are enough vertices. It
+             * also checks that there are either no normals defined or exactly one per vertex.
              *
              * \return true if reasonable data is present.
              */
@@ -138,6 +171,12 @@ namespace di
              */
             const BoundingBox& getBoundingBox() const;
 
+            /**
+             * This is a useful function to calculate smooth normals. To have it create semi-per-triangle-normals, do not share vertices for the
+             * triangles. The normals are only smooth for triangles with shared vertices.
+             */
+            void calculateNormals();
+
         protected:
         private:
             /**
@@ -149,6 +188,11 @@ namespace di
              * Triangle index list. Index the triangle to query its 3 vertices.
              */
             IndexVec3Array m_triangles = {};
+
+            /**
+             * Normals.
+             */
+            NormalArray m_normals = {};
 
             /**
              * The bounding box.

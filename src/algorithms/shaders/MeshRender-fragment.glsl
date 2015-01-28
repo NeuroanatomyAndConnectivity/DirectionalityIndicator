@@ -25,10 +25,189 @@
 #version 330
 
 in vec4 v_color;
+in vec3 v_normal;
+
 out vec4 fragColor;
+
+// NOTE the following is LIB code. I will move this somewhere else once the ShaderLibrary implementation is done.
+
+/**
+ * A struct containing the needed light and material parameters commonly used in most shaders.
+ *
+ * \note This is for evaluating the phong equation for 1 channel only.
+ */
+struct LightIntensityParameter
+{
+    // These 4 parameters are similar to those in gl_MaterialParameters
+    float materialAmbient;  //!< Material ambient intensity.
+    float materialDiffuse;  //!< Material diffuse intensity.
+    float materialSpecular; //!< Material Specular intensity.
+    float materialShinines; //!< Material shinines factor
+
+    // These 4 parametes are a stripped down version of gl_LightSourceParameters
+    float lightDiffuse;     //!< Light diffuse intensity.
+    float lightAmbient;     //!< Light ambient intensity.
+};
+
+/**
+ * This variable contains the OpenWalnut default light. You should definitely use this for your lighting to obtain an identical look for all
+ * rendered images.
+ */
+LightIntensityParameter DefaultLightIntensity = LightIntensityParameter(
+    0.04,                            // material ambient
+    0.75,                            // material diffuse
+    1.0,                             // material specular
+    250.0,                           // material shininess
+    1.0,                             // light diffuse
+    1.0                              // light ambient
+);
+
+/**
+ * This variable contains the OpenWalnut default light. You should definitely use this for your lighting to obtain an identical look for all
+ * rendered images. This version looks has no ambient factor and provides full diffuse colors.
+ */
+LightIntensityParameter DefaultLightIntensityFullDiffuse = LightIntensityParameter(
+    0.0,                             // material ambient
+    1.0,                             // material diffuse
+    1.0,                             // material specular
+    250.0,                           // material shininess
+    1.0,                             // light diffuse
+    1.0                              // light ambient
+);
+
+/**
+ * This variable contains the OpenWalnut default light. You should definitely use this for your lighting to obtain an identical look for all
+ * rendered images. This version looks a little bit more metallic.
+ */
+LightIntensityParameter DefaultLightIntensityLessDiffuse = LightIntensityParameter(
+    0.0,                             // material ambient
+    0.35,                            // material diffuse
+    1.0,                             // material specular
+    250.0,                           // material shininess
+    1.0,                             // light diffuse
+    1.0                              // light ambient
+);
+
+/**
+ * Function to calculate lighting based on "Real-Time Volume Graphics, p 119, chapter 5.4, Listing 5.1".
+ *
+ * \param ambient   materials ambient color
+ * \param diffuse   materials diffuse color
+ * \param specular  materials specular color
+ * \param shininess material shininess
+ * \param lightColor  the light color
+ * \param ambientLight the ambient light color
+ * \param normalDir the normal
+ * \param viewDir   viewing direction
+ * \param lightDir  light direction
+ *
+ * \return the color.
+ */
+vec4 blinnPhongIllumination( vec3 ambient, vec3 diffuse, vec3 specular, float shininess,
+                             vec3 lightColor, vec3 ambientLight,
+                             vec3 normalDir, vec3 viewDir, vec3 lightDir )
+{
+    normalDir *= sign( dot( normalDir, viewDir ) );
+
+    vec3 H =  normalize( lightDir + viewDir );
+
+    // compute ambient term
+    vec3 ambientV = ambient * ambientLight;
+
+    // compute diffuse term
+    float diffuseLight = max( dot( lightDir, normalDir ), 0.0 );
+    vec3 diffuseV = diffuse * diffuseLight;
+
+    // compute specular term
+    float specularLight = pow( max( dot( H, normalDir ), 0.0 ), shininess );
+    if( diffuseLight <= 0.) specularLight = 0.;
+    vec3 specularV = specular * specularLight;
+
+    return vec4( ambientV + ( diffuseV + specularV ) * lightColor, 1.0 );
+}
+
+/**
+ * Function to calculate lighting intensity based on "Real-Time Volume Graphics, p 119, chapter 5.4, Listing 5.1".
+ * It is basically the same as blinnPhongIllumination function above. But it is faster if you just need
+ * the intensity.
+ *
+ * \param ambient   materials ambient intensity
+ * \param diffuse   materials diffuse intensity
+ * \param specular  materials specular intensity
+ * \param shininess material shininess
+ * \param lightIntensity  the light intensity
+ * \param ambientIntensity the ambient light intensity
+ * \param normalDir the normal
+ * \param viewDir   viewing direction
+ * \param lightDir  light direction
+ *
+ * \return the light intensity.
+ */
+float blinnPhongIlluminationIntensity( float ambient, float diffuse, float specular, float shininess,
+                                       float lightIntensity, float ambientIntensity,
+                                       vec3 normalDir, vec3 viewDir, vec3 lightDir )
+{
+    normalDir *= sign( dot( normalDir, viewDir ) );
+
+    vec3 H =  normalize( lightDir + viewDir );
+
+    // compute ambient term
+    float ambientV = ambient * ambientIntensity;
+
+    // compute diffuse term
+    float diffuseLight = max( dot( lightDir, normalDir ), 0.0 );
+    float diffuseV = diffuse * diffuseLight;
+
+    // compute specular term
+    float specularLight = pow( max( dot( H, normalDir ), 0.0 ), shininess );
+    if( diffuseLight <= 0.) specularLight = 0.;
+    float specularV = specular * specularLight;
+
+    return ambientV + ( diffuseV + specularV ) * lightIntensity;
+}
+
+/**
+ * Function to calculate lighting intensity based on "Real-Time Volume Graphics, p 119, chapter 5.4, Listing 5.1".
+ * It is basically the same as blinnPhongIllumination function above. But it is faster if you just need
+ * the intensity.
+ *
+ * \param parameter the LightIntensityParameter defining material and light
+ * \param normal the normal. Needs to be normalized.
+ *
+ * \return lighting intensity.
+ */
+float blinnPhongIlluminationIntensity( in LightIntensityParameter parameter, in vec3 normal )
+{
+    return blinnPhongIlluminationIntensity(
+        parameter.materialAmbient,
+        parameter.materialDiffuse,
+        parameter.materialSpecular,
+        parameter.materialShinines,
+        parameter.lightDiffuse,
+        parameter.lightAmbient,
+        normal,
+        vec3( 0.0, 0.0, 1.0 ),
+        vec3( 0.0, 0.0, 1.0 )
+        );
+}
+
+/**
+ * Function to calculate lighting intensity based on "Real-Time Volume Graphics, p 119, chapter 5.4, Listing 5.1".
+ * It is basically the same as blinnPhongIllumination function above. But it is faster if you just need
+ * the intensity. This uses the DefaultLightIntensity.
+ *
+ * \param normal the normal. Must be normalized beforehand
+ *
+ * \return the light intensity
+ */
+float blinnPhongIlluminationIntensity( in vec3 normal )
+{
+    return blinnPhongIlluminationIntensity( DefaultLightIntensity, normal );
+}
 
 void main()
 {
-    fragColor = vec4( v_color.rgb, 1.0 );
+    float light = blinnPhongIlluminationIntensity( DefaultLightIntensityFullDiffuse, normalize( v_normal.rgb ) );
+    fragColor = vec4( v_color.rgb * light, 1.0 );
 }
 

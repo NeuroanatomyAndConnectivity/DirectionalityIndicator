@@ -27,16 +27,20 @@
 // Attribute data
 in vec3 position;
 in vec4 color;
+in vec3 normal;
 
+// Uniforms
 uniform mat4 u_ProjectionMatrix;
 uniform mat4 u_ViewMatrix;
 
 // Varying out
 out vec4 v_color;
+out vec3 v_normal;
 
 void main()
 {
     v_color = color;
+    v_normal = ( u_ViewMatrix * vec4( normal, 0.0 ) ).xyz;
     vec4 pos = u_ProjectionMatrix * u_ViewMatrix * vec4( position, 1.0 );
     gl_Position = pos;
 }

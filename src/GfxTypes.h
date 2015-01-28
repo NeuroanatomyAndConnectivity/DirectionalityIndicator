@@ -38,6 +38,8 @@ namespace di
     typedef std::vector< glm::vec3 > Vec3Array;
     typedef std::vector< glm::vec4 > Vec4Array;
 
+    typedef std::vector< glm::vec3 > NormalArray;
+
     typedef std::vector< glm::vec4 > RGBAArray;
 
     typedef std::vector< glm::ivec2 > IndexVec2Array;

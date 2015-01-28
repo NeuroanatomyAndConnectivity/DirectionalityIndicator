@@ -135,6 +135,9 @@ namespace di
 
         void DirectionalityVisualization::update()
         {
+            // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
+            // and many code parts repeat again and again.
+
             if( !m_visTriangleData )
             {
                 return;
@@ -147,14 +150,21 @@ namespace di
             LogD << "Vis Update" << LogEnd;
             resetRenderingRequest();
 
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Create VAO and VBO for the mesh itself
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
             // get the location of attribute "position" in program
             GLint vertexLoc = m_shaderProgram->getAttribLocation( "position" );
             GLint colorLoc = m_shaderProgram->getAttribLocation( "color" );
-                LogE << "Attrib Location: " << vertexLoc << LogEnd;
+            GLint normalLoc = m_shaderProgram->getAttribLocation( "normal" );
 
             // Create the VAO
             glGenVertexArrays( 1, &m_VAO );
             glBindVertexArray( m_VAO );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // VBO: Vertices
 
             // Create the triangle vertex buffer
             glGenBuffers( 1, &m_triVBO );
@@ -176,6 +186,9 @@ namespace di
             // it is a set of 3 floats for each vertex
             glVertexAttribPointer( vertexLoc, 3, GL_FLOAT, 0, 0, 0 );
 
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // VBO: Colors
+
             // Create the triangle color buffer
             glGenBuffers( 1, &m_colorVBO );
 
@@ -196,6 +209,32 @@ namespace di
             // it is a set of 3 floats for each vertex
             glVertexAttribPointer( colorLoc, 4, GL_FLOAT, 0, 0, 0 );
 
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // VBO: Normals
+
+            // Create the triangle color buffer
+            glGenBuffers( 1, &m_normalVBO );
+
+            // bind buffer for positions and copy data into buffer
+            // GL_ARRAY_BUFFER is the buffer type we use to feed attributes
+            glBindBuffer( GL_ARRAY_BUFFER, m_normalVBO );
+
+            // feed the buffer, and let OpenGL know that we don't plan to
+            // change it (STATIC) and that it will be used for drawing (DRAW)
+            glBufferData( GL_ARRAY_BUFFER, sizeof( NormalArray::value_type::value_type ) * 3 * m_visTriangleData->getGrid()->getNormals().size(),
+                                           m_visTriangleData->getGrid()->getNormals().data(),
+                                           GL_STATIC_DRAW );
+
+            // Enable the attribute at that location
+            glEnableVertexAttribArray( normalLoc );
+
+            // Tell OpenGL what the array contains:
+            // it is a set of 3 floats for each vertex
+            glVertexAttribPointer( normalLoc, 3, GL_FLOAT, 0, 0, 0 );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // IBO: Indices
+
             glGenBuffers( 1, &m_triIBO );
 
             // bind buffer for positions and copy data into buffer
@@ -203,6 +242,8 @@ namespace di
             glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( glm::ivec3::value_type ) * 3 * m_visTriangleData->getGrid()->getTriangles().size(),
                                                    m_visTriangleData->getGrid()->getTriangles().data(),
                                                    GL_STATIC_DRAW );
+
+
         }
     }
 }

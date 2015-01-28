@@ -232,6 +232,9 @@ namespace di
             // Restore locale.
             setlocale( LC_ALL, oldLocale );
 
+            // Optimize mesh. As we did not load normals, create:
+            mesh->calculateNormals();
+
             // construct the dataset
             return SPtr< di::core::TriangleDataSet >( new di::core::TriangleDataSet( filename, mesh, colors ) );
         }
