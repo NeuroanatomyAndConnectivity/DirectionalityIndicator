@@ -58,8 +58,10 @@ namespace di
              * If an error occurs, throw an exception accordingly.
              *
              * \note this runs in the OpenGL thread and the context is current.
+             *
+             * \param view the view to render to. This contains probably useful information.
              */
-            virtual void update();
+            virtual void update( const View& view );
 
             /**
              * Do actual rendering.

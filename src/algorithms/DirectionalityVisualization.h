@@ -100,8 +100,10 @@ namespace di
              * If an error occurs, throw an exception accordingly.
              *
              * \note this runs in the OpenGL thread and the context is current.
+             *
+             * \param view the view to render to. This contains probably useful information.
              */
-            virtual void update();
+            virtual void update( const core::View& view );
 
             /**
              * Each visualization needs to know the rendering area it will use. In most cases, this is the bounding box of the rendered geometry.
@@ -124,26 +126,6 @@ namespace di
             ConstSPtr< di::core::TriangleDataSet > m_visTriangleData = nullptr;
 
             /**
-             * The VBO used for the triangle vertices.
-             */
-            GLuint m_triVBO = 0;
-
-            /**
-             * The VBO used for the triangle colors.
-             */
-            GLuint m_colorVBO = 0;
-
-            /**
-             * Normals for the mesh
-             */
-            GLuint m_normalVBO = 0;
-
-            /**
-             * Index buffer
-             */
-            GLuint m_triIBO = 0;
-
-            /**
              * The Vertex Attribute Array Object (VAO) used for the data.
              */
             GLuint m_VAO = 0;
@@ -162,6 +144,31 @@ namespace di
              * Fragment shader.
              */
             SPtr< di::core::Shader > m_fragmentShader = nullptr;
+
+            /**
+             * Vertex data.
+             */
+            SPtr< di::core::Buffer > m_vertexBuffer = nullptr;
+
+            /**
+             * Color data.
+             */
+            SPtr< di::core::Buffer > m_colorBuffer = nullptr;
+
+            /**
+             * Normals data.
+             */
+            SPtr< di::core::Buffer > m_normalBuffer = nullptr;
+
+            /**
+             * Index array.
+             */
+            SPtr< di::core::Buffer > m_indexBuffer = nullptr;
+
+            /**
+             * The fbo ID
+             */
+            GLuint m_fbo = 0;
         };
     }
 }

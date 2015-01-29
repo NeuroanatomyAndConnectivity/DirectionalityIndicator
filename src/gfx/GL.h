@@ -32,6 +32,7 @@
 #include "Program.h"
 #include "View.h"
 #include "Camera.h"
+#include "Buffer.h"
 
 #include "GLError.h"
 

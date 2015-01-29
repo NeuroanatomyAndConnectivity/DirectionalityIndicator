@@ -119,7 +119,7 @@ namespace di
 
         void DirectionalityVisualization::render( const core::View& view )
         {
-            if( !( m_VAO && m_triVBO && m_triIBO && m_shaderProgram ) )
+            if( !( m_VAO && m_shaderProgram && m_vertexBuffer ) )
             {
                 return;
             }
@@ -133,7 +133,7 @@ namespace di
             glDrawElements( GL_TRIANGLES, m_visTriangleData->getGrid()->getTriangles().size() * 3, GL_UNSIGNED_INT, NULL );
         }
 
-        void DirectionalityVisualization::update()
+        void DirectionalityVisualization::update( const core::View& view )
         {
             // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
             // and many code parts repeat again and again.
@@ -151,7 +151,7 @@ namespace di
             resetRenderingRequest();
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Create VAO and VBO for the mesh itself
+            // Create Vertex Array Object VAO and the corresponding Vertex Buffer Objects VBO for the mesh itself
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // get the location of attribute "position" in program
@@ -163,85 +163,48 @@ namespace di
             glGenVertexArrays( 1, &m_VAO );
             glBindVertexArray( m_VAO );
 
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // VBO: Vertices
+            // Create some buffers
+            m_vertexBuffer = std::make_shared< core::Buffer >();
+            m_normalBuffer = std::make_shared< core::Buffer >();
+            m_colorBuffer = std::make_shared< core::Buffer >();
+            m_indexBuffer = std::make_shared< core::Buffer >( core::Buffer::BufferType::ElementArray );
 
-            // Create the triangle vertex buffer
-            glGenBuffers( 1, &m_triVBO );
+            // Set the data using the triangle mesh. Also set the location mapping of the shader using the VAO
+            m_vertexBuffer->realize();
+            m_vertexBuffer->bind();
+            m_vertexBuffer->data( m_visTriangleData->getGrid()->getVertices() );
 
-            // bind buffer for positions and copy data into buffer
-            // GL_ARRAY_BUFFER is the buffer type we use to feed attributes
-            glBindBuffer( GL_ARRAY_BUFFER, m_triVBO );
-
-            // feed the buffer, and let OpenGL know that we don't plan to
-            // change it (STATIC) and that it will be used for drawing (DRAW)
-            glBufferData( GL_ARRAY_BUFFER, sizeof( glm::vec3::value_type ) * 3 * m_visTriangleData->getGrid()->getVertices().size(),
-                                           m_visTriangleData->getGrid()->getVertices().data(),
-                                           GL_STATIC_DRAW );
-
-            // Enable the attribute at that location
             glEnableVertexAttribArray( vertexLoc );
-
-            // Tell OpenGL what the array contains:
-            // it is a set of 3 floats for each vertex
             glVertexAttribPointer( vertexLoc, 3, GL_FLOAT, 0, 0, 0 );
 
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // VBO: Colors
-
-            // Create the triangle color buffer
-            glGenBuffers( 1, &m_colorVBO );
-
-            // bind buffer for positions and copy data into buffer
-            // GL_ARRAY_BUFFER is the buffer type we use to feed attributes
-            glBindBuffer( GL_ARRAY_BUFFER, m_colorVBO );
-
-            // feed the buffer, and let OpenGL know that we don't plan to
-            // change it (STATIC) and that it will be used for drawing (DRAW)
-            glBufferData( GL_ARRAY_BUFFER, sizeof( RGBAArray::value_type::value_type ) * 4 * m_visTriangleData->getAttributes()->size(),
-                                           m_visTriangleData->getAttributes()->data(),
-                                           GL_STATIC_DRAW );
-
-            // Enable the attribute at that location
+            m_colorBuffer->realize();
+            m_colorBuffer->bind();
+            m_colorBuffer->data( m_visTriangleData->getAttributes() );
             glEnableVertexAttribArray( colorLoc );
-
-            // Tell OpenGL what the array contains:
-            // it is a set of 3 floats for each vertex
             glVertexAttribPointer( colorLoc, 4, GL_FLOAT, 0, 0, 0 );
 
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // VBO: Normals
-
-            // Create the triangle color buffer
-            glGenBuffers( 1, &m_normalVBO );
-
-            // bind buffer for positions and copy data into buffer
-            // GL_ARRAY_BUFFER is the buffer type we use to feed attributes
-            glBindBuffer( GL_ARRAY_BUFFER, m_normalVBO );
-
-            // feed the buffer, and let OpenGL know that we don't plan to
-            // change it (STATIC) and that it will be used for drawing (DRAW)
-            glBufferData( GL_ARRAY_BUFFER, sizeof( NormalArray::value_type::value_type ) * 3 * m_visTriangleData->getGrid()->getNormals().size(),
-                                           m_visTriangleData->getGrid()->getNormals().data(),
-                                           GL_STATIC_DRAW );
-
-            // Enable the attribute at that location
+            m_normalBuffer->realize();
+            m_normalBuffer->bind();
+            m_normalBuffer->data( m_visTriangleData->getGrid()->getNormals() );
             glEnableVertexAttribArray( normalLoc );
-
-            // Tell OpenGL what the array contains:
-            // it is a set of 3 floats for each vertex
             glVertexAttribPointer( normalLoc, 3, GL_FLOAT, 0, 0, 0 );
 
+            m_indexBuffer->realize();
+            m_indexBuffer->bind();
+            m_indexBuffer->data( m_visTriangleData->getGrid()->getTriangles() );
+
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // IBO: Indices
+            // Create a Framebuffer Object (FBO)
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            glGenBuffers( 1, &m_triIBO );
+            // The framebuffer
+            // glGenFramebuffers( 1, & m_fbo );
 
-            // bind buffer for positions and copy data into buffer
-            glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_triIBO );
-            glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( glm::ivec3::value_type ) * 3 * m_visTriangleData->getGrid()->getTriangles().size(),
-                                                   m_visTriangleData->getGrid()->getTriangles().data(),
-                                                   GL_STATIC_DRAW );
+            // Bind it to be able to modify and configure:
+            // glBindFramebuffer( GL_FRAMEBUFFER, m_fbo );
+
+            // Create some textures for LIC. 3
+
 
 
         }

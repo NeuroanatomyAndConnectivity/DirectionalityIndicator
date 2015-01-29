@@ -160,18 +160,12 @@ namespace di
 
         void OGLWidget::paintGL()
         {
-            // Allow all visualizations to update:
-            core::BoundingBox sceneBB;
-            Application::getProcessingNetwork()->visitVisualizations(
-                [ &sceneBB ]( SPtr< di::core::Visualization > vis )
-                {
-                    vis->update();
-                    sceneBB.include( vis->getBoundingBox() );
-                }
-            );
-
             // Cleanup buffers
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Draw nice background
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // Draw background first:
             m_bgShaderProgram->bind();
@@ -193,6 +187,23 @@ namespace di
             glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
 
             glDisableVertexAttribArray( 0 );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Get scene BB
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // Allow all visualizations to update:
+            core::BoundingBox sceneBB;
+            Application::getProcessingNetwork()->visitVisualizations(
+                [ &sceneBB ]( SPtr< di::core::Visualization > vis )
+                {
+                    sceneBB.include( vis->getBoundingBox() );
+                }
+            );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Update Camera
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // Calculate scene
             double maxExtend = sqrt( 3.0 ) *
@@ -219,8 +230,22 @@ namespace di
                 glm::ortho( 0.5 * -getAspectRatio(), 0.5 * getAspectRatio(), -0.5, 0.5, near, far )
             );
 
-            // Draw scenes
-            // Allow all visualizations to render:
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Update all visualizations
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // Allow all visualizations to update:
+            Application::getProcessingNetwork()->visitVisualizations(
+                [ this ]( SPtr< di::core::Visualization > vis )
+                {
+                    vis->update( *this );
+                }
+            );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Draw
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
             Application::getProcessingNetwork()->visitVisualizations(
                 [ this ]( SPtr< di::core::Visualization > vis )
                 {

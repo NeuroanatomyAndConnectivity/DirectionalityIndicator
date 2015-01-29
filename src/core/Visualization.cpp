@@ -39,7 +39,7 @@ namespace di
             // nothing to do
         }
 
-        void Visualization::update()
+        void Visualization::update( const View& /* view */ )
         {
             // nothing to do
         }
