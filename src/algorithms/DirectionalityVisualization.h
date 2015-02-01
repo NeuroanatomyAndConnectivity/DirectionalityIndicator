@@ -131,19 +131,14 @@ namespace di
             GLuint m_VAO = 0;
 
             /**
+             * The screen filling quad for texture processing
+             */
+            GLuint m_screenQuadVAO = 0;
+
+            /**
              * The shader used for rendering
              */
             SPtr< di::core::Program > m_shaderProgram = nullptr;
-
-            /**
-             * Vertex shader.
-             */
-            SPtr< di::core::Shader > m_vertexShader = nullptr;
-
-            /**
-             * Fragment shader.
-             */
-            SPtr< di::core::Shader > m_fragmentShader = nullptr;
 
             /**
              * Vertex data.
@@ -166,9 +161,39 @@ namespace di
             SPtr< di::core::Buffer > m_indexBuffer = nullptr;
 
             /**
+             * The white noise needed for LIC.
+             */
+            SPtr< di::core::Texture > m_whiteNoiseTex = nullptr;
+
+            /**
              * The fbo ID
              */
             GLuint m_fbo = 0;
+
+            /**
+             * Result texture of LIC step 1
+             */
+            SPtr< di::core::Texture > m_step1ColorTex = nullptr;
+
+            /**
+             * Result texture of LIC step 1
+             */
+            SPtr< di::core::Texture > m_step1NoiseTex = nullptr;
+
+            /**
+             * Result texture of LIC step 1 (depth)
+             */
+            SPtr< di::core::Texture > m_step1DepthTex = nullptr;
+
+            /**
+             * Fullscreen quad used for texture processing
+             */
+            SPtr< di::core::Buffer > m_screenQuadVertexBuffer = nullptr;
+
+            /**
+             * Compose everything and build final image.
+             */
+            SPtr< di::core::Program > m_composeProgram = nullptr;
         };
     }
 }

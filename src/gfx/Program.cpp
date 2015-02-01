@@ -125,8 +125,14 @@ namespace di
             return result;
         }
 
-        bool Program::setUniform( const std::string name, const glm::mat4& value )
+        GLint Program::getUniformLocation( const std::string& name ) const
         {
+            if( !isRealized() )
+            {
+                LogE << "Uniform Location: un-realized GLObject." << LogEnd;
+                return 0;
+            }
+
             GLint loc = -1;
 
             // Check the cache if there is a location stored already
@@ -137,7 +143,9 @@ namespace di
                 logGLError();
                 if( loc < 0 )
                 {
-                    return false;
+                    LogE << "Could not locate uniform \"" << name << "\". Ensure the spelling is correct and you need to use the uniform in the "
+                        << "shader code." << LogEnd;
+                    return -1;
                 }
 
                 // store.
@@ -148,10 +156,7 @@ namespace di
                 loc = m_uniformLocationCache[ name ];
             }
 
-            // get location
-            glUniformMatrix4fv( loc, 1, GL_FALSE, glm::value_ptr( value ) );
-            logGLError();
-            return true;
+            return loc;
         }
     }
 }

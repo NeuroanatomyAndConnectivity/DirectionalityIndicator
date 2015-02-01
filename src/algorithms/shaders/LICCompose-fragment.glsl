@@ -22,29 +22,22 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef GLERROR_H
-#define GLERROR_H
+#version 330
 
-#include <iostream>
-#include <string>
+uniform sampler2D u_colorSampler;
+uniform sampler2D u_noiseSampler;
+uniform sampler2D u_depthSampler;
 
-#include "core/Logger.h"
+in vec2 v_texCoord;
 
-#ifndef LogTag
-#define LogTag "Unknown LogTag"
-#endif
+out vec4 fragColor;
 
-/**
- * Simply forward GL errors to a stream.
- *
- * \param to the stream to log to
- * \param tag as this log call uses the Logger functionality, we need the tag
- * \param file the filename of caller
- * \param line linenumber of caller
- */
-void logGLErrorImpl( std::ostream& to, const std::string& tag, const char* file, int line );
-
-#define logGLError() logGLErrorImpl( LogGL, LogTag, __FILE__, __LINE__ )
-
-#endif  // GLERROR_H
+void main()
+{
+    vec4 color = texture( u_colorSampler,  v_texCoord ).rgba;
+    float noise = texture( u_noiseSampler, v_texCoord ).r;
+    float depth = texture( u_depthSampler, v_texCoord ).r;
+    fragColor = vec4( color.rgb, color.a );
+    gl_FragDepth = depth;
+}
 

@@ -26,8 +26,12 @@
 
 in vec4 v_color;
 in vec3 v_normal;
+in vec3 v_noiseCoord;
+
+uniform sampler3D u_noiseSampler;
 
 out vec4 fragColor;
+out vec4 fragNoise;
 
 // NOTE the following is LIB code. I will move this somewhere else once the ShaderLibrary implementation is done.
 
@@ -207,7 +211,9 @@ float blinnPhongIlluminationIntensity( in vec3 normal )
 
 void main()
 {
+    float noise = texture( u_noiseSampler, v_noiseCoord.xyz ).r;
     float light = blinnPhongIlluminationIntensity( DefaultLightIntensityFullDiffuse, normalize( v_normal.rgb ) );
-    fragColor = vec4( v_color.rgb * light, 1.0 );
+    fragColor = vec4( light * v_color.xyz, 1.0 );
+    fragNoise = vec4( vec3( noise ), 1.0 );
 }
 

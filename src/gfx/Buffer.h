@@ -122,7 +122,6 @@ namespace di
              */
             virtual void data( size_t size, const void* ptr );
         protected:
-
             /**
              * Convert the given internal type to a GL enum.
              *

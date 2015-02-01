@@ -94,10 +94,13 @@ namespace di
         {
             LogD << "Vis Prepare" << LogEnd;
 
+            SPtr< di::core::Shader > vertexShader = nullptr;
+            SPtr< di::core::Shader > fragmentShader = nullptr;
+
             std::string localShaderPath = core::getRuntimePath() + "/algorithms/shaders/";
-            m_vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
+            vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
                                                                core::readTextFile( localShaderPath + "MeshRender-vertex.glsl" ) );
-            m_fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+            fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
                                                                  core::readTextFile( localShaderPath + "MeshRender-fragment.glsl" ) );
 
             // Link them to build the program itself
@@ -105,11 +108,28 @@ namespace di
             // NOTE: the above code does not compile on CLang.
             m_shaderProgram = SPtr< di::core::Program >( new di::core::Program(
                         {
-                            m_vertexShader,
-                            m_fragmentShader
+                            vertexShader,
+                            fragmentShader
                         }
             ) );
             m_shaderProgram->realize();
+
+
+            vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
+                                                               core::readTextFile( localShaderPath + "LICCompose-vertex.glsl" ) );
+            fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                                 core::readTextFile( localShaderPath + "LICCompose-fragment.glsl" ) );
+
+            // Link them to build the program itself
+            // m_shaderProgram = std::make_shared< di::core::Program >( { m_vertexShader, m_fragmentShader } );
+            // NOTE: the above code does not compile on CLang.
+            m_composeProgram = SPtr< di::core::Program >( new di::core::Program(
+                        {
+                            vertexShader,
+                            fragmentShader
+                        }
+            ) );
+            m_composeProgram->realize();
        }
 
         void DirectionalityVisualization::finalize()
@@ -128,9 +148,59 @@ namespace di
             m_shaderProgram->bind();
             m_shaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             m_shaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
+            logGLError();
+
+            glActiveTexture( GL_TEXTURE0 );
+            m_whiteNoiseTex->bind();
+            logGLError();
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 1 - Draw Color and Noise on geometry to textures:
+
+            // Bind it to be able to modify and configure:
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fbo );
+            glBindFragDataLocation( m_shaderProgram->getObjectID(), 0, "fragColor" );
+            glBindFragDataLocation( m_shaderProgram->getObjectID(), 1, "fragNoise" );
+
+            glViewport( 0, 0, view.getViewportSize().x, view.getViewportSize().y );
+            logGLError();
+            GLenum drawBuffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+            glDrawBuffers( 2, drawBuffers );
+            logGLError();
+
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+            glClearColor( 1.0f, 0.0f, 0.0f, .0f );
 
             glBindVertexArray( m_VAO );
             glDrawElements( GL_TRIANGLES, m_visTriangleData->getGrid()->getTriangles().size() * 3, GL_UNSIGNED_INT, NULL );
+            logGLError();
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Final Step - Merge everything and output to the normal framebuffer:
+
+            // unbind previously bound FBOs
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+            glDrawBuffer( GL_BACK );
+            logGLError();
+
+            glEnable( GL_BLEND );
+            glDisable( GL_DEPTH_TEST );
+
+            // draw a big quad
+            m_composeProgram->bind();
+            m_composeProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            logGLError();
+
+            glActiveTexture( GL_TEXTURE0 );
+            m_step1ColorTex->bind();
+            glActiveTexture( GL_TEXTURE1 );
+            m_step1NoiseTex->bind();
+            glActiveTexture( GL_TEXTURE2 );
+            m_step1DepthTex->bind();
+            glBindVertexArray( m_screenQuadVAO );
+            glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
+            logGLError();
+            glEnable( GL_DEPTH_TEST );
         }
 
         void DirectionalityVisualization::update( const core::View& view )
@@ -154,59 +224,176 @@ namespace di
             // Create Vertex Array Object VAO and the corresponding Vertex Buffer Objects VBO for the mesh itself
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            m_shaderProgram->bind();
+            logGLError();
+
             // get the location of attribute "position" in program
             GLint vertexLoc = m_shaderProgram->getAttribLocation( "position" );
             GLint colorLoc = m_shaderProgram->getAttribLocation( "color" );
             GLint normalLoc = m_shaderProgram->getAttribLocation( "normal" );
+            logGLError();
 
             // Create the VAO
             glGenVertexArrays( 1, &m_VAO );
             glBindVertexArray( m_VAO );
+            logGLError();
 
             // Create some buffers
             m_vertexBuffer = std::make_shared< core::Buffer >();
             m_normalBuffer = std::make_shared< core::Buffer >();
             m_colorBuffer = std::make_shared< core::Buffer >();
             m_indexBuffer = std::make_shared< core::Buffer >( core::Buffer::BufferType::ElementArray );
+            logGLError();
 
             // Set the data using the triangle mesh. Also set the location mapping of the shader using the VAO
             m_vertexBuffer->realize();
             m_vertexBuffer->bind();
             m_vertexBuffer->data( m_visTriangleData->getGrid()->getVertices() );
+            logGLError();
 
             glEnableVertexAttribArray( vertexLoc );
             glVertexAttribPointer( vertexLoc, 3, GL_FLOAT, 0, 0, 0 );
+            logGLError();
 
             m_colorBuffer->realize();
             m_colorBuffer->bind();
             m_colorBuffer->data( m_visTriangleData->getAttributes() );
             glEnableVertexAttribArray( colorLoc );
             glVertexAttribPointer( colorLoc, 4, GL_FLOAT, 0, 0, 0 );
+            logGLError();
 
             m_normalBuffer->realize();
             m_normalBuffer->bind();
             m_normalBuffer->data( m_visTriangleData->getGrid()->getNormals() );
             glEnableVertexAttribArray( normalLoc );
             glVertexAttribPointer( normalLoc, 3, GL_FLOAT, 0, 0, 0 );
+            logGLError();
 
             m_indexBuffer->realize();
             m_indexBuffer->bind();
             m_indexBuffer->data( m_visTriangleData->getGrid()->getTriangles() );
+            logGLError();
+
+            // for texture coordinates, we use the [0,1]-scaled vertex coordinates -> we need the BB to scale.
+            core::BoundingBox bb = m_visTriangleData->getGrid()->getBoundingBox();
+            m_shaderProgram->setUniform( "u_meshBBMin", bb.getMin() );
+            m_shaderProgram->setUniform( "u_meshBBMax", bb.getMax() );
+            logGLError();
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Create a Framebuffer Object (FBO)
+            // Texture input data
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // We need 3D noise.
+            m_whiteNoiseTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex3D );
+            m_whiteNoiseTex->realize();
+            //glActiveTexture( GL_TEXTURE0 );
+            m_whiteNoiseTex->bind();
+            logGLError();
+
+            const size_t noiseWidth = 128;
+
+            // create some noise
+            std::srand( time( 0 ) );
+            std::vector< unsigned char > randData;
+            randData.reserve( noiseWidth * noiseWidth * noiseWidth );
+            for( size_t i = 0; i < noiseWidth * noiseWidth * noiseWidth; ++i )
+            {
+                unsigned char r = static_cast< unsigned char >( std::rand() % 255 );  // NOLINT - no we want std::rand instead of rand_r
+                randData.push_back( r );
+            }
+
+            // Commit data
+            m_whiteNoiseTex->data( randData.data(), noiseWidth, noiseWidth, noiseWidth, GL_R8, GL_RED, GL_UNSIGNED_BYTE );
+
+            // Bind to the shader
+            m_shaderProgram->setUniform( "u_noiseSampler", 0 );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Create a Framebuffer Object (FBO) and setup LIC pipeline
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // The framebuffer
-            // glGenFramebuffers( 1, & m_fbo );
+            glGenFramebuffers( 1, & m_fbo );
 
             // Bind it to be able to modify and configure:
-            // glBindFramebuffer( GL_FRAMEBUFFER, m_fbo );
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fbo );
+            logGLError();
 
-            // Create some textures for LIC. 3
+            // We need two target texture: color and noise
+            m_step1ColorTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step1ColorTex->realize();
+            m_step1ColorTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            // TODO(sebastian): fixed size textures are a problem ...
+            m_step1ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            logGLError();
+
+            m_step1NoiseTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step1NoiseTex->realize();
+            m_step1NoiseTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            m_step1NoiseTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            logGLError();
+
+            m_step1DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step1DepthTex->realize();
+            m_step1DepthTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            m_step1DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
+            logGLError();
+
+            // Bind textures to FBO
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_step1ColorTex->getObjectID() , 0 );
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_step1NoiseTex->getObjectID() , 0 );
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_step1DepthTex->getObjectID() , 0 );
+            logGLError();
+
+            // Define the out vars to bind to the attachments
+            glBindFragDataLocation( m_shaderProgram->getObjectID(), 0, "fragColor" );
+            glBindFragDataLocation( m_shaderProgram->getObjectID(), 1, "fragNoise" );
+            logGLError();
+
+            if( glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+            {
+                LogE << "FBO issue?" << LogEnd;
+            }
 
 
+            // Bind the result textures to the next step
+            m_composeProgram->bind();
+            m_composeProgram->setUniform( "u_colorSampler", 0 );
+            m_composeProgram->setUniform( "u_noiseSampler", 1 );
+            m_composeProgram->setUniform( "u_depthSampler", 2 );
 
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Create an VAO containing the full-screen quad
+
+            // Create the full-screen quad.
+            float points[] = {
+             -1.0f,  1.0f,  0.0f,
+              1.0f,  1.0f,  0.0f,
+              1.0f, -1.0f,  0.0f,
+
+              1.0f, -1.0f,  0.0f,
+             -1.0f, -1.0f,  0.0f,
+             -1.0f,  1.0f,  0.0f
+            };
+
+            // Create Vertex Array Object
+            glGenVertexArrays( 1, &m_screenQuadVAO );
+            glBindVertexArray( m_screenQuadVAO );
+            logGLError();
+
+            m_screenQuadVertexBuffer = std::make_shared< core::Buffer >();
+            m_screenQuadVertexBuffer->realize();
+            m_screenQuadVertexBuffer->bind();
+            m_screenQuadVertexBuffer->data( 9 * 2 * sizeof( float ), points );
+            logGLError();
+
+            glEnableVertexAttribArray( 0 );
+            glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
+            logGLError();
         }
     }
 }

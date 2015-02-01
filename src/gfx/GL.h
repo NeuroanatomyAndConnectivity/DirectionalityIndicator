@@ -33,6 +33,7 @@
 #include "View.h"
 #include "Camera.h"
 #include "Buffer.h"
+#include "Texture.h"
 
 #include "GLError.h"
 

@@ -32,15 +32,20 @@ in vec3 normal;
 // Uniforms
 uniform mat4 u_ProjectionMatrix;
 uniform mat4 u_ViewMatrix;
+// BB of the geometry
+uniform vec3 u_meshBBMax;
+uniform vec3 u_meshBBMin;
 
 // Varying out
 out vec4 v_color;
 out vec3 v_normal;
+out vec3 v_noiseCoord;
 
 void main()
 {
     v_color = color;
     v_normal = ( u_ViewMatrix * vec4( normal, 0.0 ) ).xyz;
+    v_noiseCoord = 10* ( position - u_meshBBMin ) / ( u_meshBBMax - u_meshBBMin );
     vec4 pos = u_ProjectionMatrix * u_ViewMatrix * vec4( position, 1.0 );
     gl_Position = pos;
 }

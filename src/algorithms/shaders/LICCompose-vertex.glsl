@@ -22,29 +22,20 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef GLERROR_H
-#define GLERROR_H
+#version 330
 
-#include <iostream>
-#include <string>
+// Uniforms
+uniform vec2 u_viewportScale = vec2( 1.0 );
 
-#include "core/Logger.h"
+// Attribute data
+in vec3 position;
 
-#ifndef LogTag
-#define LogTag "Unknown LogTag"
-#endif
+// Varying out
+out vec2 v_texCoord;
 
-/**
- * Simply forward GL errors to a stream.
- *
- * \param to the stream to log to
- * \param tag as this log call uses the Logger functionality, we need the tag
- * \param file the filename of caller
- * \param line linenumber of caller
- */
-void logGLErrorImpl( std::ostream& to, const std::string& tag, const char* file, int line );
-
-#define logGLError() logGLErrorImpl( LogGL, LogTag, __FILE__, __LINE__ )
-
-#endif  // GLERROR_H
+void main()
+{
+    v_texCoord = u_viewportScale * 0.5 * ( vec2( 1.0, 1.0 ) + position.xy );
+    gl_Position = vec4( vec3( position.xy, 0.0 ), 1.0 );
+}
 

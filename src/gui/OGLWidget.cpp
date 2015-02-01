@@ -184,9 +184,8 @@ namespace di
             );
 
             // Draw the BG
+            glDepthMask( GL_FALSE );
             glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
-
-            glDisableVertexAttribArray( 0 );
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Get scene BB
@@ -229,6 +228,11 @@ namespace di
             m_camera.setProjectionMatrix(
                 glm::ortho( 0.5 * -getAspectRatio(), 0.5 * getAspectRatio(), -0.5, 0.5, near, far )
             );
+
+            glDepthMask( GL_TRUE );
+            glEnable( GL_BLEND );
+            glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+            glEnable( GL_DEPTH_TEST );
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Update all visualizations
@@ -379,11 +383,9 @@ namespace di
                 case Qt::Key_D:
                     // restore default for our current data. Just a convenient shortcut for now. Later this will not be needed as project
                     // files store the cam too.
-                    m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) )
-                                      * glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) )
-                                      ;
+                    m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                                      glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
                     break;
-
             }
 
             event->accept();

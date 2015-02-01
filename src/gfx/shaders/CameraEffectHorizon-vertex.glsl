@@ -30,6 +30,6 @@ out float vert;
 void main()
 {
     vert = ( vp.y + 1 ) / 2.0;
-    gl_Position = vec4( vp, 1.0 );
+    gl_Position = vec4( vp.xyz, 1.0 );
 }
 

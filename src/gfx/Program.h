@@ -32,6 +32,7 @@
 
 #include "OpenGL.h"
 #include "GLBindable.h"
+#include "GLError.h"
 
 #include "Types.h"
 #include "GfxTypes.h"
@@ -89,6 +90,67 @@ namespace di
             GLint getAttribLocation( const std::string& name ) const;
 
             /**
+             * Get the location of the given uniform.  This basically forwards to glGetUniformLocation.
+             *
+             * \param name the uniform name
+             *
+             * \return the location
+             */
+            GLint getUniformLocation( const std::string& name ) const;
+
+            /**
+             * Set the given value to the specified uniform.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             */
+            void setUniform( const std::string name, const int& value )
+            {
+                // get location
+                glUniform1i( getUniformLocation( name ), value );
+                logGLError();
+            }
+
+            /**
+             * Set the given value to the specified uniform.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             */
+            void setUniform( const std::string name, const float& value )
+            {
+                // get location
+                glUniform1f( getUniformLocation( name ), value );
+                logGLError();
+            }
+
+            /**
+             * Set the given value to the specified uniform.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             */
+            void setUniform( const std::string name, const double& value )
+            {
+                // get location
+                glUniform1f( getUniformLocation( name ), value );
+                logGLError();
+            }
+
+            /**
+             * Set the given value to the specified uniform.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             */
+            void setUniform( const std::string name, const glm::mat4& value )
+            {
+                // get location
+                glUniformMatrix4fv( getUniformLocation( name ), 1, GL_FALSE, glm::value_ptr( value ) );
+                logGLError();
+            }
+
+            /**
              * Set the given value to the specified uniform.
              *
              * \param name the name of the uniform
@@ -96,7 +158,66 @@ namespace di
              *
              * \return true if successful
              */
-            bool setUniform( const std::string name, const glm::mat4& value );
+            void setUniform( const std::string name, const glm::mat3& value )
+            {
+                // get location
+                glUniformMatrix3fv( getUniformLocation( name ), 1, GL_FALSE, glm::value_ptr( value ) );
+                logGLError();
+            }
+
+            /**
+             * Set the given value to the specified uniform.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             */
+            void setUniform( const std::string name, const glm::mat2& value )
+            {
+                // get location
+                glUniformMatrix2fv( getUniformLocation( name ), 1, GL_FALSE, glm::value_ptr( value ) );
+                logGLError();
+            }
+
+            /**
+             * Set the given value to the specified uniform.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             *
+             * \return true if successful
+             */
+            void setUniform( const std::string name, const glm::vec4& value )
+            {
+                // get location
+                glUniform4fv( getUniformLocation( name ), 1, glm::value_ptr( value ) );
+                logGLError();
+            }
+
+            /**
+             * Set the given value to the specified uniform.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             */
+            void setUniform( const std::string name, const glm::vec3& value )
+            {
+                // get location
+                glUniform3fv( getUniformLocation( name ), 1, glm::value_ptr( value ) );
+                logGLError();
+            }
+
+            /**
+             * Set the given value to the specified uniform.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             */
+            void setUniform( const std::string name, const glm::vec2& value )
+            {
+                // get location
+                glUniform2fv( getUniformLocation( name ), 1, glm::value_ptr( value ) );
+                logGLError();
+            }
 
         protected:
         private:
@@ -108,7 +229,7 @@ namespace di
             /**
              * Keep track of queried uniform locations to avoid this every frame.
              */
-            std::map< std::string, GLint > m_uniformLocationCache;
+            mutable std::map< std::string, GLint > m_uniformLocationCache;
         };
     }
 }

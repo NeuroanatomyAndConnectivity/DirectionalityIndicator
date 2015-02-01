@@ -52,6 +52,7 @@ namespace di
             }
 
             // Create the buffer
+            logGLError();
             glGenBuffers( 1, &m_object );
             logGLError();
 
