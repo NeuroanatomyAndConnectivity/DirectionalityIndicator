@@ -39,7 +39,7 @@ namespace di
             // nothing to do
         }
 
-        void Visualization::update( const View& /* view */ )
+        void Visualization::update( const View& /* view */, bool /* reload */ )
         {
             // nothing to do
         }

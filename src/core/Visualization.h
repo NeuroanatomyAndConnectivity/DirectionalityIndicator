@@ -60,8 +60,9 @@ namespace di
              * \note this runs in the OpenGL thread and the context is current.
              *
              * \param view the view to render to. This contains probably useful information.
+             * \param reload to force a reload of all resources.
              */
-            virtual void update( const View& view );
+            virtual void update( const core::View& view, bool reload = false );
 
             /**
              * Do actual rendering.

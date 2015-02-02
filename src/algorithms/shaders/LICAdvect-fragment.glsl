@@ -47,7 +47,7 @@ uniform float u_noiseRatio = 0.0;
 /**
  * Number of iterations per frame.
  */
-uniform int u_numIter = 30;
+uniform int u_numIter =  50;
 
 /**
  * Returns the vector at the given point.
@@ -59,7 +59,25 @@ uniform int u_numIter = 30;
 vec2 getVec( in vec2 pos )
 {
     vec2 vec = texture( u_vecSampler, pos ).rg;
-    return ( 2.0 * ( vec - vec2( 0.5, 0.5 ) ) );
+    vec2 vecNorm = ( 2.0 * ( vec - vec2( 0.5, 0.5 ) ) );
+    float maxComp = max( vecNorm.x, vecNorm.y );
+    if( maxComp < 0.01 )
+    {
+        maxComp = 1.0;
+    }
+    return vecNorm / maxComp;
+}
+
+/**
+ * Check if the position is somewhere outside the rendered area
+ *
+ * \param pos position to check
+ *
+ * \return 1.0 if outaide. 0.0 otherwise
+ */
+float outside( in vec2 pos )
+{
+    return 1.0 - texture( u_vecSampler, pos ).a;
 }
 
 /**
@@ -119,7 +137,7 @@ void main()
     vec2 lastVec2 = vec;
     vec2 lastPos2 = texel;
     float sum = 0.0;
-    int m = 2 * u_numIter;
+    int m = 0;//2 * u_numIter;
     float scaler1 = 1.0;
     float scaler2 = 1.0;
     for( int i = 0; i < u_numIter; ++i )
@@ -129,22 +147,18 @@ void main()
         vec2 newVec1 = getVec( newPos1 );
         vec2 newVec2 = -getVec( newPos2 );
 
-        // if( ( length( newVec1 ) < 0.01 ) || ( length( newVec2 )  < 0.01 ) )
-        // {
-        //     m = 2 * i;
-        //     break;
-        // }
-
         // it is also possible to scale using a Geometric progression: float( u_numIter - i ) / u_numIter * texture2D
         sum += scaler1 * getNoise( newPos1 );
         sum += scaler2 * getNoise( newPos2 );
 
-        if( getEdge( newPos1 ) > 0.5 )
+        m += int( scaler1 ) + int( scaler2 );
+
+        if( outside( newPos1 ) > 0.0 )
         {
             scaler1 = 0.0;
         }
 
-        if( getEdge( newPos2 ) > 0.5 )
+        if( outside( newPos2 ) > 0.0 )
         {
             scaler2 = 0.0;
         }
@@ -157,10 +171,6 @@ void main()
 
     // the sum needs to be scaled to [0,1] again
     float n = sum / float( m );
-    /*if( depth > 0.99 )
-    {
-        n = noise;
-    }*/
 
     // laplace filter kernel
     fragAdvect = vec4( vec3( ( n * ( 1.0 - u_noiseRatio ) ) + ( noise * u_noiseRatio ) ), 1.0 );

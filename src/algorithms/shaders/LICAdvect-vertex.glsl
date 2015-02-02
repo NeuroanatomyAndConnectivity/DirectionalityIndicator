@@ -24,6 +24,8 @@
 
 #version 330
 
+uniform vec2 u_viewportScale;
+
 // Attribute data
 in vec3 position;
 
@@ -32,7 +34,7 @@ out vec2 v_texCoord;
 
 void main()
 {
-    v_texCoord = 0.5 * ( vec2( 1.0, 1.0 ) + position.xy );
+    v_texCoord = u_viewportScale * 0.5 * ( vec2( 1.0, 1.0 ) + position.xy );
     gl_Position = vec4( vec3( position.xy, 0.0 ), 1.0 );
 }
 

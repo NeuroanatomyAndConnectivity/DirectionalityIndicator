@@ -102,8 +102,9 @@ namespace di
              * \note this runs in the OpenGL thread and the context is current.
              *
              * \param view the view to render to. This contains probably useful information.
+             * \param reload to force a reload of all resources.
              */
-            virtual void update( const core::View& view );
+            virtual void update( const core::View& view, bool reload = false );
 
             /**
              * Each visualization needs to know the rendering area it will use. In most cases, this is the bounding box of the rendered geometry.

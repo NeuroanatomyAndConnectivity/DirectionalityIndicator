@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <string>
 #include <cmath>
+#include <chrono>
 
 #include <QMouseEvent>
 
@@ -160,6 +161,19 @@ namespace di
 
         void OGLWidget::paintGL()
         {
+            auto now = std::chrono::system_clock::now();
+            auto duration = std::chrono::duration_cast< std::chrono::milliseconds >( now - m_fpsLastTime );
+            auto durationLastShow = std::chrono::duration_cast< std::chrono::milliseconds >( now - m_fpsLastShowTime );
+            m_fpsLastTime = now;
+
+            float fps = 1000.0 / static_cast< float >( duration.count() );
+
+            if( durationLastShow.count() >= 2000 )
+            {
+                m_fpsLastShowTime = now;
+                LogE << "FPS " << fps << LogEnd;
+            }
+
             // Cleanup buffers
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -242,9 +256,10 @@ namespace di
             Application::getProcessingNetwork()->visitVisualizations(
                 [ this ]( SPtr< di::core::Visualization > vis )
                 {
-                    vis->update( *this );
+                    vis->update( *this, m_forceReload );
                 }
             );
+            m_forceReload = false;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Draw
@@ -386,6 +401,11 @@ namespace di
                     m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
                                       glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
                     break;
+                case Qt::Key_Period:
+                    // forced reload
+                    m_forceReload = true;
+                    break;
+
             }
 
             event->accept();

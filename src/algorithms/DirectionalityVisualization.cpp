@@ -273,8 +273,10 @@ namespace di
             m_step1VecTex->bind();
             glActiveTexture( GL_TEXTURE2 );
             m_step1DepthTex->bind();
+            glGenerateMipmap( GL_TEXTURE_2D );
             glActiveTexture( GL_TEXTURE3 );
             m_step2EdgeTex->bind();
+            glGenerateMipmap( GL_TEXTURE_2D );
             glActiveTexture( GL_TEXTURE4 );
             m_step1NoiseTex->bind();
             glActiveTexture( GL_TEXTURE5 );
@@ -284,7 +286,7 @@ namespace di
             logGLError();
         }
 
-        void DirectionalityVisualization::update( const core::View& view )
+        void DirectionalityVisualization::update( const core::View& view, bool reload )
         {
             // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
             // and many code parts repeat again and again.
@@ -294,12 +296,14 @@ namespace di
                 return;
             }
 
-            if( !isRenderingRequested() )
+            if( !isRenderingRequested() && !reload )
             {
                 return;
             }
             LogD << "Vis Update" << LogEnd;
             resetRenderingRequest();
+
+            prepare();
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Create Vertex Array Object VAO and the corresponding Vertex Buffer Objects VBO for the mesh itself
@@ -419,7 +423,7 @@ namespace di
             m_step1VecTex->realize();
             m_step1VecTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1VecTex->data( nullptr, 2048, 2048, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE );
+            m_step1VecTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
             logGLError();
 
             m_step1NoiseTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -434,6 +438,7 @@ namespace di
             m_step1DepthTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step1DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
+            m_step1DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
             logGLError();
 
             // Bind textures to FBO

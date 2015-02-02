@@ -32,6 +32,8 @@ uniform sampler2D u_edgeSampler;
 uniform sampler2D u_noiseSampler;
 uniform sampler2D u_advectSampler;
 
+uniform bool u_useHighContrast = true;
+
 // Varyings
 in vec2 v_texCoord;
 
@@ -45,12 +47,32 @@ void main()
     float depth = texture( u_depthSampler, v_texCoord ).r;
     float edge = texture( u_edgeSampler, v_texCoord ).r;
     float noise = texture( u_noiseSampler, v_texCoord ).r;
-    vec3 advect = texture( u_advectSampler, v_texCoord ).rgb;
+    float advect = texture( u_advectSampler, v_texCoord ).r;
+
+    // Nearly trivial Depth based halo ... looks rather ugly -> replace by SSAO
+    float depthLodMost  = textureLod( u_depthSampler, v_texCoord, 5.0 ).r;
+    float depthLodMore  = textureLod( u_depthSampler, v_texCoord, 3.0 ).r;
+    float depthLodLess  = texture( u_depthSampler, v_texCoord ).r;
+    float depthHalo1 = ( 5.0 * ( ( depthLodLess - depthLodMore ) ) );
+
+    depthHalo1 = 1. - depthHalo1;
+    depthHalo1 *= depthHalo1 * depthHalo1 * depthHalo1 * depthHalo1;
+    depthHalo1 = min( 1.0, depthHalo1 );
+    float depthHalo2 = ( 5.0 * ( ( depthLodLess - depthLodMost ) ) );
+
+    depthHalo2 = 1. - depthHalo2;
+    depthHalo2 *= depthHalo2 * depthHalo2 * depthHalo2 * depthHalo2;
+    depthHalo2 = min( 1.0, depthHalo2 );
+
+    float depthHalo = smoothstep( 0.2, 1.0, depthHalo2) * smoothstep( 0.5, 1.0,  depthHalo2 );
+
+    float u_contrastingS = u_useHighContrast ? 8.0 : 2.5;
+    float u_contrastingP = u_useHighContrast ? 4 : 2.5;
+    vec3 plainColor = mix( color.rgb, vec3( u_contrastingS * pow( advect, u_contrastingP ) ), 0.4 );
 
     vec4 col = vec4(
-        mix(
-            mix( color.rgb, vec3( 1.0 ), 1.0 * edge ),
-            advect, 0.5 ),
+        depthHalo *
+            mix( plainColor.rgb, vec3( 0.5 ), 1.0 * edge ),
         color.a
     );
 

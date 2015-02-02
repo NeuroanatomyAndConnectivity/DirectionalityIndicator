@@ -25,6 +25,8 @@
 #ifndef OGLWIDGET_H
 #define OGLWIDGET_H
 
+#include <chrono>
+
 #include "gfx/GL.h"
 
 #include <QTimer>
@@ -159,6 +161,21 @@ namespace di
             glm::vec3 toScreenCoord( double x, double y );
 
         private:
+            /**
+             * If true, all visualizations are asked to reload.
+             */
+            bool m_forceReload = false;
+
+            /**
+             * Last time used for FPS counting.
+             */
+            std::chrono::time_point< std::chrono::system_clock > m_fpsLastTime;
+
+            /**
+             * Print FPS only once per second
+             */
+            std::chrono::time_point< std::chrono::system_clock > m_fpsLastShowTime;
+
             /**
              * The VBO used for the background.
              */
