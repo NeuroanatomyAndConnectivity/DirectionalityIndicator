@@ -114,6 +114,33 @@ namespace di
             ) );
             m_shaderProgram->realize();
 
+            vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
+                                                               core::readTextFile( localShaderPath + "LICEdge-vertex.glsl" ) );
+            fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                                 core::readTextFile( localShaderPath + "LICEdge-fragment.glsl" ) );
+
+            // Link them to build the program itself
+            m_edgeProgram = SPtr< di::core::Program >( new di::core::Program(
+                        {
+                            vertexShader,
+                            fragmentShader
+                        }
+            ) );
+            m_edgeProgram->realize();
+
+            vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
+                                                               core::readTextFile( localShaderPath + "LICAdvect-vertex.glsl" ) );
+            fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                                 core::readTextFile( localShaderPath + "LICAdvect-fragment.glsl" ) );
+
+            // Link them to build the program itself
+            m_advectProgram = SPtr< di::core::Program >( new di::core::Program(
+                        {
+                            vertexShader,
+                            fragmentShader
+                        }
+            ) );
+            m_advectProgram->realize();
 
             vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
                                                                core::readTextFile( localShaderPath + "LICCompose-vertex.glsl" ) );
@@ -121,8 +148,6 @@ namespace di
                                                                  core::readTextFile( localShaderPath + "LICCompose-fragment.glsl" ) );
 
             // Link them to build the program itself
-            // m_shaderProgram = std::make_shared< di::core::Program >( { m_vertexShader, m_fragmentShader } );
-            // NOTE: the above code does not compile on CLang.
             m_composeProgram = SPtr< di::core::Program >( new di::core::Program(
                         {
                             vertexShader,
@@ -154,18 +179,19 @@ namespace di
             m_whiteNoiseTex->bind();
             logGLError();
 
+            glEnable( GL_BLEND );
+
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Step 1 - Draw Color and Noise on geometry to textures:
 
             // Bind it to be able to modify and configure:
-            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fbo );
-            glBindFragDataLocation( m_shaderProgram->getObjectID(), 0, "fragColor" );
-            glBindFragDataLocation( m_shaderProgram->getObjectID(), 1, "fragNoise" );
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboTransform );
 
-            glViewport( 0, 0, view.getViewportSize().x, view.getViewportSize().y );
+            // NOTE: keep original Viewport
+            // glViewport( 0, 0, view.getViewportSize().x, view.getViewportSize().y );
             logGLError();
-            GLenum drawBuffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-            glDrawBuffers( 2, drawBuffers );
+            GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+            glDrawBuffers( 3, drawBuffers );
             logGLError();
 
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -176,15 +202,65 @@ namespace di
             logGLError();
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 2 - Edge detection on depth buffer
+
+            // Bind it to be able to modify and configure:
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboEdge );
+            logGLError();
+            GLenum drawBuffersEdge[1] = { GL_COLOR_ATTACHMENT0 };
+            glDrawBuffers( 1, drawBuffersEdge );
+            logGLError();
+
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+            glClearColor( 1.0f, 0.0f, 0.0f, .0f );
+
+            // draw a big quad
+            m_edgeProgram->bind();
+            m_edgeProgram->setUniform( "u_viewportSize", view.getViewportSize() );
+            logGLError();
+
+            glActiveTexture( GL_TEXTURE0 );
+            m_step1DepthTex->bind();
+            glBindVertexArray( m_screenQuadVAO );
+            glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
+            logGLError();
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 3 - Advect along the vec field
+
+            // Bind it to be able to modify and configure:
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboAdvect );
+            logGLError();
+            GLenum drawBuffersAdvect[1] = { GL_COLOR_ATTACHMENT0 };
+            glDrawBuffers( 1, drawBuffersAdvect );
+            logGLError();
+
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+            glClearColor( 1.0f, 0.0f, 0.0f, .0f );
+
+            // draw a big quad
+            m_advectProgram->bind();
+            m_advectProgram->setUniform( "u_viewportSize", view.getViewportSize() );
+            m_advectProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            logGLError();
+
+            glActiveTexture( GL_TEXTURE0 );
+            m_step1DepthTex->bind();
+            glActiveTexture( GL_TEXTURE1 );
+            m_step1NoiseTex->bind();
+            glActiveTexture( GL_TEXTURE2 );
+            m_step1VecTex->bind();
+            glBindVertexArray( m_screenQuadVAO );
+            glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
+            logGLError();
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Final Step - Merge everything and output to the normal framebuffer:
 
             // unbind previously bound FBOs
             glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
             glDrawBuffer( GL_BACK );
             logGLError();
-
-            glEnable( GL_BLEND );
-            glDisable( GL_DEPTH_TEST );
 
             // draw a big quad
             m_composeProgram->bind();
@@ -194,13 +270,18 @@ namespace di
             glActiveTexture( GL_TEXTURE0 );
             m_step1ColorTex->bind();
             glActiveTexture( GL_TEXTURE1 );
-            m_step1NoiseTex->bind();
+            m_step1VecTex->bind();
             glActiveTexture( GL_TEXTURE2 );
             m_step1DepthTex->bind();
+            glActiveTexture( GL_TEXTURE3 );
+            m_step2EdgeTex->bind();
+            glActiveTexture( GL_TEXTURE4 );
+            m_step1NoiseTex->bind();
+            glActiveTexture( GL_TEXTURE5 );
+            m_step3AdvectTex->bind();
             glBindVertexArray( m_screenQuadVAO );
             glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
             logGLError();
-            glEnable( GL_DEPTH_TEST );
         }
 
         void DirectionalityVisualization::update( const core::View& view )
@@ -223,6 +304,7 @@ namespace di
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Create Vertex Array Object VAO and the corresponding Vertex Buffer Objects VBO for the mesh itself
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            LogD << "Creating Mesh VAO" << LogEnd;
 
             m_shaderProgram->bind();
             logGLError();
@@ -313,11 +395,15 @@ namespace di
             // Create a Framebuffer Object (FBO) and setup LIC pipeline
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 1: Render and transform to image space
+            LogD << "Creating Transform Pass FBO" << LogEnd;
+
             // The framebuffer
-            glGenFramebuffers( 1, & m_fbo );
+            glGenFramebuffers( 1, & m_fboTransform );
 
             // Bind it to be able to modify and configure:
-            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fbo );
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboTransform );
             logGLError();
 
             // We need two target texture: color and noise
@@ -329,11 +415,18 @@ namespace di
             m_step1ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
             logGLError();
 
+            m_step1VecTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step1VecTex->realize();
+            m_step1VecTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            m_step1VecTex->data( nullptr, 2048, 2048, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE );
+            logGLError();
+
             m_step1NoiseTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
             m_step1NoiseTex->realize();
             m_step1NoiseTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1NoiseTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            m_step1NoiseTex->data( nullptr, 2048, 2048, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE );
             logGLError();
 
             m_step1DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -345,29 +438,120 @@ namespace di
 
             // Bind textures to FBO
             glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_step1ColorTex->getObjectID() , 0 );
-            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_step1NoiseTex->getObjectID() , 0 );
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_step1VecTex->getObjectID() , 0 );
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_step1NoiseTex->getObjectID() , 0 );
             glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_step1DepthTex->getObjectID() , 0 );
             logGLError();
 
             // Define the out vars to bind to the attachments
             glBindFragDataLocation( m_shaderProgram->getObjectID(), 0, "fragColor" );
-            glBindFragDataLocation( m_shaderProgram->getObjectID(), 1, "fragNoise" );
+            glBindFragDataLocation( m_shaderProgram->getObjectID(), 1, "fragVec" );
+            glBindFragDataLocation( m_shaderProgram->getObjectID(), 2, "fragNoise" );
             logGLError();
 
             if( glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
             {
-                LogE << "FBO issue?" << LogEnd;
+                LogE << "glCheckFramebufferStatus failed for Step 1." << LogEnd;
             }
 
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 2: Edges in depth buffer
+            LogD << "Creating Edge Pass FBO" << LogEnd;
+
+            // The framebuffer
+            glGenFramebuffers( 1, & m_fboEdge );
+
+            // Bind it to be able to modify and configure:
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboEdge );
+            logGLError();
+
+            // We need two target texture: color and noise
+            m_step2EdgeTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step2EdgeTex->realize();
+            m_step2EdgeTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            // TODO(sebastian): fixed size textures are a problem ...
+            m_step2EdgeTex->data( nullptr, 2048, 2048, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE );
+            m_step2EdgeTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
+            logGLError();
+
+            // Bind textures to FBO
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_step2EdgeTex->getObjectID() , 0 );
+            logGLError();
+
+            // Define the out vars to bind to the attachments
+            glBindFragDataLocation( m_edgeProgram->getObjectID(), 0, "fragEdge" );
+            logGLError();
+
+            // Samplers
+            m_edgeProgram->bind();
+            m_edgeProgram->setUniform( "u_depthSampler", 0 );
+
+            if( glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+            {
+                LogE << "glCheckFramebufferStatus failed for Step 2." << LogEnd;
+            }
+
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 3: Advect
+            LogD << "Creating Advect Pass FBO" << LogEnd;
+
+            // The framebuffer
+            glGenFramebuffers( 1, & m_fboAdvect );
+
+            // Bind it to be able to modify and configure:
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboAdvect );
+            logGLError();
+
+            // We need two target texture: color and noise
+            m_step3AdvectTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step3AdvectTex->realize();
+            m_step3AdvectTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            // TODO(sebastian): fixed size textures are a problem ...
+            m_step3AdvectTex->data( nullptr, 2048, 2048, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE );
+            logGLError();
+
+            // Bind textures to FBO
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_step3AdvectTex->getObjectID() , 0 );
+            logGLError();
+
+            // Define the out vars to bind to the attachments
+            glBindFragDataLocation( m_advectProgram->getObjectID(), 0, "fragAdvect" );
+            logGLError();
+
+            // Samplers
+            m_advectProgram->bind();
+            m_advectProgram->setUniform( "u_depthSampler", 0 );
+            m_advectProgram->setUniform( "u_noiseSampler", 1 );
+            m_advectProgram->setUniform( "u_vecSampler",   2 );
+            m_advectProgram->setUniform( "u_edgeSampler",   3 );
+
+            if( glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+            {
+                LogE << "glCheckFramebufferStatus failed for Step 3." << LogEnd;
+            }
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 4: Compose
+            LogD << "Creating Compose Pass FBO" << LogEnd;
+
+            // Unbind other FBO
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 
             // Bind the result textures to the next step
             m_composeProgram->bind();
             m_composeProgram->setUniform( "u_colorSampler", 0 );
-            m_composeProgram->setUniform( "u_noiseSampler", 1 );
+            m_composeProgram->setUniform( "u_vecSampler", 1 );
             m_composeProgram->setUniform( "u_depthSampler", 2 );
+            m_composeProgram->setUniform( "u_edgeSampler", 3 );
+            m_composeProgram->setUniform( "u_noiseSampler", 4 );
+            m_composeProgram->setUniform( "u_advectSampler", 5 );
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Create an VAO containing the full-screen quad
+            LogD << "Creating flat VAO" << LogEnd;
 
             // Create the full-screen quad.
             float points[] = {

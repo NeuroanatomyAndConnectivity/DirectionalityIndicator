@@ -29,8 +29,10 @@ in vec3 v_normal;
 in vec3 v_noiseCoord;
 
 uniform sampler3D u_noiseSampler;
+uniform mat4 u_ViewMatrix;
 
 out vec4 fragColor;
+out vec4 fragVec;
 out vec4 fragNoise;
 
 // NOTE the following is LIB code. I will move this somewhere else once the ShaderLibrary implementation is done.
@@ -213,7 +215,19 @@ void main()
 {
     float noise = texture( u_noiseSampler, v_noiseCoord.xyz ).r;
     float light = blinnPhongIlluminationIntensity( DefaultLightIntensityFullDiffuse, normalize( v_normal.rgb ) );
+
+    // Right now, we use the color as input vector. This changes to something else as soon as we have the data
+    vec3 vector = ( vec4( v_color.rgb, 0.0 ) ).rgb;
+
+    float maxComp = max( abs( vector.x ), max( abs( vector.y ), abs( vector.z ) ) );
+    if( maxComp > 0.001 )
+    {
+        vector /= maxComp;
+    }
+
+    // Write
     fragColor = vec4( light * v_color.xyz, 1.0 );
+    fragVec = vec4( 0.5 * ( vec3( 1.0 ) + vector ), 1.0 );
     fragNoise = vec4( vec3( noise ), 1.0 );
 }
 

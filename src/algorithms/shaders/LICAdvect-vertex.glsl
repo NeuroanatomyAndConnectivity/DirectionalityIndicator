@@ -24,37 +24,15 @@
 
 #version 330
 
-// Uniforms
-uniform sampler2D u_colorSampler;
-uniform sampler2D u_vecSampler;
-uniform sampler2D u_depthSampler;
-uniform sampler2D u_edgeSampler;
-uniform sampler2D u_noiseSampler;
-uniform sampler2D u_advectSampler;
+// Attribute data
+in vec3 position;
 
-// Varyings
-in vec2 v_texCoord;
-
-// Outputs
-out vec4 fragColor;
+// Varying out
+out vec2 v_texCoord;
 
 void main()
 {
-    vec4 color = texture( u_colorSampler,  v_texCoord ).rgba;
-    vec3 vec = texture( u_vecSampler, v_texCoord ).rgb;
-    float depth = texture( u_depthSampler, v_texCoord ).r;
-    float edge = texture( u_edgeSampler, v_texCoord ).r;
-    float noise = texture( u_noiseSampler, v_texCoord ).r;
-    vec3 advect = texture( u_advectSampler, v_texCoord ).rgb;
-
-    vec4 col = vec4(
-        mix(
-            mix( color.rgb, vec3( 1.0 ), 1.0 * edge ),
-            advect, 0.5 ),
-        color.a
-    );
-
-    fragColor = col;
-    gl_FragDepth = depth;
+    v_texCoord = 0.5 * ( vec2( 1.0, 1.0 ) + position.xy );
+    gl_Position = vec4( vec3( position.xy, 0.0 ), 1.0 );
 }
 

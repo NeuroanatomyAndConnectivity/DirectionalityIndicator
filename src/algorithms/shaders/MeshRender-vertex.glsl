@@ -45,7 +45,7 @@ void main()
 {
     v_color = color;
     v_normal = ( u_ViewMatrix * vec4( normal, 0.0 ) ).xyz;
-    v_noiseCoord = 10* ( position - u_meshBBMin ) / ( u_meshBBMax - u_meshBBMin );
+    v_noiseCoord = 2 * ( position - u_meshBBMin ) / ( u_meshBBMax - u_meshBBMin );
     vec4 pos = u_ProjectionMatrix * u_ViewMatrix * vec4( position, 1.0 );
     gl_Position = pos;
 }

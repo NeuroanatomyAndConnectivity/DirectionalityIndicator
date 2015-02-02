@@ -166,14 +166,29 @@ namespace di
             SPtr< di::core::Texture > m_whiteNoiseTex = nullptr;
 
             /**
-             * The fbo ID
+             * The fbo ID, step 1.
              */
-            GLuint m_fbo = 0;
+            GLuint m_fboTransform = 0;
+
+            /**
+             * The fbo ID, edge detection
+             */
+            GLuint m_fboEdge = 0;
+
+            /**
+             * The fbo ID, advection detection
+             */
+            GLuint m_fboAdvect = 0;
 
             /**
              * Result texture of LIC step 1
              */
             SPtr< di::core::Texture > m_step1ColorTex = nullptr;
+
+            /**
+             * Result texture of LIC step 1
+             */
+            SPtr< di::core::Texture > m_step1VecTex = nullptr;
 
             /**
              * Result texture of LIC step 1
@@ -186,9 +201,29 @@ namespace di
             SPtr< di::core::Texture > m_step1DepthTex = nullptr;
 
             /**
+             * Result texture of LIC step 2
+             */
+            SPtr< di::core::Texture > m_step2EdgeTex = nullptr;
+
+            /**
+             * Result texture of LIC step 3
+             */
+            SPtr< di::core::Texture > m_step3AdvectTex = nullptr;
+
+            /**
              * Fullscreen quad used for texture processing
              */
             SPtr< di::core::Buffer > m_screenQuadVertexBuffer = nullptr;
+
+            /**
+             * Calc edges in the depth buffer.
+             */
+            SPtr< di::core::Program > m_edgeProgram = nullptr;
+
+            /**
+             * Advect inside the vector field.
+             */
+            SPtr< di::core::Program > m_advectProgram = nullptr;
 
             /**
              * Compose everything and build final image.
