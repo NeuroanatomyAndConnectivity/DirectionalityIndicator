@@ -27,7 +27,9 @@ The software uses CMake to create Makefiles. So, once you downloaded the source,
 cd /path/to/DirectionalityIndicator
 # As we use out-of-source builds: Change to the build sub-directory
 cd build
-# Allow CMake to build and update the Makefiles. Use this command everytime you do a git pull.
+# Allow CMake to build and update the Makefiles. 
+# -> Use this command everytime you do a git pull.
+# -> CMake will complain about missing depenencies.
 cmake ../src
 # Build using make
 make
