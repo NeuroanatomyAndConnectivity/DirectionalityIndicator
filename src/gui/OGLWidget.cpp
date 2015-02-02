@@ -171,7 +171,7 @@ namespace di
             if( durationLastShow.count() >= 2000 )
             {
                 m_fpsLastShowTime = now;
-                LogE << "FPS " << fps << LogEnd;
+                LogI << "FPS " << fps << LogEnd;
             }
 
             // Cleanup buffers
