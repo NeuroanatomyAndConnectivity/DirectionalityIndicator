@@ -34,7 +34,7 @@ namespace di
 {
     namespace algorithms
     {
-        class DirectionalityVisualization;
+        class SurfaceLIC;
     }
 
     namespace core
@@ -80,7 +80,7 @@ namespace di
             /**
              * The algorithm handled by this widget.
              */
-            SPtr< di::algorithms::DirectionalityVisualization > m_algorithm  = nullptr;
+            SPtr< di::algorithms::SurfaceLIC > m_algorithm  = nullptr;
         };
     }
 }

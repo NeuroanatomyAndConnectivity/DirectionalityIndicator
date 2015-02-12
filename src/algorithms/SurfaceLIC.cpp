@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-#define LogTag "algorithms/DirectionalityVisualization"
+#define LogTag "algorithms/SurfaceLIC"
 #include "core/Logger.h"
 
 #include "core/data/TriangleDataSet.h"
@@ -34,17 +34,16 @@
 #include "gfx/GL.h"
 #include "gfx/GLError.h"
 
-#include "DirectionalityVisualization.h"
+#include "SurfaceLIC.h"
 
 namespace di
 {
     namespace algorithms
     {
-        DirectionalityVisualization::DirectionalityVisualization():
-            Algorithm( "Directionality Visualization",
+        SurfaceLIC::SurfaceLIC():
+            Algorithm( "Surface LIC",
                        "This algorithm takes a triangle mesh and scalar information defined on the mesh. "
-                       "It the creates directional information from the scalar data and displays it on "
-                       "the mesh itself visually." ),
+                       "It creates a smearing pattern along the gradient information." ),
             Visualization()
         {
             // We require some inputs.
@@ -56,12 +55,12 @@ namespace di
             );
         }
 
-        DirectionalityVisualization::~DirectionalityVisualization()
+        SurfaceLIC::~SurfaceLIC()
         {
             // nothing to clean up so far
         }
 
-        void DirectionalityVisualization::process()
+        void SurfaceLIC::process()
         {
             // Get input data
             auto data = m_triangleDataInput->getData();
@@ -78,7 +77,7 @@ namespace di
             }
         }
 
-        core::BoundingBox DirectionalityVisualization::getBoundingBox() const
+        core::BoundingBox SurfaceLIC::getBoundingBox() const
         {
             if( m_visTriangleData )
             {
@@ -90,7 +89,7 @@ namespace di
             }
         }
 
-        void DirectionalityVisualization::prepare()
+        void SurfaceLIC::prepare()
         {
             LogD << "Vis Prepare" << LogEnd;
 
@@ -157,12 +156,12 @@ namespace di
             m_composeProgram->realize();
        }
 
-        void DirectionalityVisualization::finalize()
+        void SurfaceLIC::finalize()
         {
             LogD << "Vis Finalize" << LogEnd;
         }
 
-        void DirectionalityVisualization::render( const core::View& view )
+        void SurfaceLIC::render( const core::View& view )
         {
             if( !( m_VAO && m_shaderProgram && m_vertexBuffer ) )
             {
@@ -286,7 +285,7 @@ namespace di
             logGLError();
         }
 
-        void DirectionalityVisualization::update( const core::View& view, bool reload )
+        void SurfaceLIC::update( const core::View& /* view */, bool reload )
         {
             // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
             // and many code parts repeat again and again.

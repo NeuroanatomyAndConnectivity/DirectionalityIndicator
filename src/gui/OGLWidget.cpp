@@ -405,7 +405,6 @@ namespace di
                     // forced reload
                     m_forceReload = true;
                     break;
-
             }
 
             event->accept();

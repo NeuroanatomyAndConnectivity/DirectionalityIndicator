@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DIRECTIONALITYVISUALIZATION_H
-#define DIRECTIONALITYVISUALIZATION_H
+#ifndef SURFACELIC_H
+#define SURFACELIC_H
 
 #include "gfx/GL.h"
 
@@ -41,21 +41,21 @@ namespace di
     namespace algorithms
     {
         /**
-         * Directionality Indicator. This class implements the algorithm and the visualization.
+         * Surface LIC. This class implements the algorithm and the visualization.
          */
-        class DirectionalityVisualization: public di::core::Algorithm,
+        class SurfaceLIC: public di::core::Algorithm,
                                            public di::core::Visualization
         {
         public:
             /**
              * Constructor. Initialize all inputs, outputs and parameters.
              */
-            DirectionalityVisualization();
+            SurfaceLIC();
 
             /**
              * Destructor. Clean up if needed.
              */
-            virtual ~DirectionalityVisualization();
+            virtual ~SurfaceLIC();
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Algorithm Specific Methods
@@ -234,5 +234,5 @@ namespace di
     }
 }
 
-#endif  // DIRECTIONALITYVISUALIZATION_H
+#endif  // SURFACELIC_H
 

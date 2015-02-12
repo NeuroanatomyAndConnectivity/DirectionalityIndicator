@@ -24,7 +24,7 @@
 
 #include "Application.h"
 
-#include "algorithms/DirectionalityVisualization.h"
+#include "algorithms/SurfaceLIC.h"
 
 #include "ParameterWidget.h"
 
@@ -50,7 +50,7 @@ namespace di
         {
             // Please keep in mind that this is a temporary solution. Algorithms should be handled by generic widgets.
             // To achieve our vis-goal now, we hard-code the right algorithm here.
-            m_algorithm = SPtr< di::algorithms::DirectionalityVisualization >( new di::algorithms::DirectionalityVisualization() );
+            m_algorithm = SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC() );
             Application::getProcessingNetwork()->addAlgorithm( m_algorithm );
         }
 
