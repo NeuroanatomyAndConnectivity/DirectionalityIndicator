@@ -39,6 +39,7 @@ namespace di
             m_description( description )
         {
             // init
+            m_active.store( true );
         }
 
         Algorithm::~Algorithm()
@@ -109,6 +110,24 @@ namespace di
         bool Algorithm::isSink() const
         {
             return ( getOutputs().empty() && !getInputs().empty() );
+        }
+
+        bool Algorithm::isActive() const
+        {
+            return m_active.load();
+        }
+
+        void Algorithm::setActive( bool active )
+        {
+            if( active )
+            {
+                LogD << "Activating \"" << m_name << "\"." << LogEnd;
+            }
+            else
+            {
+                LogD << "De-activating \"" << m_name << "\"." << LogEnd;
+            }
+            m_active.store( active );
         }
     }
 }

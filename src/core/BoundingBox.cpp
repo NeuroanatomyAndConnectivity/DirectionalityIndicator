@@ -86,6 +86,11 @@ namespace di
 
         void BoundingBox::include( const BoundingBox& bb )
         {
+            // ignore BB without a size
+            if( bb.getMin().x > bb.getMax().x )
+            {
+                return;
+            }
             include( bb.getMin().x, bb.getMin().y, bb.getMin().z );
             include( bb.getMax().x, bb.getMax().y, bb.getMax().z );
         }

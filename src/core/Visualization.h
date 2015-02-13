@@ -102,6 +102,21 @@ namespace di
              * \return true if graphics need a refresh.
              */
             virtual bool isRenderingRequested() const;
+
+            /**
+             * Check the rendering state. If true, the visualization is active and should be drawn.
+             *
+             * \return true if active
+             */
+            bool isRenderingActive() const;
+
+            /**
+             * Change rendering state of this visualization. If set to true, the visualization is active and gets drawn.
+             *
+             * \param active draw this visualization.
+             */
+            void setRenderingActive( bool active = true );
+
         protected:
             /**
              * Constructor.
@@ -122,6 +137,11 @@ namespace di
              * A rendering was requested.
              */
             std::atomic< bool > m_renderingRequested;
+
+            /**
+             * Denote whether this Vis should draw something.
+             */
+            std::atomic< bool > m_renderingActive;
         };
     }
 }

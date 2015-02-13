@@ -31,11 +31,7 @@
 
 #include "Types.h"
 
-// Forward declarations
-class OGLWidget;
-class DataWidget;
-class ParameterWidget;
-class MainWindow;
+class QToolBox;
 
 namespace di
 {
@@ -46,6 +42,12 @@ namespace di
 
     namespace gui
     {
+        // Forward declarations
+        class OGLWidget;
+        class DataWidget;
+        class MainWindow;
+        class AlgorithmStrategies;
+
         /**
          * This represents the application user interface. It handles creation/destruction of the UI and is the central entry point of the application.
          * For now, the UI is very simplistic and hard-codes all parameters and algorithms. This will change in the future. Now, it is sufficient as
@@ -137,24 +139,14 @@ namespace di
             DataWidget* m_dataWidget = nullptr;
 
             /**
-             * Widget to show the algorithm parameters
-             */
-            ParameterWidget* m_parameterWidget = nullptr;
-
-            /**
              * The processing container managed by this application instance.
              */
             SPtr< core::ProcessingNetwork > m_processingNetwork = nullptr;
 
             /**
-             * The connection between triangle data and the algo
+             * Different use-cases are managed in this class.
              */
-            SPtr< di::core::Connection > m_connectionTrianglesToAlgo = nullptr;
-
-            /**
-             * The connection between label data and the algo
-             */
-            SPtr< di::core::Connection > m_connectionLabelsToAlgo = nullptr;
+            AlgorithmStrategies* m_algorithmStrategies = nullptr;
         };
     }
 }

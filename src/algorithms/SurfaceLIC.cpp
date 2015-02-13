@@ -98,9 +98,9 @@ namespace di
 
             std::string localShaderPath = core::getRuntimePath() + "/algorithms/shaders/";
             vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
-                                                               core::readTextFile( localShaderPath + "MeshRender-vertex.glsl" ) );
+                                                               core::readTextFile( localShaderPath + "LICMeshTransform-vertex.glsl" ) );
             fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
-                                                                 core::readTextFile( localShaderPath + "MeshRender-fragment.glsl" ) );
+                                                                 core::readTextFile( localShaderPath + "LICMeshTransform-fragment.glsl" ) );
 
             // Link them to build the program itself
             // m_shaderProgram = std::make_shared< di::core::Program >( { m_vertexShader, m_fragmentShader } );
@@ -108,7 +108,9 @@ namespace di
             m_shaderProgram = SPtr< di::core::Program >( new di::core::Program(
                         {
                             vertexShader,
-                            fragmentShader
+                            fragmentShader,
+                            std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                              core::readTextFile( localShaderPath + "Shading.glsl" ) )
                         }
             ) );
             m_shaderProgram->realize();

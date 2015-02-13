@@ -25,6 +25,7 @@
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
 
+#include <atomic>
 #include <algorithm>
 #include <string>
 
@@ -78,6 +79,20 @@ namespace di
              * \return true if it only has inputs.
              */
             virtual bool isSink() const;
+
+            /**
+             * Check active state of the algorithm. An inactive algorithm is not notified about updates on its inputs.
+             *
+             * \return true if active
+             */
+            virtual bool isActive() const;
+
+            /**
+             * Change active-state of the algorithm.
+             *
+             * \param active if true (default), the algorithm is active and processes when updates arrive.
+             */
+            virtual void setActive( bool active = true );
 
             /**
              * Get the list of inputs of this algorithm.
@@ -293,6 +308,11 @@ namespace di
              * The description of the algorithm.
              */
             std::string m_description = "";
+
+            /**
+             * Active-state
+             */
+            std::atomic< bool > m_active;
         };
     }
 }

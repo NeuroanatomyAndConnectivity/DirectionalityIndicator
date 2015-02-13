@@ -22,52 +22,21 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#version 330
 
-#include <string>
+in vec4 v_color;
+in vec3 v_normal;
 
-// This file implements some utils we all love from boost::filesystem
+out vec4 fragColor;
 
-namespace di
+// NOTE the following is LIB code. Load Shading.glsl on host side
+float blinnPhongIlluminationIntensityFullDiffuse( in vec3 normal );
+
+void main()
 {
-    namespace core
-    {
-        /**
-         * Get the extension if a filename.
-         *
-         * \param filename the filename
-         *
-         * \return the extension. Can be empty.
-         */
-        std::string getFileExtension( const std::string& filename );
+    float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.rgb ) );
 
-        /**
-         * Read a whole text file in to a string.
-         *
-         * \param filename the filename
-         *
-         * \return the string
-         *
-         * \throw std::invalid_argument if the file could not be read.
-         */
-        std::string readTextFile( const std::string& filename );
-
-        /**
-         * The runtime path of the program
-         *
-         * \return the path.
-         */
-        const std::string& getRuntimePath();
-
-        /**
-         * Initialize runtime path. Call this as soon as possible.
-         *
-         * \param path the path to use as system path. Use absolute paths.
-         */
-        void initRuntimePath( const std::string& path );
-    }
+    // Write
+    fragColor = vec4( light * v_color.xyz, 1.0 );
 }
-
-#endif  // FILESYSTEM_H
 

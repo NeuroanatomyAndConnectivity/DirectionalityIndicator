@@ -22,9 +22,11 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <iostream>
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include <stdexcept>
 
 #include "Filesystem.h"
 
@@ -43,6 +45,11 @@ namespace di
         {
             std::ifstream t( filename );
             std::string str;
+
+            if( !t.good() )
+            {
+                throw std::invalid_argument( "File \"" + filename + "\" could not be opened for reading." );
+            }
 
             // We use this to reserve the required mem beforehand
             t.seekg( 0, std::ios::end );

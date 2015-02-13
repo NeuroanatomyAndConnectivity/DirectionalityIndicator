@@ -32,6 +32,7 @@ namespace di
         {
             // nothing to do
             m_renderingRequested.store( false );
+            m_renderingActive.store( true );
         }
 
         Visualization::~Visualization()
@@ -59,6 +60,16 @@ namespace di
         bool Visualization::isRenderingRequested() const
         {
             return m_renderingRequested.load();
+        }
+
+        bool Visualization::isRenderingActive() const
+        {
+            return m_renderingActive.load();
+        }
+
+        void Visualization::setRenderingActive( bool active )
+        {
+            m_renderingActive.store( active );
         }
     }
 }

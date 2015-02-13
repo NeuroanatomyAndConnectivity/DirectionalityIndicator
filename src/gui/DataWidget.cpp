@@ -29,6 +29,7 @@
 #include <QDir>
 
 #include "Application.h"
+#include "AlgorithmStrategies.h"
 #include "ScaleLabel.h"
 
 #include "core/Algorithm.h"
@@ -78,28 +79,8 @@ namespace di
                                                                    */
                                          ),
                                          contentWidget );
-            // Add the label-load-button thingy
-            m_labelLoad = new FileWidget( QIcon( QPixmap( iconLabels_xpm ) ),
-                                          QString( "Label File (*.dpv)" ),
-                                          contentWidget );
-
-            // Add the data status indicator
-            /* QWidget* statusIndicator( new QWidget );
-            QHBoxLayout* statusIndicatorLayout( new QHBoxLayout );
-            statusIndicator->setLayout( statusIndicatorLayout );
-
-            m_statusLabel = new ScaleLabel;
-            m_statusLabel->setText( tr( "Not Complete" ) );
-            ScaleLabel* statusInfoLabel = new ScaleLabel;   // only shows the static text
-            statusInfoLabel->setText( tr( "Data Status: " ) );
-
-            statusIndicatorLayout->addWidget( statusInfoLabel );
-            statusIndicatorLayout->addWidget( m_statusLabel );
-            */
 
             contentLayout->addWidget( m_meshLoad );
-            contentLayout->addWidget( m_labelLoad );
-            // contentLayout->addWidget( statusIndicator );
             contentLayout->setAlignment( Qt::AlignTop );
         }
 
@@ -111,16 +92,12 @@ namespace di
         {
             // We use DataInject algorithms to inject data we have loaded (or will load). Let the FileWidgets do it:
             m_meshLoad->prepareProcessingNetwork();
-            m_labelLoad->prepareProcessingNetwork();
         }
 
-        void DataWidget::connectDataToAlgo( ConstSPtr< di::core::Algorithm > to )
+        void DataWidget::connectDataToStrategies( AlgorithmStrategies* to )
         {
             auto meshAlgo = m_meshLoad->getDataInject();
-            auto labelAlgo = m_labelLoad->getDataInject();
-
-            Application::getProcessingNetwork()->connectAlgorithms( meshAlgo, "Data", to, "Triangle Mesh" );
-            // Application::getProcessingNetwork()->connectAlgorithms( labelAlgo, "Data", to, "Triangle Labels" );
+            to->connectToAll( meshAlgo, "Data", "Triangle Mesh" );
         }
     }
 }

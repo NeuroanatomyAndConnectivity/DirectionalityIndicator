@@ -22,14 +22,12 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATAWIDGET_H
-#define DATAWIDGET_H
+#ifndef ALGORITHMWIDGET_H
+#define ALGORITHMWIDGET_H
 
-#include <QDockWidget>
+#include <QWidget>
 
 #include "Types.h"
-
-class FileWidget;
 
 namespace di
 {
@@ -40,26 +38,25 @@ namespace di
 
     namespace gui
     {
-        class AlgorithmStrategies;
-
         /**
-         * A simple widget to provide the data-loading functionality. For now, it hard-codes the required files of our use-case.
+         * A simple widget to show the algorithm parameters.
          */
-        class DataWidget: public QDockWidget
+        class AlgorithmWidget: public QWidget
         {
             Q_OBJECT
         public:
             /**
-             * Create the data widget.
+             * Create the parameter widget.
              *
              * \param parent the parent widget.
+             * \param algorithm the algo to handle.
              */
-            explicit DataWidget( QWidget* parent = nullptr );
+            AlgorithmWidget( SPtr< di::core::Algorithm > algorithm, QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
              */
-            virtual ~DataWidget();
+            virtual ~AlgorithmWidget();
 
             /**
              * Allows this widget to prepare everything in the network. This is only a temporary solution.
@@ -67,23 +64,28 @@ namespace di
             void prepareProcessingNetwork();
 
             /**
-             * Connect the data to the algorithm.
+             * The algorithm handled by this widget.
              *
-             * \note Hard-coded. Ugly. Do not copy.
-             *
-             * \param to to this algorithm strategy.
+             * \return the algorithm
              */
-            void connectDataToStrategies( AlgorithmStrategies* to );
+            ConstSPtr< di::core::Algorithm > getAlgorithm() const;
+
+            /**
+             * Activate the algorithm and its visualizations.
+             *
+             * \param active true to activate.
+             */
+            virtual void setActive( bool active = true );
 
         protected:
         private:
-             /**
-             * The mesh load widget.
+            /**
+             * The algorithm handled by this widget.
              */
-            FileWidget* m_meshLoad = nullptr;
+            SPtr< di::core::Algorithm > m_algorithm  = nullptr;
         };
     }
 }
 
-#endif  // DATAWIDGET_H
+#endif  // ALGORITHMWIDGET_H
 

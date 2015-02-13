@@ -23,15 +23,23 @@
 //---------------------------------------------------------------------------------------
 
 #include <QApplication>
+#include <QDockWidget>
+#include <QToolBox>
+#include <QWidget>
 
 #include "core/ProcessingNetwork.h"
 #include "core/Connection.h"
 #include "core/Filesystem.h"
 
+#include "algorithms/SurfaceLIC.h"
+#include "algorithms/RenderTriangles.h"
+
 #include "OGLWidget.h"
 #include "DataWidget.h"
-#include "ParameterWidget.h"
 #include "MainWindow.h"
+#include "AlgorithmStrategies.h"
+#include "AlgorithmStrategy.h"
+#include "AlgorithmWidget.h"
 
 #include "Application.h"
 
@@ -79,9 +87,21 @@ namespace di
             m_dataWidget = new DataWidget( m_mainWindow );
             m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_dataWidget );
 
-            // Create the parameter widget:
-            m_parameterWidget = new ParameterWidget( m_mainWindow );
-            m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_parameterWidget );
+            // The dock with all the parameters and stuff
+            QDockWidget* tbDock = new QDockWidget( "Algorithm Parameters", m_mainWindow );
+            m_algorithmStrategies = new AlgorithmStrategies( tbDock );
+            tbDock->setWidget( m_algorithmStrategies );
+            tbDock->setObjectName( "AlgorithmParameters" );    // needed for persistent GUI states
+            // avoid closable docks.
+            tbDock->setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
+            m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, tbDock );
+
+            // Create the strategies:
+            AlgorithmStrategy* s = m_algorithmStrategies->addStrategy( new AlgorithmStrategy( "Surface LIC" ) );
+            s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC ) ) );
+
+            s = m_algorithmStrategies->addStrategy( new AlgorithmStrategy( "Surface Rendering" ) );
+            s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::RenderTriangles >( new di::algorithms::RenderTriangles ) ) );
 
             // restore stored states/sizes
             m_mainWindow->loadStates();
@@ -92,11 +112,11 @@ namespace di
 
             // Tell the data widget that the processing network is ready.
             m_dataWidget->prepareProcessingNetwork();
-            m_parameterWidget->prepareProcessingNetwork();
+            m_algorithmStrategies->prepareProcessingNetwork();
 
             // Hard-code a connection here. This should be done by a GUI or nice "use-case" class or something. For now, we need to get a VIS up and
             // running.
-            m_dataWidget->connectDataToAlgo( m_parameterWidget->getAlgorithm() );
+            m_dataWidget->connectDataToStrategies( m_algorithmStrategies );
 
             // Finally, show the UI
             m_mainWindow->show();

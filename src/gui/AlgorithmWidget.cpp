@@ -22,41 +22,47 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include "core/Algorithm.h"
+#include "core/Visualization.h"
+
 #include "Application.h"
 
-#include "algorithms/SurfaceLIC.h"
-
-#include "ParameterWidget.h"
+#include "AlgorithmWidget.h"
 
 namespace di
 {
     namespace gui
     {
-        ParameterWidget::ParameterWidget( QWidget* parent ):
-            QDockWidget( parent )
+        AlgorithmWidget::AlgorithmWidget( SPtr< di::core::Algorithm > algorithm, QWidget* parent ):
+            QWidget( parent ),
+            m_algorithm( algorithm )
         {
-            setWindowTitle( tr( "Algorithm Parameters" ) );
-            setObjectName( "ParameterWidget" );    // needed for persistent GUI states
-
-            // avoid closable docks.
-            setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
+            // Init
         }
 
-        ParameterWidget::~ParameterWidget()
+        AlgorithmWidget::~AlgorithmWidget()
         {
         }
 
-        void ParameterWidget::prepareProcessingNetwork()
+        void AlgorithmWidget::prepareProcessingNetwork()
         {
-            // Please keep in mind that this is a temporary solution. Algorithms should be handled by generic widgets.
-            // To achieve our vis-goal now, we hard-code the right algorithm here.
-            m_algorithm = SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC() );
             Application::getProcessingNetwork()->addAlgorithm( m_algorithm );
         }
 
-        ConstSPtr< di::core::Algorithm > ParameterWidget::getAlgorithm() const
+        ConstSPtr< di::core::Algorithm > AlgorithmWidget::getAlgorithm() const
         {
             return m_algorithm;
+        }
+
+        void AlgorithmWidget::setActive( bool active )
+        {
+            m_algorithm->setActive( active );
+
+            SPtr< di::core::Visualization > vis = std::dynamic_pointer_cast< di::core::Visualization >( m_algorithm );
+            if( vis )
+            {
+                vis->setRenderingActive( active );
+            }
         }
     }
 }

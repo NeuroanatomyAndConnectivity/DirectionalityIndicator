@@ -268,7 +268,10 @@ namespace di
             Application::getProcessingNetwork()->visitVisualizations(
                 [ this ]( SPtr< di::core::Visualization > vis )
                 {
-                    vis->render( *this );
+                    if( vis->isRenderingActive() )
+                    {
+                        vis->render( *this );
+                    }
                 }
             );
         }

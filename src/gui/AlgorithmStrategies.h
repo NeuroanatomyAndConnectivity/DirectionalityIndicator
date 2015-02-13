@@ -22,21 +22,18 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef PARAMETERWIDGET_H
-#define PARAMETERWIDGET_H
+#ifndef ALGORITHMSTRATEGIES_H
+#define ALGORITHMSTRATEGIES_H
 
-#include <QWidget>
-#include <QDockWidget>
+#include <string>
+#include <vector>
+
+#include <QToolBox>
 
 #include "Types.h"
 
 namespace di
 {
-    namespace algorithms
-    {
-        class SurfaceLIC;
-    }
-
     namespace core
     {
         class Algorithm;
@@ -44,10 +41,12 @@ namespace di
 
     namespace gui
     {
+        class AlgorithmStrategy;
+
         /**
-         * A simple widget to show the algorithm parameters.
+         * A simple widget to switch between several bunches of algorithms, deactivating invisible ones.
          */
-        class ParameterWidget: public QDockWidget
+        class AlgorithmStrategies: public QToolBox
         {
             Q_OBJECT
         public:
@@ -56,34 +55,55 @@ namespace di
              *
              * \param parent the parent widget.
              */
-            explicit ParameterWidget( QWidget* parent = nullptr );
+            explicit AlgorithmStrategies( QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
              */
-            virtual ~ParameterWidget();
+            virtual ~AlgorithmStrategies();
 
             /**
              * Allows this widget to prepare everything in the network. This is only a temporary solution.
              */
-            void prepareProcessingNetwork();
+            virtual void prepareProcessingNetwork();
 
             /**
-             * The algorithm handled by this widget.
+             * Add the given group of algorithms as strategy. Be aware that strategies added after the call to \ref prepareProcessingNetwork will not
+             * have any effect to the network.
              *
-             * \return the algorithm
+             * \param strategy the strategy to add
+             *
+             * \return the strategy added.
              */
-            ConstSPtr< di::core::Algorithm > getAlgorithm() const;
+            virtual AlgorithmStrategy* addStrategy( AlgorithmStrategy* strategy );
+
+            /**
+             * Connect the given output to all strategy inputs with the given name.
+             *
+             * \param from the source algorithm
+             * \param outputName the output name
+             * \param inputName the target input name.
+             */
+            virtual void connectToAll( ConstSPtr< di::core::Algorithm > from, std::string outputName,
+                                       std::string inputName );
 
         protected:
+        protected slots:
+            /**
+             * Called when the active strategy changes.
+             *
+             * \param index the index of the new strategy
+             */
+            void onStrategyChange( int index );
+
         private:
             /**
-             * The algorithm handled by this widget.
+             * The strategies managed.
              */
-            SPtr< di::algorithms::SurfaceLIC > m_algorithm  = nullptr;
+            std::vector< AlgorithmStrategy* > m_strategies;
         };
     }
 }
 
-#endif  // PARAMETERWIDGET_H
+#endif  // ALGORITHMSTRATEGIES_H
 

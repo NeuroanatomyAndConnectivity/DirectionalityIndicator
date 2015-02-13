@@ -22,52 +22,39 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#version 330
 
-#include <string>
+in vec4 v_color;
+in vec3 v_normal;
+in vec3 v_noiseCoord;
 
-// This file implements some utils we all love from boost::filesystem
+uniform sampler3D u_noiseSampler;
+uniform mat4 u_ViewMatrix;
 
-namespace di
+out vec4 fragColor;
+out vec4 fragVec;
+out vec4 fragNoise;
+
+// NOTE the following is LIB code. Load Shading.glsl on host side
+float blinnPhongIlluminationIntensityFullDiffuse( in vec3 normal );
+
+void main()
 {
-    namespace core
+    float noise = texture( u_noiseSampler, v_noiseCoord.xyz ).r;
+    float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.rgb ) );
+
+    // Right now, we use the color as input vector. This changes to something else as soon as we have the data
+    vec3 vector = ( vec4( v_color.rgb, 0.0 ) ).rgb;
+
+    float maxComp = max( abs( vector.x ), max( abs( vector.y ), abs( vector.z ) ) );
+    if( maxComp > 0.001 )
     {
-        /**
-         * Get the extension if a filename.
-         *
-         * \param filename the filename
-         *
-         * \return the extension. Can be empty.
-         */
-        std::string getFileExtension( const std::string& filename );
-
-        /**
-         * Read a whole text file in to a string.
-         *
-         * \param filename the filename
-         *
-         * \return the string
-         *
-         * \throw std::invalid_argument if the file could not be read.
-         */
-        std::string readTextFile( const std::string& filename );
-
-        /**
-         * The runtime path of the program
-         *
-         * \return the path.
-         */
-        const std::string& getRuntimePath();
-
-        /**
-         * Initialize runtime path. Call this as soon as possible.
-         *
-         * \param path the path to use as system path. Use absolute paths.
-         */
-        void initRuntimePath( const std::string& path );
+        vector /= maxComp;
     }
-}
 
-#endif  // FILESYSTEM_H
+    // Write
+    fragColor = vec4( light * v_color.xyz, 1.0 );
+    fragVec = vec4( 0.5 * ( vec3( 1.0 ) + vector ), 1.0 );
+    fragNoise = vec4( vec3( noise ), 1.0 );
+}
 

@@ -201,6 +201,8 @@ namespace di
             }
         }
 
+        // NOTE: this currently only works nice for simple source-sink networks.
+        // TODO(sebastian): extend to a more sophisticated source-filter-sink system.
         void ProcessingNetwork::runNetworkImpl()
         {
             // Avoid concurrent access:
@@ -232,8 +234,15 @@ namespace di
                 {
                     if( !algo->isSource() )
                     {
-                        LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
-                        algo->process();
+                        if( algo->isActive() )
+                        {
+                            LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
+                            algo->process();
+                        }
+                        else
+                        {
+                            LogI << "Ignoring inactive algorithm \"" << algo->getName() << "\"." << LogEnd;
+                        }
                     }
                 }
             }
