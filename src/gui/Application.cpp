@@ -33,6 +33,8 @@
 
 #include "algorithms/SurfaceLIC.h"
 #include "algorithms/RenderTriangles.h"
+#include "algorithms/RenderLines.h"
+#include "algorithms/ExtractRegions.h"
 
 #include "OGLWidget.h"
 #include "DataWidget.h"
@@ -96,15 +98,27 @@ namespace di
             tbDock->setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
             m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, tbDock );
 
-            // Create the strategies:
-            AlgorithmStrategy* s = m_algorithmStrategies->addStrategy( new AlgorithmStrategy( "Surface LIC" ) );
-            s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC ) ) );
-
-            s = m_algorithmStrategies->addStrategy( new AlgorithmStrategy( "Surface Rendering" ) );
-            s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::RenderTriangles >( new di::algorithms::RenderTriangles ) ) );
-
             // restore stored states/sizes
             m_mainWindow->loadStates();
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
+            // BEGIN:
+
+            // ALgorithm Temporaries ... needed to hard-code connections
+            AlgorithmWidget* algo1;
+            AlgorithmWidget* algo2;
+            AlgorithmStrategy* s;
+
+            // Create the strategies:
+
+            s = m_algorithmStrategies->addStrategy( new AlgorithmStrategy( "Surface with Region Boundaries" ) );
+            s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::RenderTriangles >( new di::algorithms::RenderTriangles ) ) );
+            algo1 = s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::ExtractRegions >( new di::algorithms::ExtractRegions ) ) );
+            algo2 = s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::RenderLines >( new di::algorithms::RenderLines ) ) );
+
+            s = m_algorithmStrategies->addStrategy( new AlgorithmStrategy( "Surface LIC" ) );
+            s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC ) ) );
 
             // start the processing container
             m_processingNetwork = SPtr< core::ProcessingNetwork >( new core::ProcessingNetwork() );
@@ -113,6 +127,13 @@ namespace di
             // Tell the data widget that the processing network is ready.
             m_dataWidget->prepareProcessingNetwork();
             m_algorithmStrategies->prepareProcessingNetwork();
+
+            // Connect
+            Application::getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Regions", algo2->getAlgorithm(), "Lines" );
+
+            // END:
+            // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // Hard-code a connection here. This should be done by a GUI or nice "use-case" class or something. For now, we need to get a VIS up and
             // running.
