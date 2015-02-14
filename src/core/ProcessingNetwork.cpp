@@ -22,6 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <utility>
+#include <map>
 #include <string>
 
 #define LogTag "core/ProcessingNetwork"
@@ -294,7 +296,6 @@ namespace di
                             {
                                 LogI << "Ignoring inactive algorithm \"" << algo->getName() << "\"." << LogEnd;
                             }
-
                         },
                         [ & ]( SPtr< Connection > con )
                         {

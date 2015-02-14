@@ -289,7 +289,7 @@ namespace di
              * \param edgeCallback callback for each edge. If the callback returns false, the edge is not followed.
              */
             template< typename NodeVisitorType, typename EdgeVisitorType >
-            void visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits,
+            void visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits,    // NOLINT: non-const reference
                                      NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback );
         private:
             /**
@@ -385,7 +385,7 @@ namespace di
         }
 
         template< typename NodeVisitorType, typename EdgeVisitorType >
-        void ProcessingNetwork::visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits,
+        void ProcessingNetwork::visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits, // NOLINT: non-const reference
                                                     NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback )
         {
             // avoid loops by checking if we have been here at most n times, where n is the number of connected inputs. ( and at least 1 times )
