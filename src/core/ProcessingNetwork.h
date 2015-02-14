@@ -29,6 +29,8 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <map>
+#include <utility>
 
 #include "Types.h"
 
@@ -89,6 +91,8 @@ namespace di
              * visitor is called for a snapshot of the algorithms at the time of calling. This prohibits long-running visitors to block the whole
              * command queue.
              *
+             * \note the function locks access to the algorithm list. Avoid nested calls.
+             *
              * \tparam VisitorType the visitor type. Something that takes a SPtr< di::core::Algorithm > as parameter.
              * \param visitor the visitor instance itself.
              */
@@ -100,11 +104,25 @@ namespace di
              * visiting. This means, the visitor is called for a snapshot of the algorithms at the time of calling. This prohibits long-running
              * visitors to block the whole command queue.
              *
+             * \note the function locks access to the algorithm list. Avoid nested calls.
+             *
              * \tparam VisitorType the visitor type. Something that takes a SPtr< di::core::Visualization > as parameter.
              * \param visitor the visitor instance itself.
              */
             template< typename VisitorType >
             void visitVisualizations( VisitorType visitor );
+
+            /**
+             * \copydoc visitAlgorithms
+             */
+            template< typename VisitorType >
+            void visitAlgorithms( VisitorType visitor ) const;
+
+            /**
+             * \copydoc visitVisualizations
+             */
+            template< typename VisitorType >
+            void visitVisualizations( VisitorType visitor ) const;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Some convenience methods. The wrap around command-creation. The specific command is mentioned as a note.
@@ -211,39 +229,114 @@ namespace di
              * tolerant and does not complain about its argument. The only thing to keep in mind is that after committing a connection, it belongs
              * to this graph. It is  managed by this graph and you should not add it to another one again.
              *
-             * \note this method is not thread-safe. Call only from within the processing thread of this queue (via commands).
-             *
              * \param connection the connection to setup.
+             * \throw std::logic_error connections without a source or target and connections with multiple sources are invalid
              */
             virtual void addNetworkNodeEdge( SPtr< Connection > connection );
 
             /**
-             * Re-run the whole network. Do not get used to this function. It is a temporary solution and will be replaced by a more sophisticated
-             * scheduler soon.
+             * Find the nodes that are involved in the given edge (connection).
+             *
+             * \param connection the connection to check
+             *
+             * \note the method does not lock the m_algorithms member, as it assumes that the caller already has done it.
+             *
+             * \return pair contains the source algorithms and the target algorithms. In most cases, source will be a single entry. But it is not
+             * guaranteed.
+             */
+            virtual std::pair< SPtrVec< Algorithm >, SPtrVec< Algorithm > > findNodesOfEdge( SPtr< Connection > connection ) const;
+
+            /**
+             * Count the currently defined connections to an algorithm's inputs.
+             *
+             * \param algorithm the algorithm to count the connections for.
+             *
+             * \note not thread-safe. Only use from within processing thread, or after acquiring m_connectionsMutex.
+             *
+             * \return the number of connections
+             */
+            virtual size_t countInputConnections( ConstSPtr< Algorithm > algorithm ) const;
+
+            /**
+             * Re-run the whole network.
              */
             virtual void runNetworkImpl();
 
+            /**
+             * \note does not lock!
+             *
+             * \copydoc visitVisualizations
+             */
+            template< typename VisitorType >
+            void visitAlgorithmsNoLock( VisitorType visitor ) const;
+
+            /**
+             * \note does not lock!
+             *
+             * \copydoc visitVisualizations
+             */
+            template< typename VisitorType >
+            void visitAlgorithmsNoLock( VisitorType visitor );
+
+            /**
+             * Follow the network along the connections, starting at the given algorithm.
+             *
+             * \tparam NodeVisitorType The node visitor type
+             * \tparam EdgeVisitorType The edge visitor type
+             * \param start the current node
+             * \param visits count the visits of each node to handle cycles
+             * \param nodeCallback callback for each node
+             * \param edgeCallback callback for each edge. If the callback returns false, the edge is not followed.
+             */
+            template< typename NodeVisitorType, typename EdgeVisitorType >
+            void visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits,
+                                     NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback );
         private:
             /**
              * A list of all known readers.
              */
-            std::vector< SPtr< Reader > > m_reader;
+            SPtrVec< Reader > m_reader;
 
             /**
              * All the algorithms managed by this network instance.
              */
-            SPtrSet< Algorithm > m_algorithms;
+            SPtrVec< Algorithm > m_algorithms;
 
             /**
              * Mutex to secure access to m_algorithms
              */
-            std::mutex m_algorithmsMutex;
+            mutable std::mutex m_algorithmsMutex;
 
             /**
-             * The list of all connections. In other words, the edges of the multigraph.
+             * Mutex to secure access to m_connections
              */
-            SPtrSet< Connection > m_connections;
+            mutable std::mutex m_connectionsMutex;
+
+            /**
+             * The list of all connections. In other words, the edges of the multigraph. It associates a connection with source and target algorithm.
+             */
+            std::map< SPtr< Connection >,
+                        std::pair< SPtr< Algorithm >,
+                                   SPtr< Algorithm >
+                                 >
+                    > m_connections;
         };
+
+        template< typename VisitorType >
+        void ProcessingNetwork::visitAlgorithmsNoLock( VisitorType visitor )
+        {
+            // Iterate and call visitor on each
+            for( auto algo : m_algorithms )
+            {
+                visitor( algo );
+            }
+        }
+
+        template< typename VisitorType >
+        void ProcessingNetwork::visitAlgorithmsNoLock( VisitorType visitor ) const
+        {
+            const_cast< ProcessingNetwork* >( this )->visitAlgorithmsNoLock( visitor );
+        }
 
         template< typename VisitorType >
         void ProcessingNetwork::visitAlgorithms( VisitorType visitor )
@@ -252,7 +345,7 @@ namespace di
             std::unique_lock< std::mutex > lock( m_algorithmsMutex );
 
             // Copy
-            SPtrSet< Algorithm > algorithmsSnapshot( m_algorithms );
+            SPtrVec< Algorithm > algorithmsSnapshot( m_algorithms );
 
             // Unlock to avoid long-running visitors to block the network
             lock.unlock();
@@ -262,6 +355,12 @@ namespace di
             {
                 visitor( algo );
             }
+        }
+
+        template< typename VisitorType >
+        void ProcessingNetwork::visitAlgorithms( VisitorType visitor ) const
+        {
+            const_cast< ProcessingNetwork* >( this )->visitAlgorithms( visitor );
         }
 
         template< typename VisitorType >
@@ -277,6 +376,42 @@ namespace di
                                  }
                              }
             );
+        }
+
+        template< typename VisitorType >
+        void ProcessingNetwork::visitVisualizations( VisitorType visitor ) const
+        {
+            const_cast< ProcessingNetwork* >( this )->visitVisualizations( visitor );
+        }
+
+        template< typename NodeVisitorType, typename EdgeVisitorType >
+        void ProcessingNetwork::visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits,
+                                                    NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback )
+        {
+            // avoid loops by checking if we have been here at most n times, where n is the number of connected inputs. ( and at least 1 times )
+            size_t numConnections = countInputConnections( start );
+            if( ( visits[ start ] >= 1 ) && ( visits[ start ] >= numConnections ) )
+            {
+                return;
+            }
+
+            // apply visitor to current node:
+            visits[ start ]++;
+            nodeCallback( start );
+
+            // get all outgoing connections
+            for( auto c : m_connections )
+            {
+                // is the source algorithm of this connection our current algorithm?
+                if( c.second.first == start )
+                {
+                    // yes. Follow the connection if the callback allows us
+                    if( edgeCallback( c.first ) )
+                    {
+                        visitNetworkNoLock( c.second.second, visits, nodeCallback, edgeCallback );
+                    }
+                }
+            }
         }
     }
 }

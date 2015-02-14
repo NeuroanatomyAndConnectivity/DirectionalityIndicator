@@ -65,12 +65,44 @@ namespace di
             // Avoid concurrent access:
             std::lock_guard< std::mutex > lock( m_algorithmsMutex );
             // if already inside ... nothing happens.
-            m_algorithms.insert( algorithm );
+            if( std::find( m_algorithms.begin(), m_algorithms.end(), algorithm ) != m_algorithms.end() )
+            {
+                return;
+            }
+
+            m_algorithms.push_back( algorithm );
         }
 
         void ProcessingNetwork::addNetworkNodeEdge( SPtr< Connection > connection )
         {
-            m_connections.insert( connection );
+            // Avoid concurrent access:
+            std::lock_guard< std::mutex > lock( m_connectionsMutex );
+            std::lock_guard< std::mutex > lockAlgo( m_algorithmsMutex );
+
+            // Algos involved in this connection:
+            auto partners = findNodesOfEdge( connection );
+
+            if( partners.first.size() != 1 )
+            {
+                throw std::logic_error( "Connection with multiple or no source algorithms are not allowed." );
+            }
+            if( partners.second.size() != 1 )
+            {
+                throw std::logic_error( "Connection with multiple or no target algorithms are not allowed." );
+            }
+
+            // also ensure that the given target connector is not yet connected somehow:
+            for( auto c : m_connections )
+            {
+                auto theConnection = c.first;
+                if( theConnection->getTarget() == connection->getTarget() )
+                {
+                    throw std::logic_error( "Connecting an input multiple times is not allowed." );
+                }
+            }
+
+            // store
+            m_connections[ connection ] = std::make_pair( partners.first.front(), partners.second.front() );
         }
 
         SPtr< di::commands::ReadFile > ProcessingNetwork::loadFile( const std::string& fileName, SPtr< CommandObserver > observer )
@@ -89,6 +121,39 @@ namespace di
                     new di::commands::AddAlgorithm( algorithm, observer )
                 )
             );
+        }
+
+        std::pair< SPtrVec< Algorithm >, SPtrVec< Algorithm > > ProcessingNetwork::findNodesOfEdge( SPtr< Connection > connection ) const
+        {
+            SPtrVec< Algorithm > targets;
+            SPtrVec< Algorithm > sources;
+
+            // check all algorithms
+            visitAlgorithmsNoLock(
+                [ & ]( SPtr< Algorithm > algo )
+                {
+                    if( algo->hasConnector( connection->getTarget() ) )
+                    {
+                        targets.push_back( algo );
+                    }
+                    if( algo->hasConnector( connection->getSource() ) )
+                    {
+                        sources.push_back( algo );
+                    }
+                }
+            );
+
+            return std::make_pair( sources, targets );
+        }
+
+        size_t ProcessingNetwork::countInputConnections( ConstSPtr< Algorithm > algorithm ) const
+        {
+            size_t result = 0;
+            for( auto c : m_connections )
+            {
+                result += ( c.second.second == algorithm ) ? 1 : 0; // never directly add a bool.
+            }
+            return result;
         }
 
         SPtr< di::commands::Connect > ProcessingNetwork::connectAlgorithms( ConstSPtr< di::core::Algorithm > from,
@@ -201,49 +266,55 @@ namespace di
             }
         }
 
-        // NOTE: this currently only works nice for simple source-sink networks.
-        // TODO(sebastian): extend to a more sophisticated source-filter-sink system.
         void ProcessingNetwork::runNetworkImpl()
         {
             // Avoid concurrent access:
-            std::lock_guard< std::mutex > lock( m_algorithmsMutex );
+            std::lock_guard< std::mutex > lockAlgo( m_algorithmsMutex );
+            std::lock_guard< std::mutex > lockCon( m_connectionsMutex );
 
             LogD << "Running processing network. Propagating changes." << LogEnd;
 
-            // Find sources ( algorithms without input connectors )
+            // Find sources ( algorithms without input connectors ) and non-connected algorithms. They are the start of the recursive propagation.
             for( auto algo : m_algorithms )
             {
-                if( algo->isSource() )
+                // source?
+                if( algo->isSource() || ( countInputConnections( algo ) == 0 ) )
                 {
-                    LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
-                    algo->process();
-                }
-            }
-
-            // Propagate along the connections.
-            bool change = false;
-            for( auto connection : m_connections )
-            {
-                change = change || connection->propagate();
-            }
-
-            // Any connection did an update?
-            if( change )
-            {
-                for( auto algo : m_algorithms )
-                {
-                    if( !algo->isSource() )
-                    {
-                        if( algo->isActive() )
+                    // recurse along connection
+                    std::map< SPtr< Algorithm >, size_t > visits; // count visits to handle cycles.
+                    visitNetworkNoLock( algo, visits,
+                        [ & ]( SPtr< Algorithm > algo )
                         {
-                            LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
-                            algo->process();
-                        }
-                        else
+                            if( algo->isActive() )
+                            {
+                                LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
+                                algo->process();
+                            }
+                            else
+                            {
+                                LogI << "Ignoring inactive algorithm \"" << algo->getName() << "\"." << LogEnd;
+                            }
+
+                        },
+                        [ & ]( SPtr< Connection > con )
                         {
-                            LogI << "Ignoring inactive algorithm \"" << algo->getName() << "\"." << LogEnd;
+                            // Propagate only if target is active:
+                            SPtr< Algorithm > target = m_connections[ con ].second;
+                            if( target->isActive() )
+                            {
+                                bool result = con->propagate();
+                                LogD << "Propagation: " << *m_connections[ con ].first << ":" << con->getSource()->getName() << " -> " <<
+                                                          *m_connections[ con ].second << ":" << con->getTarget()->getName() <<
+                                                          " - Result: " << result << LogEnd;
+                                return result;
+                            }
+
+                            LogD << "Propagation skipped (inactive target): "
+                                 << *m_connections[ con ].first << ":" << con->getSource()->getName() << " -> " <<
+                                    *m_connections[ con ].second << ":" << con->getTarget()->getName() << LogEnd;
+                            return false;
                         }
-                    }
+                    );
                 }
             }
         }

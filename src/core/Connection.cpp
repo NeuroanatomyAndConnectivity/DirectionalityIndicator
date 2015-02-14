@@ -59,6 +59,12 @@ namespace di
             }
             return false;
         }
+
+        std::ostream& operator<<( std::ostream& os, const Connection& obj )
+        {
+            os << obj.getSource()->getName() << std::string( " -> " ) << obj.getTarget()->getName();
+            return os;
+        }
     }
 }
 

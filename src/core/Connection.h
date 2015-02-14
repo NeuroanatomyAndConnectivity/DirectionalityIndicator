@@ -92,6 +92,16 @@ namespace di
              */
             SPtr< ConnectorBase > m_target;
         };
+
+        /**
+         * Pretty-print information about this connection
+         *
+         * \param os the stream to write to
+         * \param obj the connection to print
+         *
+         * \return the stream
+         */
+        std::ostream& operator<<( std::ostream& os, const Connection& obj );
     }
 }
 

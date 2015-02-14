@@ -77,6 +77,21 @@ namespace di
             return m_description;
         }
 
+        bool Algorithm::isInput( ConstSPtr< ConnectorBase > connector ) const
+        {
+            return ( std::find( getInputs().begin(), getInputs().end(), connector ) != getInputs().end() );
+        }
+
+        bool Algorithm::isOutput( ConstSPtr< ConnectorBase > connector ) const
+        {
+            return ( std::find( getOutputs().begin(), getOutputs().end(), connector ) != getOutputs().end() );
+        }
+
+        bool Algorithm::hasConnector( ConstSPtr< ConnectorBase > connector ) const
+        {
+            return isInput( connector ) || isOutput( connector );
+        }
+
         SPtr< ConnectorBase > Algorithm::getInput( const std::string& name ) const
         {
             return searchConnector( getInputs(), name );
@@ -128,6 +143,12 @@ namespace di
                 LogD << "De-activating \"" << m_name << "\"." << LogEnd;
             }
             m_active.store( active );
+        }
+
+        std::ostream& operator<<( std::ostream& os, const Algorithm& obj )
+        {
+            os << obj.getName() << std::string( " (" ) << static_cast< const void* >( &obj ) << std::string( ")" );
+            return os;
         }
     }
 }

@@ -95,6 +95,33 @@ namespace di
             virtual void setActive( bool active = true );
 
             /**
+             * Check if the given connector is a valid input of this algorithm.
+             *
+             * \param connector the connector to check
+             *
+             * \return true if valid input.
+             */
+            virtual bool isInput( ConstSPtr< ConnectorBase > connector ) const;
+
+            /**
+             * Check if the given connector is a valid output of this algorithm.
+             *
+             * \param connector the connector to check
+             *
+             * \return true if valid output.
+             */
+            virtual bool isOutput( ConstSPtr< ConnectorBase > connector ) const;
+
+            /**
+             * Check if the given connector is one of this algorithm's connectors.
+             *
+             * \param connector the connector to check.
+             *
+             * \return true if connector is owned by this algorithm.
+             */
+            virtual bool hasConnector( ConstSPtr< ConnectorBase > connector ) const;
+
+            /**
              * Get the list of inputs of this algorithm.
              *
              * \return the list of inputs.
@@ -314,6 +341,16 @@ namespace di
              */
             std::atomic< bool > m_active;
         };
+
+        /**
+         * Pretty-print information about this algorithm
+         *
+         * \param os the stream to write to
+         * \param obj the connection to print
+         *
+         * \return the stream
+         */
+        std::ostream& operator<<( std::ostream& os, const Algorithm& obj );
     }
 }
 

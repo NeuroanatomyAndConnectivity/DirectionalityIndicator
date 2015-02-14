@@ -111,7 +111,6 @@ namespace di
             AlgorithmStrategy* s;
 
             // Create the strategies:
-
             s = m_algorithmStrategies->addStrategy( new AlgorithmStrategy( "Surface with Region Boundaries" ) );
             s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::RenderTriangles >( new di::algorithms::RenderTriangles ) ) );
             algo1 = s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::ExtractRegions >( new di::algorithms::ExtractRegions ) ) );
