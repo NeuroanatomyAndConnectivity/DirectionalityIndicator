@@ -48,7 +48,7 @@ namespace di
         {
             m_boundingBox.include( vertex );
             m_vertices.push_back( vertex );
-            return m_lines.size() - 1;
+            return m_vertices.size() - 1;
         }
 
         size_t Lines::addVertex( float x, float y, float z )
@@ -111,6 +111,16 @@ namespace di
             auto vertexIDs = m_lines[ lineID ];
             return std::make_tuple( m_vertices[ vertexIDs.x ],
                                     m_vertices[ vertexIDs.y ] );
+        }
+
+        void Lines::setVertices( const Vec3Array& vertices )
+        {
+            m_vertices = vertices;
+        }
+
+        void Lines::setLines( const IndexVec2Array& lines )
+        {
+            m_lines = lines;
         }
     }
 }

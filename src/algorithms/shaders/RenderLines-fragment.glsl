@@ -31,6 +31,9 @@ out vec4 fragColor;
 void main()
 {
     // Write
-    fragColor = vec4( v_color.xyz, 1.0 );
+    fragColor = v_color;
+
+    // Small depth offset
+    gl_FragDepth = gl_FragCoord.z - 0.001;
 }
 

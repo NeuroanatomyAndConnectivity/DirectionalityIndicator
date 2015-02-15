@@ -103,6 +103,13 @@ namespace di
             const Vec3Array& getVertices() const;
 
             /**
+             * Set the vertex array. Previously added vertices will be overwritten.
+             *
+             * \param vertices the vertex array.
+             */
+            void setVertices( const Vec3Array& vertices );
+
+            /**
              * Abbreviation for 2 vertices of a line.
              */
             typedef std::tuple< glm::vec3, glm::vec3 > Line;
@@ -124,6 +131,13 @@ namespace di
              * \return the index array.
              */
             const IndexVec2Array& getLines() const;
+
+            /**
+             * Set the lines index array. Overwrites previously set lines.
+             *
+             * \param lines the index array.
+             */
+            void setLines( const IndexVec2Array& lines );
 
             /**
              * The number of lines currently defined.

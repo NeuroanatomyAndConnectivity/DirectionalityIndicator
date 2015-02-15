@@ -105,6 +105,13 @@ namespace di
             const Vec3Array& getVertices() const;
 
             /**
+             * Set the vertex array. Previously added vertices will be overwritten.
+             *
+             * \param vertices the vertex array.
+             */
+            void setVertices( const Vec3Array& vertices );
+
+            /**
              * Abbreviation for 3 vertices of a triangle.
              */
             typedef std::tuple< glm::vec3, glm::vec3, glm::vec3 > Triangle;
@@ -121,12 +128,29 @@ namespace di
             Triangle getVertices( size_t triangleID ) const;
 
             /**
+             * Get the vertex associated with the given vertex ID.
+             *
+             * \param vertexID the vertex ID
+             * \throw std::out_of_range if the index is invalid.
+             *
+             * \return the vertex
+             */
+            glm::vec3 getVertex( size_t vertexID ) const;
+
+            /**
              * Get the triangle normal array. There is a normal for each vertex. Per-triangle normals are not supported. To achieve this, ensure that
              * no vertex is used by multiple triangles. Than store the same normal for each of the three vertices of a single triangle.
              *
              * \return the normal array.
              */
             const NormalArray& getNormals() const;
+
+            /**
+             * Set the given normals. Overwrites previously defined normals
+             *
+             * \param normals the normals to set
+             */
+            void setNormals( const NormalArray& normals );
 
             /**
              * Get the amount of normals for this mesh. A valid mesh will contain either 0 or exactly 1 for each vertex.
@@ -141,6 +165,13 @@ namespace di
              * \return the index array.
              */
             const IndexVec3Array& getTriangles() const;
+
+            /**
+             * Set the triangle index array. Overwrites previously set triangles.
+             *
+             * \param triangles the index array.
+             */
+            void setTriangles( const IndexVec3Array& triangles );
 
             /**
              * The number of triangles currently defined.

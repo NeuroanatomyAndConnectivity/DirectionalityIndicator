@@ -48,7 +48,7 @@ namespace di
         {
             m_boundingBox.include( vertex );
             m_vertices.push_back( vertex );
-            return m_triangles.size() - 1;
+            return m_vertices.size() - 1;
         }
 
         size_t TriangleMesh::addVertex( float x, float y, float z )
@@ -119,10 +119,32 @@ namespace di
 
         TriangleMesh::Triangle TriangleMesh::getVertices( size_t triangleID ) const
         {
+            // Range check is done by std::vector.
             auto vertexIDs = m_triangles[ triangleID ];
             return std::make_tuple( m_vertices[ vertexIDs.x ],
                                     m_vertices[ vertexIDs.y ],
                                     m_vertices[ vertexIDs.z ] );
+        }
+
+        glm::vec3 TriangleMesh::getVertex( size_t vertexID ) const
+        {
+            // Range check is done by std::vector.
+            return m_vertices[ vertexID ];
+        }
+
+        void TriangleMesh::setTriangles( const IndexVec3Array& triangles )
+        {
+            m_triangles = triangles;
+        }
+
+        void TriangleMesh::setVertices( const Vec3Array& vertices )
+        {
+            m_vertices = vertices;
+        }
+
+        void TriangleMesh::setNormals( const NormalArray& normals )
+        {
+            m_normals = normals;
         }
 
         void TriangleMesh::calculateNormals()

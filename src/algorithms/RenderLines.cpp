@@ -64,6 +64,8 @@ namespace di
             // Get input data
             auto data = m_lineDataInput->getData();
 
+            LogD << "Got " << data->getGrid()->getNumLines() << " lines with " << data->getGrid()->getNumVertices() << " vertices." << LogEnd;
+
             // Provide the needed information to the visualizer itself.
             bool changeVis = ( m_visLineData != data );
             m_visLineData = data;
@@ -134,6 +136,8 @@ namespace di
 
             glBindVertexArray( m_VAO );
             glDrawElements( GL_LINES, m_visLineData->getGrid()->getLines().size() * 2, GL_UNSIGNED_INT, NULL );
+
+            glDisable(  GL_BLEND );
             logGLError();
         }
 
