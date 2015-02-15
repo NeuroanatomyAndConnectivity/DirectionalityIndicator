@@ -146,6 +146,15 @@ namespace di
             const NormalArray& getNormals() const;
 
             /**
+             * Query the normal at a given vertex.
+             *
+             * \param vertexID the ID of the vertex
+             *
+             * \return the normal
+             */
+            glm::vec3 getNormal( size_t vertexID ) const;
+
+            /**
              * Set the given normals. Overwrites previously defined normals
              *
              * \param normals the normals to set

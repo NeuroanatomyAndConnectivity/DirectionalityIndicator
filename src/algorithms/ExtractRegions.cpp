@@ -105,6 +105,8 @@ namespace di
                 }
                 else
                 {
+                    float arrowLength = 3.00f;
+
                     // 2: the more interesting case: each color is different to each other.
                     if( ( c1 != c2 ) && ( c1 != c3 ) && ( c2 != c3 ) )
                     {
@@ -117,6 +119,12 @@ namespace di
                         auto v2 = triangles->getVertex( t.y );
                         auto v3 = triangles->getVertex( t.z );
                         auto c = ( v1 + v2 + v3 ) / 3.0f;
+
+                        // get a normal
+                        auto nd = triangles->getNormal( t.x );
+                        auto ne1 = triangles->getNormal( t.y );
+                        auto ne2 = triangles->getNormal( t.z );
+                        auto n = glm::normalize( ( nd + ne1 + ne2 ) / 3.0f );
 
                         // build border lines from each edge-middle-point to the center
                         auto em1 = v1 + ( 0.5f * ( v2 - v1 ) );
@@ -139,6 +147,32 @@ namespace di
                         lines->addLine( em1I, cI );
                         lines->addLine( em2I, cI );
                         lines->addLine( em3I, cI );
+
+                        // An arrow is derived from the newly added border and the triangle normal:
+                        auto arrow1 = glm::cross( n , glm::normalize( em1 - c ) );
+                        auto arrow2 = glm::cross( n , glm::normalize( em2 - c ) );
+                        auto arrow3 = glm::cross( n , glm::normalize( em3 - c ) );
+
+                        auto arrI1 = lines->addVertex( em1 + arrowLength * arrow1 );
+                        auto arrI2 = lines->addVertex( em1 - arrowLength * arrow1 );
+                        auto arrI3 = lines->addVertex( em2 + arrowLength * arrow2 );
+                        auto arrI4 = lines->addVertex( em2 - arrowLength * arrow2 );
+                        auto arrI5 = lines->addVertex( em3 + arrowLength * arrow3 );
+                        auto arrI6 = lines->addVertex( em3 - arrowLength * arrow3 );
+
+                        lines->addLine( em1I, arrI1 );
+                        lines->addLine( em1I, arrI2 );
+                        lines->addLine( em2I, arrI3 );
+                        lines->addLine( em2I, arrI4 );
+                        lines->addLine( em3I, arrI5 );
+                        lines->addLine( em3I, arrI6 );
+
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 1.0 ) );
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 1.0 ) );
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 1.0 ) );
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 1.0 ) );
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 1.0 ) );
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 1.0 ) );
                     }
                     else
                     {
@@ -172,6 +206,12 @@ namespace di
                         auto ve1 = triangles->getVertex( otherI1 );
                         auto ve2 = triangles->getVertex( otherI2 );
 
+                        // get a normal
+                        auto nd = triangles->getNormal( differentI );
+                        auto ne1 = triangles->getNormal( otherI1 );
+                        auto ne2 = triangles->getNormal( otherI2 );
+                        auto n = glm::normalize( ( nd + ne1 + ne2 ) / 3.0f );
+
                         // find the new vertices of the border. It just is the middle of the edge
                         auto bv1 = vd + ( 0.5f * ( ve1 - vd ) );
                         auto bv2 = vd + ( 0.5f * ( ve2 - vd ) );
@@ -182,6 +222,21 @@ namespace di
                         lines->addLine( li1, li2 );
                         colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
                         colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
+
+                        // An arrow is derived from the newly added border and the triangle normal:
+                        auto arrow = glm::cross( n , glm::normalize( bv2 - bv1 ) );
+                        auto arrI1 = lines->addVertex( bv1 + arrowLength * arrow );
+                        auto arrI2 = lines->addVertex( bv2 + arrowLength * arrow );
+                        auto arrI3 = lines->addVertex( bv1 - arrowLength * arrow );
+                        auto arrI4 = lines->addVertex( bv2 - arrowLength * arrow );
+                        lines->addLine( li1, arrI1 );
+                        lines->addLine( li2, arrI2 );
+                        lines->addLine( li1, arrI3 );
+                        lines->addLine( li2, arrI4 );
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 0.5 ) );
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 0.5 ) );
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 1.0 ) );
+                        colors->push_back( glm::vec4( 0.0, 1.0, 0.0, 1.0 ) );
                     }
                 }
             }

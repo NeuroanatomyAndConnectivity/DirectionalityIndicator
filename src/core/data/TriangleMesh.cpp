@@ -147,6 +147,11 @@ namespace di
             m_normals = normals;
         }
 
+        glm::vec3 TriangleMesh::getNormal( size_t vertexID ) const
+        {
+            return m_normals[ vertexID ];
+        }
+
         void TriangleMesh::calculateNormals()
         {
             m_normals.clear();
