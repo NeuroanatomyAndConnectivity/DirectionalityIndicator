@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------------------
 
 #include <string>
+#include <sstream>
 
 #include "Connection.h"
 
@@ -53,10 +54,17 @@ namespace di
 
         bool Connection::propagate()
         {
+            m_packageInfo = "0";
+
             // only propagate if needed
             if( m_target->getTransferable() != m_source->getTransferable() )
             {
                 m_target->setTransferable( m_source->getTransferable() );
+
+                // Also store some info for debugging
+                std::stringstream ss;
+                ss << static_cast< const void* >( m_source->getTransferable().get() );
+                m_packageInfo = ss.str();
                 return true;
             }
             return false;
@@ -64,7 +72,7 @@ namespace di
 
         std::ostream& operator<<( std::ostream& os, const Connection& obj )
         {
-            os << obj.getSource()->getName() << std::string( " -> " ) << obj.getTarget()->getName();
+            os << obj.getSource()->getName() << std::string( " --(" ) << obj.m_packageInfo << std::string( ")--> " ) << obj.getTarget()->getName();
             return os;
         }
     }

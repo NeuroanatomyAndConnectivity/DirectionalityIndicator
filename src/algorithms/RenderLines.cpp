@@ -63,7 +63,6 @@ namespace di
         {
             // Get input data
             auto data = m_lineDataInput->getData();
-            LogD << "Got data instance " << static_cast< const void* >( data.get() ) << "." << LogEnd;
 
             // Provide the needed information to the visualizer itself.
             bool changeVis = ( m_visLineData != data );

@@ -64,7 +64,6 @@ namespace di
         {
             // Get input data
             auto data = m_triangleDataInput->getData();
-            LogD << "Got data instance " << static_cast< const void* >( data.get() ) << "." << LogEnd;
 
             // Provide the needed information to the visualizer itself.
             bool changeVis = ( m_visTriangleData != data );

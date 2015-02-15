@@ -304,15 +304,13 @@ namespace di
                             if( target->isActive() )
                             {
                                 bool result = con->propagate();
-                                LogD << "Propagation: " << *m_connections[ con ].first << ":" << con->getSource()->getName() << " -> " <<
-                                                          *m_connections[ con ].second << ":" << con->getTarget()->getName() <<
-                                                          " - Result: " << result << LogEnd;
+                                LogD << "Propagation: " << *m_connections[ con ].first << ":" << *con << ":" << *m_connections[ con ].second <<
+                                                           " - Result: " << result << LogEnd;
                                 return result;
                             }
 
                             LogD << "Propagation skipped (inactive target): "
-                                 << *m_connections[ con ].first << ":" << con->getSource()->getName() << " -> " <<
-                                    *m_connections[ con ].second << ":" << con->getTarget()->getName() << LogEnd;
+                                 << *m_connections[ con ].first << ":" << *con << ":" << *m_connections[ con ].second << LogEnd;
                             return false;
                         }
                     );

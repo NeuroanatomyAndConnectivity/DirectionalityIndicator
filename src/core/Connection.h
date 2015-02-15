@@ -26,6 +26,7 @@
 #define CONNECTION_H
 
 #include <memory>
+#include <string>
 
 #include "ConnectorBase.h"
 #include "ConnectorObserver.h"
@@ -45,6 +46,7 @@ namespace di
          */
         class Connection
         {
+            friend std::ostream& operator<<( std::ostream& os, const Connection& obj );
         public:
             /**
              * Constructor. Represents the connection between two connectors. Please keep in mind that the data flows from the source connector to the
@@ -91,6 +93,11 @@ namespace di
              * Target connector.
              */
             SPtr< ConnectorBase > m_target;
+
+            /**
+             * Store some information about the last transferred package. This is very useful for debugging and serves no further purpose.
+             */
+            std::string m_packageInfo = "0";
         };
 
         /**
