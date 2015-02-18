@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef ADDALGORITHM_H
-#define ADDALGORITHM_H
+#ifndef DI_ADDALGORITHM_H
+#define DI_ADDALGORITHM_H
 
 #include <string>
 
@@ -88,5 +88,5 @@ namespace di
     }
 }
 
-#endif  // ADDALGORITHM_H
+#endif  // DI_ADDALGORITHM_H
 

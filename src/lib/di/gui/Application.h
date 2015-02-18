@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#ifndef DI_APPLICATION_H
+#define DI_APPLICATION_H
 
 #include <string>
 
@@ -160,5 +160,5 @@ namespace di
     }
 }
 
-#endif  // APPLICATION_H
+#endif  // DI_APPLICATION_H
 

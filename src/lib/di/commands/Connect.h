@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef CONNECT_H
-#define CONNECT_H
+#ifndef DI_CONNECT_H
+#define DI_CONNECT_H
 
 #include <string>
 
@@ -142,5 +142,5 @@ namespace di
     }
 }
 
-#endif  // CONNECT_H
+#endif  // DI_CONNECT_H
 

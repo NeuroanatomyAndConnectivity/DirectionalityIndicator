@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef COMMANDOBSERVEREVENT_H
-#define COMMANDOBSERVEREVENT_H
+#ifndef DI_COMMANDOBSERVEREVENT_H
+#define DI_COMMANDOBSERVEREVENT_H
 
 #include <QEvent>
 
@@ -116,5 +116,5 @@ namespace di
     }
 }
 
-#endif  // COMMANDOBSERVEREVENT_H
+#endif  // DI_COMMANDOBSERVEREVENT_H
 

@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef DI_TYPES_H
+#define DI_TYPES_H
 
 #include <vector>
 #include <set>
@@ -86,5 +86,5 @@ namespace di
     using ConstSPtrSet = std::set< std::shared_ptr< const T > >;
 }
 
-#endif  // TYPES_H
+#endif  // DI_TYPES_H
 

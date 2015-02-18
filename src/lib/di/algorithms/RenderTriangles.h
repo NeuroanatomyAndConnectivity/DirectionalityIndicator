@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef RENDERTRIANGLES_H
-#define RENDERTRIANGLES_H
+#ifndef DI_RENDERTRIANGLES_H
+#define DI_RENDERTRIANGLES_H
 
 #include <di/gfx/GL.h>
 
@@ -159,5 +159,5 @@ namespace di
     }
 }
 
-#endif  // RENDERTRIANGLES_H
+#endif  // DI_RENDERTRIANGLES_H
 

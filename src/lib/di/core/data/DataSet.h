@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATASET_H
-#define DATASET_H
+#ifndef DI_DATASET_H
+#define DI_DATASET_H
 
 #include <string>
 #include <tuple>
@@ -122,5 +122,5 @@ namespace di
     }
 }
 
-#endif  // DATASET_H
+#endif  // DI_DATASET_H
 

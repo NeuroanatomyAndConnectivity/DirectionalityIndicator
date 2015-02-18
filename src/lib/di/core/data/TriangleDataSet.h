@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef TRIANGLEDATASET_H
-#define TRIANGLEDATASET_H
+#ifndef DI_TRIANGLEDATASET_H
+#define DI_TRIANGLEDATASET_H
 
 #include <string>
 #include <tuple>
@@ -65,5 +65,5 @@ namespace di
     }
 }
 
-#endif  // TRIANGLEDATASET_H
+#endif  // DI_TRIANGLEDATASET_H
 

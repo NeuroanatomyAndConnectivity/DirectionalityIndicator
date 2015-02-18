@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef GLERROR_H
-#define GLERROR_H
+#ifndef DI_GLERROR_H
+#define DI_GLERROR_H
 
 #include <iostream>
 #include <string>
@@ -46,5 +46,5 @@ void logGLErrorImpl( std::ostream& to, const std::string& tag, const char* file,
 
 #define logGLError() logGLErrorImpl( LogGL, LogTag, __FILE__, __LINE__ )
 
-#endif  // GLERROR_H
+#endif  // DI_GLERROR_H
 

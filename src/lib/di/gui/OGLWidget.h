@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef OGLWIDGET_H
-#define OGLWIDGET_H
+#ifndef DI_OGLWIDGET_H
+#define DI_OGLWIDGET_H
 
 #include <chrono>
 
@@ -272,5 +272,5 @@ namespace di
     }
 }
 
-#endif  // OGLWIDGET_H
+#endif  // DI_OGLWIDGET_H
 

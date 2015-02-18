@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef LINEDATASET_H
-#define LINEDATASET_H
+#ifndef DI_LINEDATASET_H
+#define DI_LINEDATASET_H
 
 #include <string>
 
@@ -63,5 +63,5 @@ namespace di
     }
 }
 
-#endif  // LINEDATASET_H
+#endif  // DI_LINEDATASET_H
 

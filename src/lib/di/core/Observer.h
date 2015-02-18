@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef OBSERVER_H
-#define OBSERVER_H
+#ifndef DI_OBSERVER_H
+#define DI_OBSERVER_H
 
 namespace di
 {
@@ -57,5 +57,5 @@ namespace di
     }
 }
 
-#endif  // OBSERVER_H
+#endif  // DI_OBSERVER_H
 

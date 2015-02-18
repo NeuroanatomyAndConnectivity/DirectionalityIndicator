@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef GLOBJECT_H
-#define GLOBJECT_H
+#ifndef DI_GLOBJECT_H
+#define DI_GLOBJECT_H
 
 #include <di/gfx/OpenGL.h>
 
@@ -87,6 +87,6 @@ namespace di
     }
 }
 
-#endif  // GLOBJECT_H
+#endif  // DI_GLOBJECT_H
 
 

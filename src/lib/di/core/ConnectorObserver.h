@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef CONNECTOROBSERVER_H
-#define CONNECTOROBSERVER_H
+#ifndef DI_CONNECTOROBSERVER_H
+#define DI_CONNECTOROBSERVER_H
 
 #include "Observer.h"
 
@@ -64,5 +64,5 @@ namespace di
     }
 }
 
-#endif  // CONNECTOROBSERVER_H
+#endif  // DI_CONNECTOROBSERVER_H
 

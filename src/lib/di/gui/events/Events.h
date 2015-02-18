@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef EVENTS_H
-#define EVENTS_H
+#ifndef DI_EVENTS_H
+#define DI_EVENTS_H
 
 #include <QEvent>
 
@@ -31,5 +31,5 @@
 
 #include <di/gui/events/CommandObserverEvent.h>
 
-#endif  // EVENTS_H
+#endif  // DI_EVENTS_H
 

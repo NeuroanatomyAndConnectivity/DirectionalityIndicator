@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISUALIZATION_H
-#define VISUALIZATION_H
+#ifndef DI_VISUALIZATION_H
+#define DI_VISUALIZATION_H
 
 #include <atomic>
 
@@ -146,5 +146,5 @@ namespace di
     }
 }
 
-#endif  // VISUALIZATION_H
+#endif  // DI_VISUALIZATION_H
 

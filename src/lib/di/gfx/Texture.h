@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#ifndef DI_TEXTURE_H
+#define DI_TEXTURE_H
 
 #include <di/Types.h>
 
@@ -166,5 +166,5 @@ namespace di
     }
 }
 
-#endif  // TEXTURE_H
+#endif  // DI_TEXTURE_H
 

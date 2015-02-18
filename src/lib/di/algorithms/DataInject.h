@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATAINJECT_H
-#define DATAINJECT_H
+#ifndef DI_DATAINJECT_H
+#define DI_DATAINJECT_H
 
 #include <mutex>
 
@@ -90,5 +90,5 @@ namespace di
     }
 }
 
-#endif  // DATAINJECT_H
+#endif  // DI_DATAINJECT_H
 

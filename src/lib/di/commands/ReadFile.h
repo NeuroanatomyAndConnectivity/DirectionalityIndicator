@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef READFILE_H
-#define READFILE_H
+#ifndef DI_READFILE_H
+#define DI_READFILE_H
 
 #include <exception>
 #include <string>
@@ -107,5 +107,5 @@ namespace di
     }
 }
 
-#endif  // READFILE_H
+#endif  // DI_READFILE_H
 

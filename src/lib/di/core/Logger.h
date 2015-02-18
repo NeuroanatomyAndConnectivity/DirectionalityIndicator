@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef LOGGER_H
-#define LOGGER_H
+#ifndef DI_LOGGER_H
+#define DI_LOGGER_H
 
 #include <iostream>
 
@@ -38,4 +38,4 @@
 #define LogE LogStream << "ERROR [" << LogTag << "]: "
 #define LogGL LogStream
 
-#endif  // LOGGER_H
+#endif  // DI_LOGGER_H

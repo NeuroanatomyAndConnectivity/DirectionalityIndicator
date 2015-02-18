@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef ALGORITHM_H
-#define ALGORITHM_H
+#ifndef DI_ALGORITHM_H
+#define DI_ALGORITHM_H
 
 #include <atomic>
 #include <algorithm>
@@ -354,5 +354,5 @@ namespace di
     }
 }
 
-#endif  // ALGORITHM_H
+#endif  // DI_ALGORITHM_H
 

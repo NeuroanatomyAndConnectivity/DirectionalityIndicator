@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef PROGRAM_H
-#define PROGRAM_H
+#ifndef DI_PROGRAM_H
+#define DI_PROGRAM_H
 
 #include <initializer_list>
 #include <string>
@@ -234,5 +234,5 @@ namespace di
     }
 }
 
-#endif  // PROGRAM_H
+#endif  // DI_PROGRAM_H
 

@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef TRIANGLEMESH_H
-#define TRIANGLEMESH_H
+#ifndef DI_TRIANGLEMESH_H
+#define DI_TRIANGLEMESH_H
 
 #include <vector>
 #include <tuple>
@@ -242,5 +242,5 @@ namespace di
     }
 }
 
-#endif  // TRIANGLEMESH_H
+#endif  // DI_TRIANGLEMESH_H
 

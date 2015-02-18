@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef DI_MAINWINDOW_H
+#define DI_MAINWINDOW_H
 
 #include <QWidget>
 #include <QMainWindow>
@@ -73,5 +73,5 @@ namespace di
     }
 }
 
-#endif  // MAINWINDOW_H
+#endif  // DI_MAINWINDOW_H
 

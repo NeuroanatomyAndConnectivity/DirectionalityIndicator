@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef GFXTYPES_H
-#define GFXTYPES_H
+#ifndef DI_GFXTYPES_H
+#define DI_GFXTYPES_H
 
 // NOTE: This file is mostly used to include some standard graphics types, like vector arrays and similar.
 
@@ -47,6 +47,6 @@ namespace di
     typedef std::vector< glm::ivec4 > IndexVec4Array;
 }
 
-#endif  // GFXTYPES_H
+#endif  // DI_GFXTYPES_H
 
 

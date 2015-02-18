@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATASETBASE_H
-#define DATASETBASE_H
+#ifndef DI_DATASETBASE_H
+#define DI_DATASETBASE_H
 
 #include <string>
 
@@ -69,5 +69,5 @@ namespace di
     }
 }
 
-#endif  // DATASETBASE_H
+#endif  // DI_DATASETBASE_H
 

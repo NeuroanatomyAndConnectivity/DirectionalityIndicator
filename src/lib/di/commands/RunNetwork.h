@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef RUNNETWORK_H
-#define RUNNETWORK_H
+#ifndef DI_RUNNETWORK_H
+#define DI_RUNNETWORK_H
 
 #include <string>
 
@@ -74,5 +74,5 @@ namespace di
     }
 }
 
-#endif  // RUNNETWORK_H
+#endif  // DI_RUNNETWORK_H
 

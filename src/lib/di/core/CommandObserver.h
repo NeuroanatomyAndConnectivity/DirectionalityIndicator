@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef COMMANDOBSERVER_H
-#define COMMANDOBSERVER_H
+#ifndef DI_COMMANDOBSERVER_H
+#define DI_COMMANDOBSERVER_H
 
 #include <di/core/Observer.h>
 
@@ -100,5 +100,5 @@ namespace di
     }
 }
 
-#endif  // COMMANDOBSERVER_H
+#endif  // DI_COMMANDOBSERVER_H
 

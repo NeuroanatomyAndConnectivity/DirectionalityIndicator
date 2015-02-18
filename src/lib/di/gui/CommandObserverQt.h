@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef COMMANDOBSERVERQT_H
-#define COMMANDOBSERVERQT_H
+#ifndef DI_COMMANDOBSERVERQT_H
+#define DI_COMMANDOBSERVERQT_H
 
 #include <vector>
 #include <memory>
@@ -152,5 +152,5 @@ namespace di
     }
 }
 
-#endif  // COMMANDOBSERVERQT_H
+#endif  // DI_COMMANDOBSERVERQT_H
 

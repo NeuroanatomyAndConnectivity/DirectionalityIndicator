@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef BOUNDINGBOX_H
-#define BOUNDINGBOX_H
+#ifndef DI_BOUNDINGBOX_H
+#define DI_BOUNDINGBOX_H
 
 #include <di/MathTypes.h>
 
@@ -120,5 +120,5 @@ namespace di
     }
 }
 
-#endif  // BOUNDINGBOX_H
+#endif  // DI_BOUNDINGBOX_H
 

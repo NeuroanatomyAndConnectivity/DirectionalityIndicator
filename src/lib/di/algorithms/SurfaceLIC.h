@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef SURFACELIC_H
-#define SURFACELIC_H
+#ifndef DI_SURFACELIC_H
+#define DI_SURFACELIC_H
 
 #include <di/gfx/GL.h>
 
@@ -234,5 +234,5 @@ namespace di
     }
 }
 
-#endif  // SURFACELIC_H
+#endif  // DI_SURFACELIC_H
 

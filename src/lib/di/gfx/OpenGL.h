@@ -22,11 +22,11 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef OPENGL_H
-#define OPENGL_H
+#ifndef DI_OPENGL_H
+#define DI_OPENGL_H
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-#endif  // OPENGL_H
+#endif  // DI_OPENGL_H
 

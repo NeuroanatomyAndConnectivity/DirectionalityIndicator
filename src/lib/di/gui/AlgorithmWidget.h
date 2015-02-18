@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef ALGORITHMWIDGET_H
-#define ALGORITHMWIDGET_H
+#ifndef DI_ALGORITHMWIDGET_H
+#define DI_ALGORITHMWIDGET_H
 
 #include <QWidget>
 
@@ -87,5 +87,5 @@ namespace di
     }
 }
 
-#endif  // ALGORITHMWIDGET_H
+#endif  // DI_ALGORITHMWIDGET_H
 

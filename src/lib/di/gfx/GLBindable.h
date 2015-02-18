@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef GLBINDABLE_H
-#define GLBINDABLE_H
+#ifndef DI_GLBINDABLE_H
+#define DI_GLBINDABLE_H
 
 #include <di/gfx/OpenGL.h>
 #include <di/gfx/GLObject.h>
@@ -63,5 +63,5 @@ namespace di
     }
 }
 
-#endif  // GLBINDABLE_H
+#endif  // DI_GLBINDABLE_H
 

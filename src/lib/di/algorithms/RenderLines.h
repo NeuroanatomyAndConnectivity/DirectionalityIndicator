@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef RENDERLINES_H
-#define RENDERLINES_H
+#ifndef DI_RENDERLINES_H
+#define DI_RENDERLINES_H
 
 #include <di/gfx/GL.h>
 
@@ -154,5 +154,5 @@ namespace di
     }
 }
 
-#endif  // RENDERLINES_H
+#endif  // DI_RENDERLINES_H
 

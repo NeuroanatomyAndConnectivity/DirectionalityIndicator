@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef STRINGUTILS_H
-#define STRINGUTILS_H
+#ifndef DI_STRINGUTILS_H
+#define DI_STRINGUTILS_H
 
 #include <string>
 
@@ -44,5 +44,5 @@ namespace di
     }
 }
 
-#endif  // STRINGUTILS_H
+#endif  // DI_STRINGUTILS_H
 

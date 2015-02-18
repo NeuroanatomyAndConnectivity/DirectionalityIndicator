@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef CONNECTOR_H
-#define CONNECTOR_H
+#ifndef DI_CONNECTOR_H
+#define DI_CONNECTOR_H
 
 #include <string>
 
@@ -152,5 +152,5 @@ namespace di
     }
 }
 
-#endif  // CONNECTOR_H
+#endif  // DI_CONNECTOR_H
 

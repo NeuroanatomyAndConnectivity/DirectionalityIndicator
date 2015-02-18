@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef MATHTYPES_H
-#define MATHTYPES_H
+#ifndef DI_MATHTYPES_H
+#define DI_MATHTYPES_H
 
 // NOTE: This file is mostly used to include some standard math types like matrix and vector.
 
@@ -44,6 +44,6 @@
 #include <glm/mat4x4.hpp>
 
 
-#endif  // MATHTYPES_H
+#endif  // DI_MATHTYPES_H
 
 

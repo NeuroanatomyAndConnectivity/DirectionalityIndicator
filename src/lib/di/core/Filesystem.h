@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#ifndef DI_FILESYSTEM_H
+#define DI_FILESYSTEM_H
 
 #include <string>
 
@@ -76,5 +76,5 @@ namespace di
     }
 }
 
-#endif  // FILESYSTEM_H
+#endif  // DI_FILESYSTEM_H
 

@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef LINES_H
-#define LINES_H
+#ifndef DI_LINES_H
+#define DI_LINES_H
 
 #include <vector>
 #include <tuple>
@@ -187,5 +187,5 @@ namespace di
     }
 }
 
-#endif  // LINES_H
+#endif  // DI_LINES_H
 

@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef ALGORITHMSTRATEGIES_H
-#define ALGORITHMSTRATEGIES_H
+#ifndef DI_ALGORITHMSTRATEGIES_H
+#define DI_ALGORITHMSTRATEGIES_H
 
 #include <string>
 #include <vector>
@@ -105,5 +105,5 @@ namespace di
     }
 }
 
-#endif  // ALGORITHMSTRATEGIES_H
+#endif  // DI_ALGORITHMSTRATEGIES_H
 

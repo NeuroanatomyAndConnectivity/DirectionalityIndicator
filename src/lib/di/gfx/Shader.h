@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef DI_SHADER_H
+#define DI_SHADER_H
 
 #include <string>
 
@@ -89,5 +89,5 @@ namespace di
     }
 }
 
-#endif  // SHADER_H
+#endif  // DI_SHADER_H
 

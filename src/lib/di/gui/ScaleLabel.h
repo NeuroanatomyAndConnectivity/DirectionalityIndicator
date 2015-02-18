@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef SCALELABEL_H
-#define SCALELABEL_H
+#ifndef DI_SCALELABEL_H
+#define DI_SCALELABEL_H
 
 #include <QLabel>
 #include <QString>
@@ -162,5 +162,5 @@ namespace di
     }
 }
 
-#endif  // SCALELABEL_H
+#endif  // DI_SCALELABEL_H
 

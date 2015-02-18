@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATAWIDGET_H
-#define DATAWIDGET_H
+#ifndef DI_DATAWIDGET_H
+#define DI_DATAWIDGET_H
 
 #include <vector>
 
@@ -99,5 +99,5 @@ namespace di
     }
 }
 
-#endif  // DATAWIDGET_H
+#endif  // DI_DATAWIDGET_H
 

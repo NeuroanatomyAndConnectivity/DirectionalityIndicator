@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef CONNECTORTRANSFERABLE_H
-#define CONNECTORTRANSFERABLE_H
+#ifndef DI_CONNECTORTRANSFERABLE_H
+#define DI_CONNECTORTRANSFERABLE_H
 
 #include <string>
 
@@ -55,5 +55,5 @@ namespace di
     }
 }
 
-#endif  // CONNECTORTRANSFERABLE_H
+#endif  // DI_CONNECTORTRANSFERABLE_H
 

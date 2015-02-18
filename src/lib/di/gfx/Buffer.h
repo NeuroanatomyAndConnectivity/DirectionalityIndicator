@@ -22,8 +22,9 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef BUFFER_H
-#define BUFFER_H
+#ifndef DI_BUFFER_H
+#define DI_BUFFER_H
+
 #include <iostream>
 
 #include <di/Types.h>
@@ -140,5 +141,5 @@ namespace di
     }
 }
 
-#endif  // BUFFER_H
+#endif  // DI_BUFFER_H
 

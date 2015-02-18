@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef FILEWIDGET_H
-#define FILEWIDGET_H
+#ifndef DI_FILEWIDGET_H
+#define DI_FILEWIDGET_H
 
 #include <QIcon>
 #include <QWidget>
@@ -112,5 +112,5 @@ namespace di
     }
 }
 
-#endif  // FILEWIDGET_H
+#endif  // DI_FILEWIDGET_H
 

@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef CAMERA_H
-#define CAMERA_H
+#ifndef DI_CAMERA_H
+#define DI_CAMERA_H
 
 #include <di/GfxTypes.h>
 
@@ -92,5 +92,5 @@ namespace di
     }
 }
 
-#endif  // CAMERA_H
+#endif  // DI_CAMERA_H
 

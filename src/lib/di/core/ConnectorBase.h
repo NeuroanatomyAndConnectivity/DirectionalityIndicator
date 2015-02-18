@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef CONNECTORBASE_H
-#define CONNECTORBASE_H
+#ifndef DI_CONNECTORBASE_H
+#define DI_CONNECTORBASE_H
 
 #include <string>
 
@@ -108,5 +108,5 @@ namespace di
     }
 }
 
-#endif  // CONNECTORBASE_H
+#endif  // DI_CONNECTORBASE_H
 

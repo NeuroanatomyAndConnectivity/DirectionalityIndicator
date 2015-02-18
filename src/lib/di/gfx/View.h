@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VIEW_H
-#define VIEW_H
+#ifndef DI_VIEW_H
+#define DI_VIEW_H
 
 #include <utility>
 
@@ -90,5 +90,5 @@ namespace di
     }
 }
 
-#endif  // VIEW_H
+#endif  // DI_VIEW_H
 

@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef CONNECTION_H
-#define CONNECTION_H
+#ifndef DI_CONNECTION_H
+#define DI_CONNECTION_H
 
 #include <memory>
 #include <string>
@@ -112,5 +112,5 @@ namespace di
     }
 }
 
-#endif  // CONNECTION_H
+#endif  // DI_CONNECTION_H
 

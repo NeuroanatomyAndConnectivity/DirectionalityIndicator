@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef PLYREADER_H
-#define PLYREADER_H
+#ifndef DI_PLYREADER_H
+#define DI_PLYREADER_H
 
 #include <string>
 
@@ -73,5 +73,5 @@ namespace di
     }
 }
 
-#endif  // PLYREADER_H
+#endif  // DI_PLYREADER_H
 

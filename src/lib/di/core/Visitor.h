@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef VISITOR_H
-#define VISITOR_H
+#ifndef DI_VISITOR_H
+#define DI_VISITOR_H
 
 namespace di
 {
@@ -94,5 +94,5 @@ namespace di
     }
 }
 
-#endif  // VISITOR_H
+#endif  // DI_VISITOR_H
 

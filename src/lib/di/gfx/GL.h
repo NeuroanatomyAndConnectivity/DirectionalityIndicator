@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef GL_H
-#define GL_H
+#ifndef DI_GL_H
+#define DI_GL_H
 
 #include <di/GfxTypes.h>
 
@@ -37,5 +37,5 @@
 
 #include <di/gfx/GLError.h>
 
-#endif  // GL_H
+#endif  // DI_GL_H
 

@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef PROCESSINGNETWORK_H
-#define PROCESSINGNETWORK_H
+#ifndef DI_PROCESSINGNETWORK_H
+#define DI_PROCESSINGNETWORK_H
 
 #include <mutex>
 #include <string>
@@ -416,5 +416,5 @@ namespace di
     }
 }
 
-#endif  // PROCESSINGNETWORK_H
+#endif  // DI_PROCESSINGNETWORK_H
 

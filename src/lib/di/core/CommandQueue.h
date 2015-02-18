@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef COMMANDQUEUE_H
-#define COMMANDQUEUE_H
+#ifndef DI_COMMANDQUEUE_H
+#define DI_COMMANDQUEUE_H
 
 #include <condition_variable>
 #include <list>
@@ -157,5 +157,5 @@ namespace di
     }
 }
 
-#endif  // COMMANDQUEUE_H
+#endif  // DI_COMMANDQUEUE_H
 

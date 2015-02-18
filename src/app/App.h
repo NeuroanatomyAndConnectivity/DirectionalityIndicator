@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef APP_H
-#define APP_H
+#ifndef DI_APP_H
+#define DI_APP_H
 
 #include <di/gui/Application.h>
 
@@ -104,5 +104,5 @@ namespace di
     }
 }
 
-#endif  // APP_H
+#endif  // DI_APP_H
 

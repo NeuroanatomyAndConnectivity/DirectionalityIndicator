@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef COMMAND_H
-#define COMMAND_H
+#ifndef DI_COMMAND_H
+#define DI_COMMAND_H
 
 #include <memory>
 #include <exception>
@@ -208,5 +208,5 @@ namespace di
     }
 }
 
-#endif  // COMMAND_H
+#endif  // DI_COMMAND_H
 

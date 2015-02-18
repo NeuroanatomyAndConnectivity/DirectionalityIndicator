@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef READER_H
-#define READER_H
+#ifndef DI_READER_H
+#define DI_READER_H
 
 #include <string>
 
@@ -76,7 +76,5 @@ namespace di
     }
 }
 
-#endif  // READER_H
-
-
+#endif  // DI_READER_H
 
