@@ -22,44 +22,38 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <QMainWindow>
-#include <QSettings>
+#include <iostream>
 
-#include "Application.h"
+#include "App.h"
 
-#include "MainWindow.h"
-
-namespace di
+/**
+ * Print the version information.
+ */
+void printVersion()
 {
-    namespace gui
-    {
-        MainWindow::MainWindow( QWidget* parent ):
-            QMainWindow( parent )
-        {
-            setWindowTitle( tr( "DirectionalityIndicator" ) );
-            setObjectName( "MainWindow" );
-        }
+    std::cout << "DirectionalityIndicator (http://github.com/NeuroanatomyAndConnectivity/DirectionalityIndicator)"
+              << std::endl
+              << std::endl;
 
-        MainWindow::~MainWindow()
-        {
-        }
-
-        void MainWindow::loadStates()
-        {
-            restoreGeometry( Application::getSettings()->value( "gui/geometry" ).toByteArray() );
-            restoreState( Application::getSettings()->value( "gui/windowState" ).toByteArray() );
-        }
-
-        void MainWindow::saveStates()
-        {
-            Application::getSettings()->setValue( "gui/geometry", saveGeometry() );
-            Application::getSettings()->setValue( "gui/windowState", saveState() );
-        }
-
-        void MainWindow::closeEvent( QCloseEvent* event )
-        {
-            saveStates();
-            QMainWindow::closeEvent( event );
-        }
-    }
+    std::cout <<
+    "Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)" << std::endl <<
+    "          2014-2015 Max Planck Research Group \"Neuroanatomy and Connectivity\"" << std::endl <<
+    std::endl;  // Create new line after message for clarity.
 }
+
+
+/**
+ * The main routine starting up the whole application.
+ */
+int main( int argc, char** argv )
+{
+    printVersion();
+
+    // Run GUI App
+    di::app::App app( argc, argv );
+    int ret = app.run();
+
+    // Done.
+    return ret;
+}
+

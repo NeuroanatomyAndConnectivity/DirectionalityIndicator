@@ -22,24 +22,43 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef MATHTYPES_H
-#define MATHTYPES_H
+#include <QMainWindow>
 
-// NOTE: This file is mostly used to include some standard math types like matrix and vector.
+#include "gui/Application.h"
 
-// GLM utils
-#include <glm/gtc/type_ptr.hpp>
+#include "MainWindow.h"
 
-// vectors
-#include "glm/vec2.hpp"
-#include "glm/vec3.hpp"
-#include "glm/vec4.hpp"
+namespace di
+{
+    namespace app
+    {
+        MainWindow::MainWindow( QWidget* parent ):
+            QMainWindow( parent )
+        {
+            setWindowTitle( tr( "DirectionalityIndicator" ) );
+            setObjectName( "MainWindow" );
+        }
 
-// matrices
-#include "glm/mat3x3.hpp"
-#include "glm/mat4x4.hpp"
+        MainWindow::~MainWindow()
+        {
+        }
 
+        void MainWindow::loadStates()
+        {
+            restoreGeometry( di::gui::Application::getSettings()->value( "gui/geometry" ).toByteArray() );
+            restoreState( di::gui::Application::getSettings()->value( "gui/windowState" ).toByteArray() );
+        }
 
-#endif  // MATHTYPES_H
+        void MainWindow::saveStates()
+        {
+            di::gui::Application::getSettings()->setValue( "gui/geometry", saveGeometry() );
+            di::gui::Application::getSettings()->setValue( "gui/windowState", saveState() );
+        }
 
-
+        void MainWindow::closeEvent( QCloseEvent* event )
+        {
+            saveStates();
+            QMainWindow::closeEvent( event );
+        }
+    }
+}

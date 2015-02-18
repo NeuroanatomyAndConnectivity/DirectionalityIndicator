@@ -22,68 +22,55 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DATAWIDGET_H
-#define DATAWIDGET_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#include <QDockWidget>
-
-#include "Types.h"
-
-class FileWidget;
+#include <QWidget>
+#include <QMainWindow>
 
 namespace di
 {
-    namespace core
+    namespace app
     {
-        class Algorithm;
-    }
-
-    namespace gui
-    {
-        class AlgorithmStrategies;
-
         /**
-         * A simple widget to provide the data-loading functionality. For now, it hard-codes the required files of our use-case.
+         * The main window of the application.
          */
-        class DataWidget: public QDockWidget
+        class MainWindow: public QMainWindow
         {
             Q_OBJECT
         public:
             /**
-             * Create the data widget.
+             * Create the main window.
              *
              * \param parent the parent widget.
              */
-            explicit DataWidget( QWidget* parent = nullptr );
+            explicit MainWindow( QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
              */
-            virtual ~DataWidget();
+            virtual ~MainWindow();
 
             /**
-             * Allows this widget to prepare everything in the network. This is only a temporary solution.
+             * Loads and restores previous states  (if any). Useful to retain user GUI setup during sessions.
              */
-            void prepareProcessingNetwork();
+            virtual void loadStates();
 
             /**
-             * Connect the data to the algorithm.
-             *
-             * \note Hard-coded. Ugly. Do not copy.
-             *
-             * \param to to this algorithm strategy.
+             * Save the current GUI states and sizes. Useful to retain user GUI setup during sessions.
              */
-            void connectDataToStrategies( AlgorithmStrategies* to );
-
+            virtual void saveStates();
         protected:
-        private:
-             /**
-             * The mesh load widget.
+            /**
+             * Called on close. For more details, refer to QWidget::closeEvent.
+             *
+             * \param event the close event.
              */
-            FileWidget* m_meshLoad = nullptr;
+            virtual void closeEvent( QCloseEvent* event );
+        private:
         };
     }
 }
 
-#endif  // DATAWIDGET_H
+#endif  // MAINWINDOW_H
 

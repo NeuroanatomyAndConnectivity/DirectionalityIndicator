@@ -22,38 +22,31 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <iostream>
+#ifndef MATHTYPES_H
+#define MATHTYPES_H
 
-#include "Application.h"
+// NOTE: This file is mostly used to include some standard math types like matrix and vector.
 
-/**
- * Print the version information.
- */
-void printVersion()
-{
-    std::cout << "DirectionalityIndicator (http://github.com/NeuroanatomyAndConnectivity/DirectionalityIndicator)"
-              << std::endl
-              << std::endl;
-
-    std::cout <<
-    "Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)" << std::endl <<
-    "          2014-2015 Max Planck Research Group \"Neuroanatomy and Connectivity\"" << std::endl <<
-    std::endl;  // Create new line after message for clarity.
-}
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 
 
-/**
- * The main routine starting up the whole application.
- */
-int main( int argc, char** argv )
-{
-    printVersion();
+// GLM utils
+#include <glm/gtc/type_ptr.hpp>
 
-    // Run GUI App
-    di::gui::Application app( argc, argv );
-    int ret = app.run();
+// vectors
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
-    // Done.
-    return ret;
-}
+// matrices
+#include <glm/mat3x3.hpp>
+#include <glm/mat4x4.hpp>
+
+
+#endif  // MATHTYPES_H
+
 

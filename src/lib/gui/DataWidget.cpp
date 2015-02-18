@@ -36,10 +36,6 @@
 #define LogTag "gui/DataWidget"
 #include "core/Logger.h"
 
-// include some icons as XPM. This will be replaced by a proper file loading.
-#include "icons/iconMesh.xpm"
-#include "icons/iconLabels.xpm"
-
 #include "CommandObserverQt.h"
 #include "events/CommandObserverEvent.h"
 #include "FileWidget.h"
@@ -65,39 +61,39 @@ namespace di
             // Create the content container
             QWidget* contentWidget( new QWidget( this ) );
             setWidget( contentWidget );
-            QVBoxLayout* contentLayout( new QVBoxLayout );
-            contentWidget->setLayout( contentLayout );
+            m_contentLayout = new QVBoxLayout;
+            contentWidget->setLayout( m_contentLayout );
 
-            // Add the mesh-load-button thingy
-            m_meshLoad = new FileWidget( QIcon( QPixmap( iconMesh_xpm ) ),
-                                         QString( "Stanford Poly Format (*.ply)"
-                                         /* Not yet implemented
-                                                                   "Mesh File (*.gii *.asc *.ply);;
-                                                                   GIfTI File (*.gii);; " +
-                                                                   "ASCII Mesh File (*.asc);; " +
-                                                                   "Stanford Poly Format (*.ply)" );
-                                                                   */
-                                         ),
-                                         contentWidget );
-
-            contentLayout->addWidget( m_meshLoad );
-            contentLayout->setAlignment( Qt::AlignTop );
+            m_contentLayout->setAlignment( Qt::AlignTop );
         }
 
         DataWidget::~DataWidget()
         {
         }
 
+        void DataWidget::addFileWidget( FileWidget* widget )
+        {
+            m_loaders.push_back( widget );
+            m_contentLayout->addWidget( widget );
+        }
+
         void DataWidget::prepareProcessingNetwork()
         {
-            // We use DataInject algorithms to inject data we have loaded (or will load). Let the FileWidgets do it:
-            m_meshLoad->prepareProcessingNetwork();
+            // forward
+            for( auto l : m_loaders )
+            {
+                l->prepareProcessingNetwork();
+            }
         }
 
         void DataWidget::connectDataToStrategies( AlgorithmStrategies* to )
         {
-            auto meshAlgo = m_meshLoad->getDataInject();
-            to->connectToAll( meshAlgo, "Data", "Triangle Mesh" );
+            // forward
+            for( auto l : m_loaders )
+            {
+                auto lAlgo = l->getDataInject();
+                to->connectToAll( lAlgo, "Data", "Triangle Mesh" );
+            }
         }
     }
 }

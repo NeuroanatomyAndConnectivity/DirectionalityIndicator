@@ -54,11 +54,18 @@ namespace di
         std::string readTextFile( const std::string& filename );
 
         /**
-         * The runtime path of the program
+         * The runtime path of the program. Guaranteed to end with a directory separator.
          *
          * \return the path.
          */
-        const std::string& getRuntimePath();
+        std::string getRuntimePath();
+
+        /**
+         * The runtime path of the program. Guaranteed to end with a directory separator.
+         *
+         * \return the resource path
+         */
+        std::string getResourcePath();
 
         /**
          * Initialize runtime path. Call this as soon as possible.

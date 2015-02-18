@@ -63,16 +63,29 @@ namespace di
             return str;
         }
 
-        std::string g_runtimePath = "";
+        static std::string g_runtimePath = "";
 
-        const std::string& getRuntimePath()
+        std::string getRuntimePath()
         {
             return g_runtimePath;
         }
 
+        std::string getResourcePath()
+        {
+            // NOTE: ResourceName needs to be set by the build system
+            return getRuntimePath() + "../share/" + ResourceName + "/";
+        }
+
         void initRuntimePath( const std::string& path )
         {
-            g_runtimePath = path;
+            if( ( path.back() == '/' ) || ( path.back() == '\\' ) )
+            {
+                g_runtimePath = path;
+            }
+            else
+            {
+                g_runtimePath = path + "/";
+            }
         }
     }
 }

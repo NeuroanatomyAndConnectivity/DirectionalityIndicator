@@ -31,23 +31,10 @@
 
 #include "Types.h"
 
-class QToolBox;
-
 namespace di
 {
-    namespace core
-    {
-        class Connection;
-    }
-
     namespace gui
     {
-        // Forward declarations
-        class OGLWidget;
-        class DataWidget;
-        class MainWindow;
-        class AlgorithmStrategies;
-
         /**
          * This represents the application user interface. It handles creation/destruction of the UI and is the central entry point of the application.
          * For now, the UI is very simplistic and hard-codes all parameters and algorithms. This will change in the future. Now, it is sufficient as
@@ -63,15 +50,16 @@ namespace di
             /**
              * Create application instance. It does not create any GUI. To actually initialize and startup the application, use \ref run.
              *
-             * \param argc
-             * \param argv
+             * \param argc argument count
+             * \param argv argument array
+             * \param name define a name of this application. It is used as namespace for settings and more. No spaces!
              */
-            Application( int argc, char** argv );
+            Application( std::string name, int argc, char** argv );
 
             /**
              * Destroy and clean up.
              */
-            ~Application();
+            virtual ~Application();
 
             /**
              * Run the application. It initializes the application, OpenGL and the visualization framework.
@@ -101,8 +89,33 @@ namespace di
              */
             static SPtr< di::core::ProcessingNetwork > getProcessingNetwork();
 
+            /**
+             * Get app name. The application namespace.
+             *
+             * \return the name
+             */
+            std::string getName() const;
         protected:
+            /**
+             * Implement your specific UI code here. The network was not yet started. So only do GUI stuff here.
+             */
+            virtual void prepareUI() = 0;
+
+            /**
+             * Implement your specific network code here. Network was started.
+             */
+            virtual void prepareNetwork() = 0;
+
+            /**
+             * Implement the code that will be called after all preparations to start the UI.
+             */
+            virtual void show() = 0;
         private:
+            /**
+             * The namespace the app is operating in.
+             */
+            std::string m_name;
+
             /**
              * Singleton instance.
              */
@@ -124,29 +137,9 @@ namespace di
             QSettings* m_settings = nullptr;
 
             /**
-             * The application main window.
-             */
-            MainWindow* m_mainWindow = nullptr;
-
-            /**
-             * The main graphics widget widget.
-             */
-            OGLWidget* m_mainGLWidget = nullptr;
-
-            /**
-             * The data-handling widget.
-             */
-            DataWidget* m_dataWidget = nullptr;
-
-            /**
              * The processing container managed by this application instance.
              */
             SPtr< core::ProcessingNetwork > m_processingNetwork = nullptr;
-
-            /**
-             * Different use-cases are managed in this class.
-             */
-            AlgorithmStrategies* m_algorithmStrategies = nullptr;
         };
     }
 }

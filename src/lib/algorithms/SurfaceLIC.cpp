@@ -95,7 +95,7 @@ namespace di
             SPtr< di::core::Shader > vertexShader = nullptr;
             SPtr< di::core::Shader > fragmentShader = nullptr;
 
-            std::string localShaderPath = core::getRuntimePath() + "/algorithms/shaders/";
+            std::string localShaderPath = core::getResourcePath() + "/algorithms/shaders/";
             vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
                                                                core::readTextFile( localShaderPath + "LICMeshTransform-vertex.glsl" ) );
             fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,

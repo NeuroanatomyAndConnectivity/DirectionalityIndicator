@@ -25,48 +25,50 @@
 #include <string>
 #include <vector>
 
-#define LogTag "algorithms/RenderTriangles"
+#define LogTag "algorithms/RenderLines"
 #include "core/Logger.h"
 
-#include "core/data/TriangleDataSet.h"
+#include "core/data/LineDataSet.h"
 #include "core/Filesystem.h"
 
 #include "gfx/GL.h"
 #include "gfx/GLError.h"
 
-#include "RenderTriangles.h"
+#include "RenderLines.h"
 
 namespace di
 {
     namespace algorithms
     {
-        RenderTriangles::RenderTriangles():
-            Algorithm( "Render Triangles",
-                       "This algorithm takes a triangle mesh and renders it to screen." ),
+        RenderLines::RenderLines():
+            Algorithm( "Render Lines",
+                       "This algorithm takes a bunch of lines and renders it to screen." ),
             Visualization()
         {
             // We require some inputs.
 
             // 1: the triangle mesh
-            m_triangleDataInput = addInput< di::core::TriangleDataSet >(
-                    "Triangle Mesh",
-                    "The triangle mesh to render."
+            m_lineDataInput = addInput< di::core::LineDataSet >(
+                    "Lines",
+                    "The lines to render."
             );
         }
 
-        RenderTriangles::~RenderTriangles()
+        RenderLines::~RenderLines()
         {
             // nothing to clean up so far
         }
 
-        void RenderTriangles::process()
+        void RenderLines::process()
         {
             // Get input data
-            auto data = m_triangleDataInput->getData();
+            auto data = m_lineDataInput->getData();
+
+            LogD << "Got " << data->getGrid()->getNumLines() << " lines with " << data->getGrid()->getNumVertices() << " vertices." << LogEnd;
 
             // Provide the needed information to the visualizer itself.
-            bool changeVis = ( m_visTriangleData != data );
-            m_visTriangleData = data;
+            bool changeVis = ( m_visLineData != data );
+            m_visLineData = data;
 
             // As the rendering system does not render permanently, inform about the update.
             if( changeVis )
@@ -75,11 +77,11 @@ namespace di
             }
         }
 
-        core::BoundingBox RenderTriangles::getBoundingBox() const
+        core::BoundingBox RenderLines::getBoundingBox() const
         {
-            if( m_visTriangleData )
+            if( m_visLineData )
             {
-                return m_visTriangleData->getGrid()->getBoundingBox();
+                return m_visLineData->getGrid()->getBoundingBox();
             }
             else
             {
@@ -87,18 +89,18 @@ namespace di
             }
         }
 
-        void RenderTriangles::prepare()
+        void RenderLines::prepare()
         {
             LogD << "Vis Prepare" << LogEnd;
 
             SPtr< di::core::Shader > vertexShader = nullptr;
             SPtr< di::core::Shader > fragmentShader = nullptr;
 
-            std::string localShaderPath = core::getRuntimePath() + "/algorithms/shaders/";
+            std::string localShaderPath = core::getResourcePath() + "/algorithms/shaders/";
             vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
-                                                               core::readTextFile( localShaderPath + "RenderTriangles-vertex.glsl" ) );
+                                                               core::readTextFile( localShaderPath + "RenderLines-vertex.glsl" ) );
             fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
-                                                                 core::readTextFile( localShaderPath + "RenderTriangles-fragment.glsl" ) );
+                                                                 core::readTextFile( localShaderPath + "RenderLines-fragment.glsl" ) );
 
             // Link them to build the program itself
             // m_shaderProgram = std::make_shared< di::core::Program >( { m_vertexShader, m_fragmentShader } );
@@ -106,20 +108,18 @@ namespace di
             m_shaderProgram = SPtr< di::core::Program >( new di::core::Program(
                         {
                             vertexShader,
-                            fragmentShader,
-                            std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
-                                                              core::readTextFile( localShaderPath + "Shading.glsl" ) )
+                            fragmentShader
                         }
             ) );
             m_shaderProgram->realize();
         }
 
-        void RenderTriangles::finalize()
+        void RenderLines::finalize()
         {
             LogD << "Vis Finalize" << LogEnd;
         }
 
-        void RenderTriangles::render( const core::View& view )
+        void RenderLines::render( const core::View& view )
         {
             if( !( m_VAO && m_shaderProgram && m_vertexBuffer ) )
             {
@@ -135,16 +135,18 @@ namespace di
             glEnable( GL_BLEND );
 
             glBindVertexArray( m_VAO );
-            glDrawElements( GL_TRIANGLES, m_visTriangleData->getGrid()->getTriangles().size() * 3, GL_UNSIGNED_INT, NULL );
+            glDrawElements( GL_LINES, m_visLineData->getGrid()->getLines().size() * 2, GL_UNSIGNED_INT, NULL );
+
+            glDisable(  GL_BLEND );
             logGLError();
         }
 
-        void RenderTriangles::update( const core::View& /* view */, bool reload )
+        void RenderLines::update( const core::View& /* view */, bool reload )
         {
             // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
             // and many code parts repeat again and again.
 
-            if( !m_visTriangleData )
+            if( !m_visLineData )
             {
                 return;
             }
@@ -169,7 +171,6 @@ namespace di
             // get the location of attribute "position" in program
             GLint vertexLoc = m_shaderProgram->getAttribLocation( "position" );
             GLint colorLoc = m_shaderProgram->getAttribLocation( "color" );
-            GLint normalLoc = m_shaderProgram->getAttribLocation( "normal" );
             logGLError();
 
             // Create the VAO
@@ -179,7 +180,6 @@ namespace di
 
             // Create some buffers
             m_vertexBuffer = std::make_shared< core::Buffer >();
-            m_normalBuffer = std::make_shared< core::Buffer >();
             m_colorBuffer = std::make_shared< core::Buffer >();
             m_indexBuffer = std::make_shared< core::Buffer >( core::Buffer::BufferType::ElementArray );
             logGLError();
@@ -187,7 +187,7 @@ namespace di
             // Set the data using the triangle mesh. Also set the location mapping of the shader using the VAO
             m_vertexBuffer->realize();
             m_vertexBuffer->bind();
-            m_vertexBuffer->data( m_visTriangleData->getGrid()->getVertices() );
+            m_vertexBuffer->data( m_visLineData->getGrid()->getVertices() );
             logGLError();
 
             glEnableVertexAttribArray( vertexLoc );
@@ -196,21 +196,14 @@ namespace di
 
             m_colorBuffer->realize();
             m_colorBuffer->bind();
-            m_colorBuffer->data( m_visTriangleData->getAttributes() );
+            m_colorBuffer->data( m_visLineData->getAttributes() );
             glEnableVertexAttribArray( colorLoc );
             glVertexAttribPointer( colorLoc, 4, GL_FLOAT, 0, 0, 0 );
             logGLError();
 
-            m_normalBuffer->realize();
-            m_normalBuffer->bind();
-            m_normalBuffer->data( m_visTriangleData->getGrid()->getNormals() );
-            glEnableVertexAttribArray( normalLoc );
-            glVertexAttribPointer( normalLoc, 3, GL_FLOAT, 0, 0, 0 );
-            logGLError();
-
             m_indexBuffer->realize();
             m_indexBuffer->bind();
-            m_indexBuffer->data( m_visTriangleData->getGrid()->getTriangles() );
+            m_indexBuffer->data( m_visLineData->getGrid()->getLines() );
             logGLError();
         }
     }

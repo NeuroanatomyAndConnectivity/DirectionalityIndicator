@@ -22,7 +22,6 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <QApplication>
 #include <QDockWidget>
 #include <QToolBox>
 #include <QWidget>
@@ -36,99 +35,97 @@
 #include "algorithms/RenderLines.h"
 #include "algorithms/ExtractRegions.h"
 
-#include "OGLWidget.h"
-#include "DataWidget.h"
-#include "MainWindow.h"
-#include "AlgorithmStrategies.h"
-#include "AlgorithmStrategy.h"
-#include "AlgorithmWidget.h"
+#include "gui/OGLWidget.h"
+#include "gui/AlgorithmStrategies.h"
+#include "gui/AlgorithmStrategy.h"
+#include "gui/AlgorithmWidget.h"
+#include "gui/DataWidget.h"
+#include "gui/FileWidget.h"
 
-#include "Application.h"
+#include "MainWindow.h"
+
+// include some icons as XPM. This will be replaced by a proper file loading.
+#include "icons/iconMesh.xpm"
+#include "icons/iconLabels.xpm"
+
+#include "App.h"
 
 namespace di
 {
-    namespace gui
+    namespace app
     {
-        Application* Application::m_instance = nullptr;
-
-        Application::Application( int argc, char** argv ):
-            m_argc( argc ),
-            m_argv( argv )
+        App::App( int argc, char** argv ):
+            di::gui::Application( "DirectionalityIndicator", argc, argv )
         {
-            // Init the singleton ...
-            m_instance = this;
         }
 
-        Application::~Application()
+        App::~App()
         {
-            // all the cleanup was done during run().
         }
 
-        int Application::run()
+        void App::show()
         {
-            // Initialize logger
+            // restore stored states/sizes
+            m_mainWindow->loadStates();
 
-            // Create QApplication
-            QApplication application( m_argc, m_argv, true );
+            // Finally, show the UI
+            m_mainWindow->show();
+        }
 
-            // We need this for shader loading and others.
-            di::core::initRuntimePath( QCoreApplication::applicationDirPath().toStdString() );
-
-            // Load settings
-            m_settings = new QSettings( "SE", "DirectionalityIndicator" );
-
+        void App::prepareUI()
+        {
             // Create the QMainWindow
             m_mainWindow = new MainWindow();
             m_mainWindow->resize( 1024, 768 );
 
             // Create the GL output:
-            m_mainGLWidget = new OGLWidget( m_mainWindow );
+            m_mainGLWidget = new di::gui::OGLWidget( m_mainWindow );
             m_mainWindow->setCentralWidget( m_mainGLWidget );
 
             // Create the data widget:
-            m_dataWidget = new DataWidget( m_mainWindow );
+            m_dataWidget = new di::gui::DataWidget( m_mainWindow );
             m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_dataWidget );
 
             // The dock with all the parameters and stuff
             QDockWidget* tbDock = new QDockWidget( "Algorithm Parameters", m_mainWindow );
-            m_algorithmStrategies = new AlgorithmStrategies( tbDock );
+            m_algorithmStrategies = new di::gui::AlgorithmStrategies( tbDock );
             tbDock->setWidget( m_algorithmStrategies );
             tbDock->setObjectName( "AlgorithmParameters" );    // needed for persistent GUI states
             // avoid closable docks.
             tbDock->setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
             m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, tbDock );
+        }
 
-            // restore stored states/sizes
-            m_mainWindow->loadStates();
-
+        void App::prepareNetwork()
+        {
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
             // BEGIN:
 
+            // Load mesh:
+            m_dataWidget->addFileWidget( new di::gui::FileWidget( QIcon( QPixmap( iconMesh_xpm ) ),
+                                                                  QString( "Stanford Poly Format (*.ply)" ) ) );
+
             // ALgorithm Temporaries ... needed to hard-code connections
-            AlgorithmWidget* algo1;
-            AlgorithmWidget* algo2;
-            AlgorithmStrategy* s;
+            di::gui::AlgorithmWidget* algo1;
+            di::gui::AlgorithmWidget* algo2;
+            di::gui::AlgorithmStrategy* s;
 
             // Create the strategies:
-            s = m_algorithmStrategies->addStrategy( new AlgorithmStrategy( "Surface with Region Boundaries" ) );
-            s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::RenderTriangles >( new di::algorithms::RenderTriangles ) ) );
-            algo1 = s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::ExtractRegions >( new di::algorithms::ExtractRegions ) ) );
-            algo2 = s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::RenderLines >( new di::algorithms::RenderLines ) ) );
+            s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface with Region Boundaries" ) );
+            s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::RenderTriangles >( new di::algorithms::RenderTriangles ) ) );
+            algo1 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::ExtractRegions >( new di::algorithms::ExtractRegions ) ) );
+            algo2 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::RenderLines >( new di::algorithms::RenderLines ) ) );
 
-            s = m_algorithmStrategies->addStrategy( new AlgorithmStrategy( "Surface LIC" ) );
-            s->addAlgorithm( new AlgorithmWidget( SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC ) ) );
-
-            // start the processing container
-            m_processingNetwork = SPtr< core::ProcessingNetwork >( new core::ProcessingNetwork() );
-            m_processingNetwork->start();
+            s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface LIC" ) );
+            s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC ) ) );
 
             // Tell the data widget that the processing network is ready.
             m_dataWidget->prepareProcessingNetwork();
             m_algorithmStrategies->prepareProcessingNetwork();
 
             // Connect
-            Application::getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Regions", algo2->getAlgorithm(), "Lines" );
+            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Regions", algo2->getAlgorithm(), "Lines" );
 
             // END:
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
@@ -137,33 +134,6 @@ namespace di
             // Hard-code a connection here. This should be done by a GUI or nice "use-case" class or something. For now, we need to get a VIS up and
             // running.
             m_dataWidget->connectDataToStrategies( m_algorithmStrategies );
-
-            // Finally, show the UI
-            m_mainWindow->show();
-
-            // run.
-            int retVal = application.exec();
-
-            // Stop if not yet done already.
-            m_processingNetwork->stop();
-
-            // Clean up and return.
-            return retVal;
-        }
-
-        QSettings* Application::getSettings()
-        {
-            return Application::getInstance()->m_settings;
-        }
-
-        Application* Application::getInstance()
-        {
-            return m_instance;
-        }
-
-        di::SPtr< di::core::ProcessingNetwork > Application::getProcessingNetwork()
-        {
-            return Application::getInstance()->m_processingNetwork;
         }
     }
 }

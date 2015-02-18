@@ -22,12 +22,6 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
-
 #include <algorithm>
 #include <string>
 #include <cmath>
@@ -40,6 +34,7 @@
 #include "core/Filesystem.h"
 #include "core/BoundingBox.h"
 #include "gfx/GL.h"
+#include "MathTypes.h"
 
 #include "Application.h"
 
@@ -124,7 +119,7 @@ namespace di
             // Set the data
             glBufferData( GL_ARRAY_BUFFER, 2 * 9 * sizeof( float ), points, GL_STATIC_DRAW );
 
-            std::string localShaderPath = core::getRuntimePath() + "/gfx/shaders/";
+            std::string localShaderPath = core::getResourcePath() + "/gfx/shaders/";
             m_bgVertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
                                                                core::readTextFile( localShaderPath + "CameraEffectHorizon-vertex.glsl" ) );
             m_bgFragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,

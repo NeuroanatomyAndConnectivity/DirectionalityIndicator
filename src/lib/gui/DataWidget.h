@@ -22,55 +22,80 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef DATAWIDGET_H
+#define DATAWIDGET_H
 
-#include <QWidget>
-#include <QMainWindow>
+#include <QDockWidget>
+#include <QVBoxLayout>
+
+#include "Types.h"
 
 namespace di
 {
+    namespace core
+    {
+        class Algorithm;
+    }
+
     namespace gui
     {
+        class AlgorithmStrategies;
+        class FileWidget;
+
         /**
-         * The main window of the application.
+         * A simple widget to provide the data-loading functionality. For now, it hard-codes the required files of our use-case.
          */
-        class MainWindow: public QMainWindow
+        class DataWidget: public QDockWidget
         {
             Q_OBJECT
         public:
             /**
-             * Create the main window.
+             * Create the data widget.
              *
              * \param parent the parent widget.
              */
-            explicit MainWindow( QWidget* parent = nullptr );
+            explicit DataWidget( QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
              */
-            virtual ~MainWindow();
+            virtual ~DataWidget();
 
             /**
-             * Loads and restores previous states  (if any). Useful to retain user GUI setup during sessions.
-             */
-            virtual void loadStates();
-
-            /**
-             * Save the current GUI states and sizes. Useful to retain user GUI setup during sessions.
-             */
-            virtual void saveStates();
-        protected:
-            /**
-             * Called on close. For more details, refer to QWidget::closeEvent.
+             * Add the given widget to the list of file widgets managed here.
              *
-             * \param event the close event.
+             * \param widget the widget to add
              */
-            virtual void closeEvent( QCloseEvent* event );
+            void addFileWidget( FileWidget* widget );
+
+            /**
+             * Allows this widget to prepare everything in the network. This is only a temporary solution.
+             */
+            void prepareProcessingNetwork();
+
+            /**
+             * Connect the data to the algorithm.
+             *
+             * \note Hard-coded. Ugly. Do not copy.
+             *
+             * \param to to this algorithm strategy.
+             */
+            void connectDataToStrategies( AlgorithmStrategies* to );
+
+        protected:
         private:
+             /**
+             * The load/file widget layout.
+             */
+            QVBoxLayout* m_contentLayout;
+
+            /**
+             * The widget list
+             */
+            std::vector< FileWidget* > m_loaders;
         };
     }
 }
 
-#endif  // MAINWINDOW_H
+#endif  // DATAWIDGET_H
 
