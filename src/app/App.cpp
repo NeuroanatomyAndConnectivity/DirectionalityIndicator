@@ -26,22 +26,22 @@
 #include <QToolBox>
 #include <QWidget>
 
-#include "core/ProcessingNetwork.h"
-#include "core/Connection.h"
-#include "core/Filesystem.h"
+#include <di/core/ProcessingNetwork.h>
+#include <di/core/Connection.h>
+#include <di/core/Filesystem.h>
 
-#include "algorithms/SurfaceLIC.h"
-#include "algorithms/RenderTriangles.h"
-#include "algorithms/RenderLines.h"
-#include "algorithms/ExtractRegions.h"
+#include <di/algorithms/SurfaceLIC.h>
+#include <di/algorithms/RenderTriangles.h>
+#include <di/algorithms/RenderLines.h>
+#include <di/algorithms/ExtractRegions.h>
 
-#include "gui/OGLWidget.h"
-#include "gui/AlgorithmStrategies.h"
-#include "gui/AlgorithmStrategy.h"
-#include "gui/AlgorithmWidget.h"
-#include "gui/DataWidget.h"
-#include "gui/FileWidget.h"
-#include "gui/MainWindow.h"
+#include <di/gui/OGLWidget.h>
+#include <di/gui/AlgorithmStrategies.h>
+#include <di/gui/AlgorithmStrategy.h>
+#include <di/gui/AlgorithmWidget.h>
+#include <di/gui/DataWidget.h>
+#include <di/gui/FileWidget.h>
+#include <di/gui/MainWindow.h>
 
 // include some icons as XPM. This will be replaced by a proper file loading.
 #include "icons/iconMesh.xpm"

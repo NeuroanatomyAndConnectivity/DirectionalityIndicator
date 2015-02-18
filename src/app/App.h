@@ -25,7 +25,7 @@
 #ifndef APP_H
 #define APP_H
 
-#include "gui/Application.h"
+#include <di/gui/Application.h>
 
 namespace di
 {
