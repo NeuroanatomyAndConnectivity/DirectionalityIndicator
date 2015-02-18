@@ -32,10 +32,10 @@ namespace di
 {
     namespace gui
     {
-        MainWindow::MainWindow( QWidget* parent ):
+        MainWindow::MainWindow( QString title, QWidget* parent ):
             QMainWindow( parent )
         {
-            setWindowTitle( tr( "DirectionalityIndicator" ) );
+            setWindowTitle( title );
             setObjectName( "MainWindow" );
         }
 

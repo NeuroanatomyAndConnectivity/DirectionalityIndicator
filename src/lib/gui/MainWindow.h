@@ -43,8 +43,9 @@ namespace di
              * Create the main window.
              *
              * \param parent the parent widget.
+             * \param title the window title to use.
              */
-            explicit MainWindow( QWidget* parent = nullptr );
+            MainWindow( QString title, QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
