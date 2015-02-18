@@ -41,8 +41,7 @@
 #include "gui/AlgorithmWidget.h"
 #include "gui/DataWidget.h"
 #include "gui/FileWidget.h"
-
-#include "MainWindow.h"
+#include "gui/MainWindow.h"
 
 // include some icons as XPM. This will be replaced by a proper file loading.
 #include "icons/iconMesh.xpm"
@@ -65,35 +64,26 @@ namespace di
 
         void App::show()
         {
-            // restore stored states/sizes
-            m_mainWindow->loadStates();
-
-            // Finally, show the UI
-            m_mainWindow->show();
         }
 
         void App::prepareUI()
         {
-            // Create the QMainWindow
-            m_mainWindow = new MainWindow();
-            m_mainWindow->resize( 1024, 768 );
-
             // Create the GL output:
-            m_mainGLWidget = new di::gui::OGLWidget( m_mainWindow );
-            m_mainWindow->setCentralWidget( m_mainGLWidget );
+            m_mainGLWidget = new di::gui::OGLWidget( getMainWindow() );
+            getMainWindow()->setCentralWidget( m_mainGLWidget );
 
             // Create the data widget:
-            m_dataWidget = new di::gui::DataWidget( m_mainWindow );
-            m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_dataWidget );
+            m_dataWidget = new di::gui::DataWidget( getMainWindow() );
+            getMainWindow()->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_dataWidget );
 
             // The dock with all the parameters and stuff
-            QDockWidget* tbDock = new QDockWidget( "Algorithm Parameters", m_mainWindow );
+            QDockWidget* tbDock = new QDockWidget( "Algorithm Parameters", getMainWindow() );
             m_algorithmStrategies = new di::gui::AlgorithmStrategies( tbDock );
             tbDock->setWidget( m_algorithmStrategies );
             tbDock->setObjectName( "AlgorithmParameters" );    // needed for persistent GUI states
             // avoid closable docks.
             tbDock->setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
-            m_mainWindow->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, tbDock );
+            getMainWindow()->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, tbDock );
         }
 
         void App::prepareNetwork()

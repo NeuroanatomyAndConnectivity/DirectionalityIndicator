@@ -30,7 +30,7 @@
 
 namespace di
 {
-    namespace app
+    namespace gui
     {
         /**
          * The main window of the application.

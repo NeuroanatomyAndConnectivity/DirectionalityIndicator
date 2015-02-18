@@ -44,8 +44,6 @@ namespace di
 
     namespace app
     {
-        class MainWindow;
-
         /**
          * This represents the application user interface. It handles creation/destruction of the UI and is the central entry point of the application.
          * For now, the UI is very simplistic and hard-codes all parameters and algorithms. This will change in the future. Now, it is sufficient as
@@ -88,11 +86,6 @@ namespace di
             void show() override;
 
         private:
-            /**
-             * The application main window.
-             */
-            MainWindow* m_mainWindow = nullptr;
-
             /**
              * The main graphics widget widget.
              */

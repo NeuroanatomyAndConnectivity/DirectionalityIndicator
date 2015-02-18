@@ -24,13 +24,13 @@
 
 #include <QMainWindow>
 
-#include "gui/Application.h"
+#include "Application.h"
 
 #include "MainWindow.h"
 
 namespace di
 {
-    namespace app
+    namespace gui
     {
         MainWindow::MainWindow( QWidget* parent ):
             QMainWindow( parent )
@@ -45,14 +45,14 @@ namespace di
 
         void MainWindow::loadStates()
         {
-            restoreGeometry( di::gui::Application::getSettings()->value( "gui/geometry" ).toByteArray() );
-            restoreState( di::gui::Application::getSettings()->value( "gui/windowState" ).toByteArray() );
+            restoreGeometry( Application::getSettings()->value( "gui/geometry" ).toByteArray() );
+            restoreState( Application::getSettings()->value( "gui/windowState" ).toByteArray() );
         }
 
         void MainWindow::saveStates()
         {
-            di::gui::Application::getSettings()->setValue( "gui/geometry", saveGeometry() );
-            di::gui::Application::getSettings()->setValue( "gui/windowState", saveState() );
+            Application::getSettings()->setValue( "gui/geometry", saveGeometry() );
+            Application::getSettings()->setValue( "gui/windowState", saveState() );
         }
 
         void MainWindow::closeEvent( QCloseEvent* event )

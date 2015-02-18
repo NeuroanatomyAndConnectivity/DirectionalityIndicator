@@ -71,6 +71,10 @@ namespace di
             // Load settings
             m_settings = new QSettings( "SE", QString::fromStdString( m_name ) );
 
+            // Create main window to use
+            m_mainWindow = new MainWindow();
+            m_mainWindow->resize( 1024, 768 );
+
             // call users code:
             prepareUI();
 
@@ -83,6 +87,12 @@ namespace di
 
             // Call show code
             show();
+
+            // restore stored states/sizes
+            m_mainWindow->loadStates();
+
+            // Finally, show the UI
+            m_mainWindow->show();
 
             // run.
             int retVal = application.exec();
@@ -107,6 +117,11 @@ namespace di
         di::SPtr< di::core::ProcessingNetwork > Application::getProcessingNetwork()
         {
             return Application::getInstance()->m_processingNetwork;
+        }
+
+        MainWindow* Application::getMainWindow()
+        {
+            return m_mainWindow;
         }
     }
 }

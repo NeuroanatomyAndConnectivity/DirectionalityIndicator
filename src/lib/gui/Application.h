@@ -29,6 +29,8 @@
 
 #include "core/ProcessingNetwork.h"
 
+#include "MainWindow.h"
+
 #include <QSettings>
 
 #include "Types.h"
@@ -112,7 +114,19 @@ namespace di
              * Implement the code that will be called after all preparations to start the UI.
              */
             virtual void show() = 0;
+
+            /**
+             * Get the main window used by the application. Add your widgets in here.
+             *
+             * \return the mainwindow
+             */
+            MainWindow* getMainWindow();
         private:
+            /**
+             * The application main window.
+             */
+            MainWindow* m_mainWindow = nullptr;
+
             /**
              * The namespace the app is operating in.
              */

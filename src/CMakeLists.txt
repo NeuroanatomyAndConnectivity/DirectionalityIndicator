@@ -113,7 +113,7 @@ ENDFUNCTION( COLLECT_SHADER_FILES )
 # additionally setups the install targets. Since build and install structure are the same, specify only relative targets here which are used for
 # both.
 # _Shaders list of shaders
-# _TargetDir the directory where to put the shaders. Relative to ${PROJECT_BINARY_DIR}/share/${PROJECT_NAME} and install dir. You should avoid ".." stuff. This can
+# _TargetDir the directory where to put the shaders. Relative to ${PROJECT_BINARY_DIR}/share/${ResourceName} and install dir. You should avoid ".." stuff. This can
 # break the install targets
 FUNCTION( SETUP_SHADERS _Shaders _TargetDir )
     SET( _RealTargetDir "share/${ResourceName}/${_TargetDir}" )
