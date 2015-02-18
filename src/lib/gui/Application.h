@@ -25,6 +25,8 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include <string>
+
 #include "core/ProcessingNetwork.h"
 
 #include <QSettings>

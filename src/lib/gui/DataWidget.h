@@ -25,6 +25,8 @@
 #ifndef DATAWIDGET_H
 #define DATAWIDGET_H
 
+#include <vector>
+
 #include <QDockWidget>
 #include <QVBoxLayout>
 

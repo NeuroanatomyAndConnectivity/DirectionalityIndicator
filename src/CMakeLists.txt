@@ -216,7 +216,7 @@ FUNCTION( SETUP_STYLECHECKER _TargetName _CheckFiles _Excludes )
 
     # add a new target for this lib
     ADD_CUSTOM_TARGET( stylecheck_${_TargetName}
-                       COMMAND  cat ${BrainLinterListFile} | xargs ${XARGS_OPTIONS} ${PROJECT_SOURCE_DIR}/../tools/style/brainlint/brainlint.py ${STYLECHECK_OPTIONS} 2>&1 | grep -iv 'Total errors found: 0$$' | cat
+        COMMAND  cat ${BrainLinterListFile} | xargs ${XARGS_OPTIONS} ${PROJECT_SOURCE_DIR}/../tools/style/brainlint/brainlint.py ${STYLECHECK_OPTIONS} 2>&1 | grep -iv 'Total errors found: 0$$' | cat
                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                        COMMENT "Check if ${_TargetName} complies to CodingStandard"
     )

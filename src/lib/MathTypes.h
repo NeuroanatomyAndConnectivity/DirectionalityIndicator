@@ -27,15 +27,12 @@
 
 // NOTE: This file is mostly used to include some standard math types like matrix and vector.
 
+// GLM utils
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
-
-
-// GLM utils
-#include <glm/gtc/type_ptr.hpp>
 
 // vectors
 #include <glm/vec2.hpp>
