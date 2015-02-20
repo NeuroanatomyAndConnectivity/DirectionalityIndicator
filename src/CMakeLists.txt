@@ -82,7 +82,7 @@ SET( CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG -O0" CACHE STRING "" FORCE )
 SET( CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem" CACHE STRING "" FORCE )
 
 # Export compile commands. Useful if you are using a code completion tool like YouCompleteMe.
-SET( CMAKE_EXPORT_COMPILE_COMMAND ON FORCE )
+SET( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 # We always use the project name as resource prefix.
 SET( ResourceName ${PROJECT_NAME} )
