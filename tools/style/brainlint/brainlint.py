@@ -473,7 +473,6 @@ class _IncludeState(dict):
       error message describing what's wrong.
 
     """
-    return ''
     error_message = ('Found %s after %s' %
                      (self._TYPE_NAMES[header_type],
                       self._SECTION_NAMES[self._section]))
@@ -1120,7 +1119,7 @@ def GetHeaderGuardCPPVariable(filename):
   fileinfo = FileInfo(filename)
   # math: Modified, to not use the full path and trailing H
   # return re.sub(r'[-./\s]', '_', fileinfo.RepositoryName()).upper() + '_'
-  return 'DI_' + re.sub(r'[-./\s]', '_', fileinfo.BaseName()).upper() + '_H'
+  return re.sub(r'[-./\s]', '_', fileinfo.BaseName()).upper() + '_H'
 
 
 def CheckForHeaderGuard(filename, lines, error):

@@ -35,8 +35,8 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( DirectionalityIndicator )
 
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin" )
-SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib" )
+# How to call the binary?
+SET( BinName "DirectionalityIndicator" )
 
 # guard against in-source builds
 IF( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
@@ -88,9 +88,8 @@ SET( CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem" CACHE STRING "" FORCE )
 # Export compile commands. Useful if you are using a code completion tool like YouCompleteMe.
 SET( CMAKE_EXPORT_COMPILE_COMMAND ON FORCE )
 
-# We always use the project name as resource prefix.
-SET( ResourceName ${PROJECT_NAME} )
-ADD_DEFINITIONS( "-DResourceName=\"${ResourceName}\"" )
+# Use src/ as include search path
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 #
@@ -117,12 +116,10 @@ ENDFUNCTION( COLLECT_SHADER_FILES )
 # additionally setups the install targets. Since build and install structure are the same, specify only relative targets here which are used for
 # both.
 # _Shaders list of shaders
-# _TargetDir the directory where to put the shaders. Relative to ${PROJECT_BINARY_DIR}/share/${ResourceName} and install dir. You should avoid ".." stuff. This can
+# _TargetDir the directory where to put the shaders. Relative to ${PROJECT_BINARY_DIR} and install dir. You should avoid ".." stuff. This can
 # break the install targets
 FUNCTION( SETUP_SHADERS _Shaders _TargetDir )
-    SET( _RealTargetDir "share/${ResourceName}/${_TargetDir}" )
-
-    EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E make_directory ${_RealTargetDir} )
+    EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E make_directory ${_TargetDir} )
 
     # should we copy or link them?
     SET( ShaderOperation "copy_if_different" )
@@ -136,7 +133,7 @@ FUNCTION( SETUP_SHADERS _Shaders _TargetDir )
         STRING( REGEX REPLACE "^.*/" "" StrippedFileName "${fname}" )
 
         # construct final filename
-        SET( targetFile "${PROJECT_BINARY_DIR}/${_RealTargetDir}/${StrippedFileName}" )
+        SET( targetFile "${PROJECT_BINARY_DIR}/${_TargetDir}/${StrippedFileName}" )
 
         # if the file already exists as non-symlink and we use the "create_symlink" command, we first need to remove the files
         IF( NOT IS_SYMLINK ${targetFile} AND DI_LINK_SHADERS )
@@ -151,6 +148,14 @@ FUNCTION( SETUP_SHADERS _Shaders _TargetDir )
         EXECUTE_PROCESS( COMMAND ${CMAKE_COMMAND} -E ${ShaderOperation} ${fname} ${targetFile} )
     ENDFOREACH( fname )
 ENDFUNCTION( SETUP_SHADERS )
+
+# Use the above utility code to setup the GFX core shaders.
+COLLECT_SHADER_FILES( ${CMAKE_CURRENT_SOURCE_DIR}/gfx/shaders GFX_GLSL_FILES )
+SETUP_SHADERS( "${GFX_GLSL_FILES}" "gfx/shaders" )
+
+# Also setup algorithm shaders.
+COLLECT_SHADER_FILES( ${CMAKE_CURRENT_SOURCE_DIR}/algorithms ALGORITHM_GLSL_FILES )
+SETUP_SHADERS( "${ALGORITHM_GLSL_FILES}" "algorithms/shaders" )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 #
@@ -223,7 +228,7 @@ FUNCTION( SETUP_STYLECHECKER _TargetName _CheckFiles _Excludes )
 
     # add a new target for this lib
     ADD_CUSTOM_TARGET( stylecheck_${_TargetName}
-        COMMAND  cat ${BrainLinterListFile} | xargs ${XARGS_OPTIONS} ${PROJECT_SOURCE_DIR}/../tools/style/brainlint/brainlint.py ${STYLECHECK_OPTIONS} 2>&1 | grep -iv 'Total errors found: 0$$' | cat
+                       COMMAND  cat ${BrainLinterListFile} | xargs ${XARGS_OPTIONS} ${PROJECT_SOURCE_DIR}/../tools/style/brainlint/brainlint.py ${STYLECHECK_OPTIONS} 2>&1 | grep -iv 'Total errors found: 0$$' | cat
                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                        COMMENT "Check if ${_TargetName} complies to CodingStandard"
     )
@@ -242,19 +247,13 @@ ADD_CUSTOM_TARGET( stylecheck )
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
-# GLM
-# ---------------------------------------------------------------------------------------------------------------------------------------------------
-
-INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/ext/ )
-
-# ---------------------------------------------------------------------------------------------------------------------------------------------------
 # OpenGL
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 # We do not explicitly search for OpenGL. This is already done by QT5OpenGL. Doing so anyways would cause compilation errors. I am not exactly sure
 # why.
 # When enabling, I get
-#     "No rule to make target '/usr/lib/x86_64-linux-gnu/libXext.so,', needed by ----.  Stop."
+#     "No rule to make target '/usr/lib/x86_64-linux-gnu/libXext.so,', needed by 'DirectionalityIndicator'.  Stop."
 # Do you know the reason?
 
 # As we use this later: add GL explicitly to the link list
@@ -265,6 +264,7 @@ ELSE()
 ENDIF()
 
 FIND_PACKAGE( GLEW REQUIRED )
+
 
 # Includes
 INCLUDE_DIRECTORIES( SYSTEM ${OPENGL_INCLUDE_DIR} )
@@ -311,28 +311,65 @@ SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_QT5_EXECUTABLE_COMPILE_FLAGS}" )
 # This is needed since the mocs will be generated there
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#
+# External Code Setup (/ext)
+#
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Add /ext directory to include search path
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/ext )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Setup GLM
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Is header-only. Use /ext as include search path (see above)
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Setup RPly
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+FILE( GLOB_RECURSE TARGET_EXT_RPLY_CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ext/rply/*.c )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+#
+# Code Setup
+#
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Collect everything to compile
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+FILE( GLOB_RECURSE TARGET_CPP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp )
+FILE( GLOB_RECURSE TARGET_H_FILES   ${CMAKE_CURRENT_SOURCE_DIR}/*.h )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Build the binary
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
 # Qt5 requires all classes with a QWidget stuff inside to be put into the MOC mechanism. We utilize the automoc mechanism here.
 SET( CMAKE_AUTOMOC ON )
 
+# Setup the target
+ADD_EXECUTABLE( ${BinName} ${TARGET_CPP_FILES} ${TARGET_H_FILES} ${TARGET_EXT_RPLY_CPP_FILES} )
+
+# Some Linux distributions need to explicitly link against X11. We add this lib here.
+IF( CMAKE_HOST_SYSTEM MATCHES "Linux" )
+    SET( ADDITIONAL_TARGET_LINK_LIBRARIES "X11" )
+ENDIF()
+TARGET_LINK_LIBRARIES( ${BinName} ${CMAKE_STANDARD_LIBRARIES}
+                                  ${OPENGL_LIBRARIES}
+                                  ${GLEW_LIBRARIES}
+                                  Qt5::Widgets Qt5::OpenGL Qt5::WebKitWidgets 
+                                  ${ADDITIONAL_TARGET_LINK_LIBRARIES} )
+
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
-#
-# Compile parts
-#
+# Style
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-# We want the LIB code to be included as it is "root" -> #include "core/data/xyz"
-INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/lib )
-
-# -----------------------------------------------------------------------------------------------------------------------------------------------
-# library
-# -----------------------------------------------------------------------------------------------------------------------------------------------
-
-ADD_SUBDIRECTORY( lib )
-
-# -----------------------------------------------------------------------------------------------------------------------------------------------
-# the app itself
-# -----------------------------------------------------------------------------------------------------------------------------------------------
-
-# build core
-ADD_SUBDIRECTORY( app )
-
+# setup the stylechecker. Ignore the platform specific stuff.
+SETUP_STYLECHECKER( "${BinName}"
+                    "${TARGET_CPP_FILES};${TARGET_H_FILES}"  # add all these files to the stylechecker
+                    "ext/*;io/PlyReader.cpp" )                                # exclude some ugly files
