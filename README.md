@@ -41,6 +41,8 @@ $ cd build
 # -> Use this command everytime you do a git pull.
 # -> CMake will complain about missing depenencies.
 $ cmake ../src
+# -> CMake does not find Qt5 on your system? Help Cmake to find it by defining the QTDIR variable:
+$ QTDIR=/path/to/Qt cmake ../src
 # Build using make
 $ make
 # Run the software
