@@ -22,64 +22,46 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EXTRACTREGIONS_H
-#define DI_EXTRACTREGIONS_H
+#ifndef DI_POINTDATASET_H
+#define DI_POINTDATASET_H
 
-#include <mutex>
+#include <string>
 
-#include <di/core/Algorithm.h>
+#include <di/core/data/DataSet.h>
+#include <di/core/data/Points.h>
+
+#include <di/MathTypes.h>
+#include <di/GfxTypes.h>
+#include <di/Types.h>
 
 namespace di
 {
     namespace core
     {
-        class LineDataSet;
-        class PointDataSet;
-        class Points;
-        class TriangleDataSet;
-    }
-
-    namespace algorithms
-    {
         /**
-         * Extract regions from a given triangle mesh dataset.
+         * A basic encapsulation of a bunch of points in combination with a RGBA color attribute.
          */
-        class ExtractRegions: public di::core::Algorithm
+        class PointDataSet: public DataSet< Points, RGBAArray > // points as "grid", no attributes
         {
         public:
             /**
-             * Constructor. Initialize all inputs, outputs and parameters.
+             * Create a dataset containing only the points as grid. Attributes are optional.
+             *
+             * \param points the point grid
+             * \param color a color array
+             * \param name the name of the dataset
              */
-            ExtractRegions();
+            PointDataSet( const std::string name, ConstSPtr< Points > points, ConstSPtr< RGBAArray > color );
 
             /**
-             * Destructor. Clean up if needed.
+             * Destructor.
              */
-            virtual ~ExtractRegions();
-
-            /**
-             * Does nothing in this case, besides setting the injection data.
-             */
-            virtual void process();
+            virtual ~PointDataSet();
         protected:
         private:
-            /**
-             * The resulting line data.
-             */
-            SPtr< di::core::Connector< di::core::LineDataSet > > m_borderLinesOutput;
-
-            /**
-             * The resulting center point data.
-             */
-            SPtr< di::core::Connector< di::core::PointDataSet > > m_centerPointOutput;
-
-            /**
-             * The triangle mesh input to use.
-             */
-            SPtr< di::core::Connector< di::core::TriangleDataSet > > m_dataInput;
         };
     }
 }
 
-#endif  // DI_EXTRACTREGIONS_H
+#endif  // DI_POINTDATASET_H
 

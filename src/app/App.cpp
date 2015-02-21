@@ -33,6 +33,7 @@
 #include <di/algorithms/SurfaceLIC.h>
 #include <di/algorithms/RenderTriangles.h>
 #include <di/algorithms/RenderLines.h>
+#include <di/algorithms/RenderPoints.h>
 #include <di/algorithms/ExtractRegions.h>
 
 #include <di/gui/OGLWidget.h>
@@ -99,14 +100,18 @@ namespace di
             // ALgorithm Temporaries ... needed to hard-code connections
             di::gui::AlgorithmWidget* algo1;
             di::gui::AlgorithmWidget* algo2;
+            di::gui::AlgorithmWidget* algo3;
             di::gui::AlgorithmStrategy* s;
 
             // Create the strategies:
+            // Strategy 1:
             s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface with Region Boundaries" ) );
-            s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::RenderTriangles >( new di::algorithms::RenderTriangles ) ) );
-            algo1 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::ExtractRegions >( new di::algorithms::ExtractRegions ) ) );
-            algo2 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::RenderLines >( new di::algorithms::RenderLines ) ) );
+            s->addAlgorithm(         new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderTriangles ) ) );
+            algo1 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::ExtractRegions ) ) );
+            algo2 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
+            algo3 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderPoints ) ) );
 
+            // Strategy 2:
             s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface LIC" ) );
             s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC ) ) );
 
@@ -114,8 +119,9 @@ namespace di
             m_dataWidget->prepareProcessingNetwork();
             m_algorithmStrategies->prepareProcessingNetwork();
 
-            // Connect
+            // Connect everything in strategy 1
             getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Regions", algo2->getAlgorithm(), "Lines" );
+            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Region Centers", algo3->getAlgorithm(), "Points" );
 
             // END:
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user

@@ -234,6 +234,7 @@ namespace di
 
             // Optimize mesh. As we did not load normals, create:
             mesh->calculateNormals();
+            mesh->calculateInverseIndex();
 
             // construct the dataset
             return SPtr< di::core::TriangleDataSet >( new di::core::TriangleDataSet( filename, mesh, colors ) );

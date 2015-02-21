@@ -22,6 +22,7 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <algorithm>
 #include <vector>
 #include <map>
 
@@ -150,6 +151,89 @@ namespace di
         glm::vec3 TriangleMesh::getNormal( size_t vertexID ) const
         {
             return m_normals[ vertexID ];
+        }
+
+        void TriangleMesh::calculateInverseIndex() const
+        {
+            // Clean up and create empty vector with as much empty elements as vertices.
+            m_inverseIndex.clear();
+            m_inverseIndex.resize( getNumVertices(), {} );
+
+            // iterate all triangles and map between vertex and triangle
+            // NOTE: as the triangle Index is increasing, the inverse index is sorted automatically.
+            for( size_t triID = 0; triID < m_triangles.size(); ++triID )
+            {
+                // get verts of this triangle
+                auto vertexIDs = m_triangles[ triID ];
+                m_inverseIndex[ vertexIDs.x ].push_back( triID );
+                m_inverseIndex[ vertexIDs.y ].push_back( triID );
+                m_inverseIndex[ vertexIDs.z ].push_back( triID );
+            }
+        }
+
+        std::vector< size_t > TriangleMesh::getNeighbours( size_t triID ) const
+        {
+            if( m_inverseIndex.empty() )
+            {
+                calculateInverseIndex();
+            }
+
+            // Get triangles of each vertex
+            auto tris1 = getTrianglesForVertex( m_triangles[ triID ].x );
+            auto tris2 = getTrianglesForVertex( m_triangles[ triID ].y );
+            auto tris3 = getTrianglesForVertex( m_triangles[ triID ].z );
+
+            // Reserve enough space
+            tris3.reserve( tris1.size() + tris2.size() + tris3.size() );
+            tris3.insert( tris3.end(), tris2.begin(), tris2.end() );
+            tris3.insert( tris3.end(), tris1.begin(), tris3.end() );
+
+            // sort and make unique.
+            std::sort( tris3.begin(), tris3.end() );
+            auto last = std::unique( tris3.begin(), tris3.end() );
+            tris3.erase( last, tris3.end() );
+
+            return tris3;
+        }
+
+        std::vector< size_t > TriangleMesh::getNeighbourVertices( size_t vertexID ) const
+        {
+            if( m_inverseIndex.empty() )
+            {
+                calculateInverseIndex();
+            }
+
+            std::vector< size_t > result;
+
+            // Get triangles of each vertex
+            auto tris = getTrianglesForVertex( vertexID );
+            result.reserve( tris.size() * 3 );
+            for( auto triID : tris )
+            {
+                auto vertexIDs = m_triangles[ triID ];
+                // NOTE: one of them is == vertexID
+                result.push_back( vertexIDs.x );
+                result.push_back( vertexIDs.y );
+                result.push_back( vertexIDs.z );
+            }
+
+            // sort and make unique.
+            std::sort( result.begin(), result.end() );
+            auto last = std::unique( result.begin(), result.end() );
+            result.erase( last, result.end() );
+
+            return result;
+        }
+
+        const std::vector< size_t >& TriangleMesh::getTrianglesForVertex( size_t vertexID ) const
+        {
+            if( m_inverseIndex.empty() )
+            {
+                calculateInverseIndex();
+            }
+
+            // we already have this information:
+            return m_inverseIndex[ vertexID ];
         }
 
         void TriangleMesh::calculateNormals()

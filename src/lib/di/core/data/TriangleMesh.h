@@ -138,6 +138,36 @@ namespace di
             glm::vec3 getVertex( size_t vertexID ) const;
 
             /**
+             * Get all neighbour triangles of the specified one.
+             *
+             * \param triID index of the triangle whose neighbours should be found.
+             * \throw std::out_of_range if the index is invalid.
+             *
+             * \return the list of triangle IDs of all neighbours
+             */
+            std::vector< size_t > getNeighbours( size_t triID ) const;
+
+            /**
+             * Get the list of triangles using the given vertex.
+             *
+             * \param vertexID the vertex id
+             * \throw std::out_of_range if the index is invalid.
+             *
+             * \return the list of triangles sharing this vertex. Is sorted.
+             */
+            const std::vector< size_t >& getTrianglesForVertex( size_t vertexID ) const;
+
+            /**
+             * Get the list of vertices that are directly connected to the specified vertex.
+             *
+             * \param vertexID the vertex
+             * \throw std::out_of_range if the index is invalid.
+             *
+             * \return the list of directly connected vertices.
+             */
+            std::vector< size_t > getNeighbourVertices( size_t vertexID ) const;
+
+            /**
              * Get the triangle normal array. There is a normal for each vertex. Per-triangle normals are not supported. To achieve this, ensure that
              * no vertex is used by multiple triangles. Than store the same normal for each of the three vertices of a single triangle.
              *
@@ -217,6 +247,10 @@ namespace di
              */
             void calculateNormals();
 
+            /**
+             * Create an inverse index to find triangles associated with a given vertex.
+             */
+            void calculateInverseIndex() const;
         protected:
         private:
             /**
@@ -233,6 +267,13 @@ namespace di
              * Normals.
              */
             NormalArray m_normals = {};
+
+            /**
+             * Associate a vertex index (outer vector) with a list of triangles that use this index (inner vector).
+             *
+             * \NOTE mutables are bad. Replace by mutex protected const-cast.
+             */
+            mutable std::vector< std::vector< size_t > > m_inverseIndex = {};
 
             /**
              * The bounding box.
