@@ -33,6 +33,7 @@
 #include <di/algorithms/SurfaceLIC.h>
 #include <di/algorithms/RenderTriangles.h>
 #include <di/algorithms/RenderLines.h>
+#include <di/algorithms/RenderGraph.h>
 #include <di/algorithms/RenderPoints.h>
 #include <di/algorithms/ExtractRegions.h>
 
@@ -98,18 +99,23 @@ namespace di
                                                                   QString( "Stanford Poly Format (*.ply)" ) ) );
 
             // ALgorithm Temporaries ... needed to hard-code connections
+            di::gui::AlgorithmWidget* algoT;
             di::gui::AlgorithmWidget* algo1;
             di::gui::AlgorithmWidget* algo2;
             di::gui::AlgorithmWidget* algo3;
+            di::gui::AlgorithmWidget* algo4;
+            di::gui::AlgorithmWidget* algo5;
             di::gui::AlgorithmStrategy* s;
 
             // Create the strategies:
             // Strategy 1:
             s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface with Region Boundaries" ) );
-            s->addAlgorithm(         new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderTriangles ) ) );
+            algoT = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderTriangles ) ) );
             algo1 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::ExtractRegions ) ) );
             algo2 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
             algo3 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderPoints ) ) );
+            algo4 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderGraph ) ) );
+            algo5 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
 
             // Strategy 2:
             s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface LIC" ) );
@@ -122,6 +128,8 @@ namespace di
             // Connect everything in strategy 1
             getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Regions", algo2->getAlgorithm(), "Lines" );
             getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Region Centers", algo3->getAlgorithm(), "Points" );
+            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Connections", algo4->getAlgorithm(), "Graph" );
+            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Region Meshes", algo5->getAlgorithm(), "Lines" );
 
             // END:
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
@@ -130,6 +138,8 @@ namespace di
             // Hard-code a connection here. This should be done by a GUI or nice "use-case" class or something. For now, we need to get a VIS up and
             // running.
             m_dataWidget->connectDataToStrategies( m_algorithmStrategies );
+            //algo2->setActive( false );
+            algoT->setActive( false );
         }
     }
 }

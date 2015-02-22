@@ -33,29 +33,26 @@ namespace di
 {
     namespace core
     {
-        class LineDataSet;
-        class PointDataSet;
-        class Points;
         class TriangleDataSet;
     }
 
     namespace algorithms
     {
         /**
-         * Extract regions from a given triangle mesh dataset.
+         * Extract a voxelized version of the given input.
          */
-        class ExtractRegions: public di::core::Algorithm
+        class Voxelize: public di::core::Algorithm
         {
         public:
             /**
              * Constructor. Initialize all inputs, outputs and parameters.
              */
-            ExtractRegions();
+            Voxelize();
 
             /**
              * Destructor. Clean up if needed.
              */
-            virtual ~ExtractRegions();
+            virtual ~Voxelize();
 
             /**
              * Does nothing in this case, besides setting the injection data.
@@ -64,29 +61,15 @@ namespace di
         protected:
         private:
             /**
-             * The resulting line data.
-             */
-            SPtr< di::core::Connector< di::core::LineDataSet > > m_borderLinesOutput;
-
-            /**
-             * The region mesh
-             */
-            SPtr< di::core::Connector< di::core::LineDataSet > > m_regionMeshOutput;
-
-            /**
-             * The calculated connection graph.
-             */
-            SPtr< di::core::Connector< di::core::LineDataSet > > m_connectionsOutput;
-
-            /**
-             * The resulting center point data.
-             */
-            SPtr< di::core::Connector< di::core::PointDataSet > > m_centerPointOutput;
-
-            /**
-             * The triangle mesh input to use.
+             * The triangle input to use.
              */
             SPtr< di::core::Connector< di::core::TriangleDataSet > > m_dataInput;
+
+            /**
+             * The resolution used for voxelizing.
+             */
+            // core::Property< unsigned int > m_resoultion;
+            unsigned int m_resoultion = 128;
         };
     }
 }

@@ -22,19 +22,49 @@
 //
 //---------------------------------------------------------------------------------------
 
-#version 330
+#include <map>
+#include <utility>
 
-in vec4 v_color;
+#include <di/core/data/TriangleDataSet.h>
 
-out vec4 fragColor;
+#define LogTag "algorithms/Voxelize"
+#include <di/core/Logger.h>
 
-void main()
+#include "Voxelize.h"
+
+namespace di
 {
-    // Write
-    fragColor = v_color;
-    // fragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+    namespace algorithms
+    {
+        Voxelize::Voxelize():
+            Algorithm( "Voxelize",
+                       "Create a voxel-version of the input data." )
+        {
+            // 1: the output
 
-    // Small depth offset ?
-    gl_FragDepth = gl_FragCoord.z - 0.01;
+            // 2: the input
+            m_dataInput = addInput< di::core::TriangleDataSet >(
+                    "Triangle Mesh",
+                    "The triangle data to voxelize."
+            );
+
+            /*m_resoultion = addProperty< unsigned int >(
+                    "Resolution",
+                    "The number of voxels per direction used for sampling.",
+                    128 );*/
+        }
+
+        Voxelize::~Voxelize()
+        {
+            // nothing to clean up so far
+        }
+
+        void Voxelize::process()
+        {
+            // Get input data
+            auto triangleDataSet = m_dataInput->getData();
+
+        }
+    }
 }
 

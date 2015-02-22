@@ -50,9 +50,19 @@ namespace di
                     "Extracted regions as lines."
             );
 
+            m_regionMeshOutput = addOutput< di::core::LineDataSet >(
+                    "Region Meshes",
+                    "Extracted region meshes as lines."
+            );
+
             m_centerPointOutput = addOutput< di::core::PointDataSet >(
                     "Region Centers",
                     "Extracted center points of the regions."
+            );
+
+            m_connectionsOutput = addOutput< di::core::LineDataSet >(
+                    "Connections",
+                    "Extracted connections between regions."
             );
 
             // 2: the input
@@ -85,7 +95,6 @@ namespace di
                     marchRegion( n, connectedAndEqual, visited, source, attribute );
                 }
             }
-
         }
 
         void ExtractRegions::process()
@@ -98,6 +107,9 @@ namespace di
             // Create the buffers we need to store lines and color information
             auto lines = std::make_shared< di::core::Lines >();
             auto colors = std::make_shared< di::RGBAArray >();
+            // Create the buffers we need to store lines and color information
+            auto linesMesh = std::make_shared< di::core::Lines >();
+            auto colorsMesh = std::make_shared< di::RGBAArray >();
 
             // Create a list of regions, visit each vertex only once.
             std::vector< bool > visited( triangles->getNumVertices(), false );
@@ -139,6 +151,9 @@ namespace di
                 regionCenterPoints->addVertex( center );
             }
 
+            // Use the following iteration for determining the neighbourhood of each region
+            std::vector< std::set< size_t > > regionNeighbours( regionVertices.size() ); // keep a set of direct neighbours of each regions
+
             // Iterate all triangles and transform to lines
             for( auto t : triangles->getTriangles() )
             {
@@ -151,23 +166,18 @@ namespace di
                 auto v2 = triangles->getVertex( t.y );
                 auto v3 = triangles->getVertex( t.z );
 
-                // Always add the triangle itself?
-                bool includeTriangle = true;
-                if( includeTriangle )
-                {
-                    // Get Vertices, add to line data, connect ... nothing fancy here.
-                    auto v1I = lines->addVertex( v1 );
-                    auto v2I = lines->addVertex( v2 );
-                    auto v3I = lines->addVertex( v3 );
-                    lines->addLine( v1I, v2I );
-                    lines->addLine( v1I, v3I );
-                    lines->addLine( v2I, v3I );
-                    float g = 0.5;
-                    float a = 0.25;
-                    colors->push_back( glm::vec4( g, g, g, a ) );
-                    colors->push_back( glm::vec4( g, g, g, a ) );
-                    colors->push_back( glm::vec4( g, g, g, a ) );
-                }
+                // Always add the triangle itself
+                // Get Vertices, add to line data, connect ... nothing fancy here.
+                auto v1I = linesMesh->addVertex( v1 );
+                auto v2I = linesMesh->addVertex( v2 );
+                auto v3I = linesMesh->addVertex( v3 );
+                linesMesh->addLine( v1I, v2I );
+                linesMesh->addLine( v1I, v3I );
+                linesMesh->addLine( v2I, v3I );
+                float a = 0.07125;
+                colorsMesh->push_back( glm::vec4( c1.r, c1.g, c1.b, a ) );
+                colorsMesh->push_back( glm::vec4( c2.r, c2.g, c2.b, a ) );
+                colorsMesh->push_back( glm::vec4( c3.r, c3.g, c3.b, a ) );
 
                 // There are two cases now:
                 //  1: c1,c2,c3 are the same -> triangle is not a border triangle -> do not add a border line
@@ -177,6 +187,45 @@ namespace di
                 }
                 else
                 {
+                    // get associated region
+                    auto regID1 = -1;
+                    auto regID2 = -1;
+                    auto regID3 = -1;
+                    for( size_t regID = 0; regID < regionVertices.size(); ++regID )
+                    {
+                        // are the current vertices in this region?
+                        if( std::find( regionVertices[ regID ].begin(), regionVertices[ regID ].end(), t.x ) != regionVertices[ regID ].end() )
+                        {
+                            regID1 = regID;
+                        }
+                        if( std::find( regionVertices[ regID ].begin(), regionVertices[ regID ].end(), t.y ) != regionVertices[ regID ].end() )
+                        {
+                            regID2 = regID;
+                        }
+                        if( std::find( regionVertices[ regID ].begin(), regionVertices[ regID ].end(), t.z ) != regionVertices[ regID ].end() )
+                        {
+                            regID3 = regID;
+                        }
+                    }
+                    if( regID1 < 0 )
+                    {
+                        LogE << "Could not find associated region?" << LogEnd;
+                    }
+                    if( regID2 < 0 )
+                    {
+                        LogE << "Could not find associated region?" << LogEnd;
+                    }
+                    if( regID3 < 0 )
+                    {
+                        LogE << "Could not find associated region?" << LogEnd;
+                    }
+                    regionNeighbours[ regID1 ].insert( regID2 );
+                    regionNeighbours[ regID1 ].insert( regID3 );
+                    regionNeighbours[ regID2 ].insert( regID1 );
+                    regionNeighbours[ regID2 ].insert( regID3 );
+                    regionNeighbours[ regID3 ].insert( regID1 );
+                    regionNeighbours[ regID3 ].insert( regID2 );
+
                     // 2: the more interesting case: each color is different to each other.
                     if( ( c1 != c2 ) && ( c1 != c3 ) && ( c2 != c3 ) )
                     {
@@ -255,12 +304,45 @@ namespace di
                 }
             }
 
+            // Create the buffers we need to store lines and color information of the connection graph
+            auto connectionLines = std::make_shared< di::core::Lines >();
+            auto connectionColors = std::make_shared< di::RGBAArray >();
+
+            // We need to connect each regions. This is an experiment. We need to find out more about the "how".
+            for( size_t regID = 0; regID < regionNeighbours.size(); ++regID )
+            {
+                // get the current region center point and its coordinates:
+                auto c = regionCenterPoints->getVertex( regID );
+                auto idx = connectionLines->addVertex( c );
+
+                // Also use the color of the source region
+                auto cCol = regionColors->at( regID );
+                connectionColors->push_back( cCol );
+
+                // Connect this with each neighbour
+                for( auto n : regionNeighbours[ regID ] )
+                {
+                    auto nC = regionCenterPoints->getVertex( n );
+                    auto idxN = connectionLines->addVertex( nC );
+                    connectionLines->addLine( idx, idxN );
+
+                    // Also use the color of the target region
+                    auto nCol = regionColors->at( n );
+                    connectionColors->push_back( nCol );
+                }
+            }
+
             // Re-package the region list into a point dataset
             m_centerPointOutput->setData( std::make_shared< di::core::PointDataSet >( "Region Centers", regionCenterPoints,
                                                                                                         regionColors ) );
 
+            // Output connections
+            m_connectionsOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Connections", connectionLines,
+                                                                                                           connectionColors ) );
+
             // Create line dataset and set output
             m_borderLinesOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Borders", lines, colors ) );
+            m_regionMeshOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Mesh", linesMesh, colorsMesh ) );
         }
     }
 }

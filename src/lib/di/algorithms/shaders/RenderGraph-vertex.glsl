@@ -24,17 +24,23 @@
 
 #version 330
 
-in vec4 v_color;
+// Attribute data
+in vec3 position;
+in vec4 color;
 
-out vec4 fragColor;
+// Uniforms
+uniform mat4 u_ProjectionMatrix;
+uniform mat4 u_ViewMatrix;
+
+// Varying out
+out vec4 v_color;
 
 void main()
 {
-    // Write
-    fragColor = v_color;
-    // fragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
-
-    // Small depth offset ?
-    gl_FragDepth = gl_FragCoord.z - 0.01;
+    vec3 correctedPos = position;
+    // correctedPos *= 1.0;
+    v_color = color;
+    vec4 pos = u_ProjectionMatrix * u_ViewMatrix * vec4( correctedPos, 1.0 );
+    gl_Position = pos;
 }
 
