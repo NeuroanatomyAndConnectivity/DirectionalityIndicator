@@ -24,6 +24,8 @@
 
 #include <map>
 #include <utility>
+#include <set>
+#include <vector>
 
 #include <di/core/data/TriangleDataSet.h>
 #include <di/core/data/LineDataSet.h>
@@ -114,7 +116,7 @@ namespace di
             // Create a list of regions, visit each vertex only once.
             std::vector< bool > visited( triangles->getNumVertices(), false );
             std::vector< std::vector< size_t > > regionVertices; // collect all vertices of the regions found
-            auto regionColors = std::make_shared< std::vector< glm::vec4 > >() ;       // create a palette of colors
+            auto regionColors = std::make_shared< std::vector< glm::vec4 > >();       // create a palette of colors
             // Iterate all triangles and transform to lines
             size_t regionVertexCount = 0; // keep track of how many vertices where associated
             for( size_t vertID = 0; vertID < triangles->getNumVertices(); ++vertID )
@@ -130,7 +132,7 @@ namespace di
 
                     // add new region to map and store the associated vertices.
                     regionVertices.push_back( connectedAndEqual );
-                    regionColors->push_back( attribute->at( vertID )) ; // take source color as palette here
+                    regionColors->push_back( attribute->at( vertID ) ); // take source color as palette here
                     regionVertexCount += connectedAndEqual.size();
                 }
             }

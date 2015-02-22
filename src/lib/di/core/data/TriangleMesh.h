@@ -271,7 +271,7 @@ namespace di
             /**
              * Associate a vertex index (outer vector) with a list of triangles that use this index (inner vector).
              *
-             * \NOTE mutables are bad. Replace by mutex protected const-cast.
+             * \note mutables are bad. Replace by mutex protected const-cast.
              */
             mutable std::vector< std::vector< size_t > > m_inverseIndex = {};
 

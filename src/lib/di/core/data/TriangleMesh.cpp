@@ -157,7 +157,7 @@ namespace di
         {
             // Clean up and create empty vector with as much empty elements as vertices.
             m_inverseIndex.clear();
-            m_inverseIndex.resize( getNumVertices(), {} );
+            m_inverseIndex.resize( getNumVertices() );
 
             // iterate all triangles and map between vertex and triangle
             // NOTE: as the triangle Index is increasing, the inverse index is sorted automatically.

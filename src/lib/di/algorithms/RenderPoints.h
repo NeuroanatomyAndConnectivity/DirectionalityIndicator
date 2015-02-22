@@ -154,5 +154,5 @@ namespace di
     }
 }
 
-#endif  // DI_RENDERLINES_H
+#endif  // DI_RENDERPOINTS_H
 

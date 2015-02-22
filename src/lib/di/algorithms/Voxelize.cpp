@@ -63,7 +63,6 @@ namespace di
         {
             // Get input data
             auto triangleDataSet = m_dataInput->getData();
-
         }
     }
 }

@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EXTRACTREGIONS_H
-#define DI_EXTRACTREGIONS_H
+#ifndef DI_VOXELIZE_H
+#define DI_VOXELIZE_H
 
 #include <mutex>
 
@@ -74,5 +74,5 @@ namespace di
     }
 }
 
-#endif  // DI_EXTRACTREGIONS_H
+#endif  // DI_VOXELIZE_H
 
