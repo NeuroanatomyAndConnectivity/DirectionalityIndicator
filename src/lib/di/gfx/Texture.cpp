@@ -22,11 +22,11 @@
 //
 //---------------------------------------------------------------------------------------
 
-#define LogTag "gfx/Texture"
-#include <di/core/Logger.h>
-#include <di/gfx/GLError.h>
-
 #include "Texture.h"
+
+#include <di/core/Logger.h>
+#define LogTag "gfx/Texture"
+#include <di/gfx/GLError.h>
 
 namespace di
 {

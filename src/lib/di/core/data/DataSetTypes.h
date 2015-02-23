@@ -22,25 +22,34 @@
 //
 //---------------------------------------------------------------------------------------
 
-// A bit crude, but ensures the tag is undefined every time someone includes the logger.
-#ifdef LogTag
-    #undef LogTag
-#endif
+#ifndef DI_DATASETTYPES_H
+#define DI_DATASETTYPES_H
 
-#ifndef DI_LOGGER_H
-#define DI_LOGGER_H
+#include <di/core/data/DataSet.h>
+#include <di/core/data/GridRegular.h>
+#include <di/core/data/GridTransformation.h>
+#include <di/core/data/GridBuilders.h>
 
-#include <iostream>
+#include <di/core/data/LineDataSet.h>
+#include <di/core/data/PointDataSet.h>
+#include <di/core/data/TriangleDataSet.h>
 
-// This file contains the preprocessor based logger. This is a rather simple logger, but as it uses a simple ostream interface, it can be replaced
-// later without the need for changes in the code.
+// Now, define a bunch of default dataset types
+namespace di
+{
+    namespace core
+    {
+        /**
+         * Dataset in a 3D regular grid. The "d" in the name stands for "double".
+         */
+        typedef DataSet< GridRegular3, std::vector< double > > DataSetScalarRegular3d;
 
-#define LogStream std::cout
-#define LogEnd std::endl;
-#define LogD LogStream << "DEBUG [" << LogTag << "]: "
-#define LogI LogStream << "INFO  [" << LogTag << "]: "
-#define LogW LogStream << "WARN  [" << LogTag << "]: "
-#define LogE LogStream << "ERROR [" << LogTag << "]: "
-#define LogGL LogStream
+        /**
+         * Dataset in a 3D regular grid as masks.
+         */
+        typedef DataSet< GridRegular3, std::vector< bool > > DataSetScalarRegular3b;
+    }
+}
 
-#endif  // DI_LOGGER_H
+#endif  // DI_DATASETTYPES_H
+

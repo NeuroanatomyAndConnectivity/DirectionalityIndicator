@@ -22,25 +22,33 @@
 //
 //---------------------------------------------------------------------------------------
 
-// A bit crude, but ensures the tag is undefined every time someone includes the logger.
-#ifdef LogTag
-    #undef LogTag
-#endif
+#ifndef DI_GRIDBUILDERS_H
+#define DI_GRIDBUILDERS_H
 
-#ifndef DI_LOGGER_H
-#define DI_LOGGER_H
+#include <di/core/BoundingBox.h>
+#include <di/core/data/GridTransformation.h>
+#include <di/core/data/GridRegular.h>
 
-#include <iostream>
+#include <di/MathTypes.h> // needed for storing physical bounds
+#include <di/Types.h>
 
-// This file contains the preprocessor based logger. This is a rather simple logger, but as it uses a simple ostream interface, it can be replaced
-// later without the need for changes in the code.
+namespace di
+{
+    namespace core
+    {
+        /**
+         * Construct a grid matching the specified bounding box.
+         *
+         * \param bb the bb to match
+         * \param maxRes max resolution along the longest axis of the BB.
+         * \param additional add additional space around the grid.
+         *
+         * \return the gird.
+         */
+        SPtr< core::GridRegular3 > regularGridForBoundingBox( const BoundingBox& bb, size_t maxRes, size_t additional = 0 );
+    }
+}
 
-#define LogStream std::cout
-#define LogEnd std::endl;
-#define LogD LogStream << "DEBUG [" << LogTag << "]: "
-#define LogI LogStream << "INFO  [" << LogTag << "]: "
-#define LogW LogStream << "WARN  [" << LogTag << "]: "
-#define LogE LogStream << "ERROR [" << LogTag << "]: "
-#define LogGL LogStream
+#endif  // DI_GRIDBUILDERS_H
 
-#endif  // DI_LOGGER_H
+

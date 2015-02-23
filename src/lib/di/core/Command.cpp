@@ -24,12 +24,12 @@
 
 #include <string>
 
-#define LogTag "core/Command"
-#include <di/core/Logger.h>
-
 #include <di/Types.h>
 
 #include "Command.h"
+
+#include <di/core/Logger.h>
+#define LogTag "core/Command"
 
 namespace di
 {
@@ -156,7 +156,7 @@ namespace di
                 return;
             }
 
-            LogD << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": failed - Reason: " << reason << "" << LogEnd;
+            LogE << "Command \"" << getName() << "\", instance " << static_cast< void* >( this ) << ": failed - Reason: " << reason << "" << LogEnd;
 
             // Change state and notify
             m_isFailed = true;

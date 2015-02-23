@@ -22,9 +22,6 @@
 //
 //---------------------------------------------------------------------------------------
 
-#define LogTag "gui/CommandObserverEvent"
-#include "core/Logger.h"
-
 #include <di/gui/events/Events.h>
 
 #include "CommandObserverEvent.h"

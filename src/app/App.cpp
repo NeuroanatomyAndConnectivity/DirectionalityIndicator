@@ -36,6 +36,7 @@
 #include <di/algorithms/RenderGraph.h>
 #include <di/algorithms/RenderPoints.h>
 #include <di/algorithms/ExtractRegions.h>
+#include <di/algorithms/Voxelize.h>
 
 #include <di/gui/OGLWidget.h>
 #include <di/gui/AlgorithmStrategies.h>
@@ -105,6 +106,7 @@ namespace di
             di::gui::AlgorithmWidget* algo3;
             di::gui::AlgorithmWidget* algo4;
             di::gui::AlgorithmWidget* algo5;
+            di::gui::AlgorithmWidget* algo6;
             di::gui::AlgorithmStrategy* s;
 
             // Create the strategies:
@@ -116,6 +118,7 @@ namespace di
             algo3 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderPoints ) ) );
             algo4 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderGraph ) ) );
             algo5 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
+            algo6 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::Voxelize ) ) );
 
             // Strategy 2:
             s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface LIC" ) );

@@ -34,9 +34,6 @@
 
 #include "AlgorithmStrategies.h"
 
-#define LogTag "gui/AlgorithmStrategies"
-#include <di/core/Logger.h>
-
 namespace di
 {
     namespace gui

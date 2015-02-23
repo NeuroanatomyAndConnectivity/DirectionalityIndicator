@@ -25,10 +25,10 @@
 #include <algorithm>
 #include <string>
 
-#define  LogTag "core/Algorithm"
-#include <di/core/Logger.h>
-
 #include "Algorithm.h"
+
+#include <di/core/Logger.h>
+#define  LogTag "core/Algorithm"
 
 namespace di
 {

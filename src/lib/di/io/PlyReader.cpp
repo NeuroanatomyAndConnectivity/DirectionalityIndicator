@@ -30,8 +30,6 @@
 #include <chrono>
 #include <thread>
 
-#define LogTag "io/PlyReader"
-#include <di/core/Logger.h>
 #include <di/core/Filesystem.h>
 #include <di/core/StringUtils.h>
 #include <di/core/data/TriangleMesh.h>
@@ -40,6 +38,9 @@
 #include <di/ext/rply/rply.h>
 
 #include "PlyReader.h"
+
+#include <di/core/Logger.h>
+#define LogTag "io/PlyReader"
 
 namespace di
 {

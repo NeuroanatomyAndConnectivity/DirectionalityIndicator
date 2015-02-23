@@ -28,9 +28,6 @@
 
 #include <QCoreApplication>
 
-#define LogTag "gui/CommandObserverQt"
-#include <di/core/Logger.h>
-
 #include <di/gui/events/CommandObserverEvent.h>
 
 #include "CommandObserverQt.h"

@@ -26,8 +26,6 @@
 #include <map>
 #include <string>
 
-#define LogTag "core/ProcessingNetwork"
-#include <di/core/Logger.h>
 #include <di/core/Reader.h>
 
 #include <di/commands/ReadFile.h>
@@ -35,6 +33,9 @@
 #include <di/io/PlyReader.h>
 
 #include "ProcessingNetwork.h"
+
+#include <di/core/Logger.h>
+#define LogTag "core/ProcessingNetwork"
 
 namespace di
 {

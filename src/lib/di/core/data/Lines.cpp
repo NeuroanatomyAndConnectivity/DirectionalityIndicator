@@ -25,9 +25,6 @@
 #include <vector>
 #include <map>
 
-#define LogTag "core/data/Lines"
-#include <di/core/Logger.h>
-
 #include "Lines.h"
 
 namespace di

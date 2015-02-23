@@ -29,8 +29,6 @@
 
 #include <QMouseEvent>
 
-#define LogTag "gui/OGLWidget"
-#include <di/core/Logger.h>
 #include <di/core/Filesystem.h>
 #include <di/core/BoundingBox.h>
 #include <di/gfx/GL.h>
@@ -39,6 +37,9 @@
 #include <di/gui/Application.h>
 
 #include "OGLWidget.h"
+
+#include <di/core/Logger.h>
+#define LogTag "gui/OGLWidget"
 
 namespace di
 {

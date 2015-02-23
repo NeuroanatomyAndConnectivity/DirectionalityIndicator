@@ -31,9 +31,6 @@
 #include <di/gui/Application.h>
 #include <di/gui/ScaleLabel.h>
 
-#define LogTag "gui/FileWidget"
-#include <di/core/Logger.h>
-
 #include <di/gui/CommandObserverQt.h>
 #include <di/gui/events/CommandObserverEvent.h>
 

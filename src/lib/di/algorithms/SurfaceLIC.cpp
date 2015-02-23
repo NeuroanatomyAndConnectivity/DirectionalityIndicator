@@ -25,9 +25,6 @@
 #include <string>
 #include <vector>
 
-#define LogTag "algorithms/SurfaceLIC"
-#include <di/core/Logger.h>
-
 #include <di/core/data/TriangleDataSet.h>
 #include <di/core/Filesystem.h>
 
@@ -35,6 +32,9 @@
 #include <di/gfx/GLError.h>
 
 #include "SurfaceLIC.h"
+
+#include <di/core/Logger.h>
+#define LogTag "algorithms/SurfaceLIC"
 
 namespace di
 {

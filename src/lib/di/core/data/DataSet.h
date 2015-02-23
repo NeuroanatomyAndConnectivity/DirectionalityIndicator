@@ -43,14 +43,19 @@ namespace di
          *
          * \note Keep in mind that you can specify multiple attribute types. Optional attributes should be implemented using runtime functions.
          */
-        template< typename GridType, typename... AttributeType >
+        template< typename GridT, typename... AttributeT >
         class DataSet: public DataSetBase
         {
         public:
             /**
              * The tuple containing all attributes.
              */
-            typedef std::tuple< ConstSPtr< AttributeType >... > AttributesTuple;
+            typedef std::tuple< ConstSPtr< AttributeT >... > AttributeTypes;
+
+            /**
+             * The type of the grid
+             */
+            typedef GridT GridType;
 
             /**
              * Create a new dataset. Datasets only exist if they have a grid and attribute(s).
@@ -59,7 +64,7 @@ namespace di
              * \param grid the grid
              * \param attributes
              */
-            DataSet( const std::string& name, ConstSPtr< GridType > grid, ConstSPtr< AttributeType >... attributes );
+            DataSet( const std::string& name, ConstSPtr< GridT > grid, ConstSPtr< AttributeT >... attributes );
 
             /**
              * Destructor. Does NOT free the contained data. Data is freed automatically if no one keeps a reference anymore.
@@ -71,7 +76,7 @@ namespace di
              *
              * \return the grid
              */
-            ConstSPtr< GridType > getGrid() const;
+            ConstSPtr< GridT > getGrid() const;
 
             /**
              * Get the attributes.
@@ -80,7 +85,7 @@ namespace di
              * \return the attributes
              */
             template< int Index = 0 >
-            typename std::tuple_element< Index, AttributesTuple >::type getAttributes() const
+            typename std::tuple_element< Index, AttributeTypes >::type getAttributes() const
             {
                 return std::get< Index >( m_attributes );
             }
@@ -90,32 +95,32 @@ namespace di
             /**
              * The grid of the dataset.
              */
-            ConstSPtr< GridType > m_grid = nullptr;
+            ConstSPtr< GridT > m_grid = nullptr;
 
             /**
              * The attributes
              */
-            AttributesTuple m_attributes;
+            AttributeTypes m_attributes;
         };
 
-        template< typename GridType, typename... AttributeType >
-        DataSet< GridType, AttributeType... >::DataSet( const std::string& name,
-                                                     ConstSPtr< GridType > grid,
-                                                     ConstSPtr< AttributeType >... attributes ):
+        template< typename GridT, typename... AttributeT >
+        DataSet< GridT, AttributeT... >::DataSet( const std::string& name,
+                                                     ConstSPtr< GridT > grid,
+                                                     ConstSPtr< AttributeT >... attributes ):
             DataSetBase( name ),
             m_grid( grid ),
             m_attributes( std::make_tuple( attributes... ) )
         {
         }
 
-        template< typename GridType, typename... AttributeType >
-        DataSet< GridType, AttributeType... >::~DataSet()
+        template< typename GridT, typename... AttributeT >
+        DataSet< GridT, AttributeT... >::~DataSet()
         {
             // cleanup is done by the SPtr.
         }
 
-        template< typename GridType, typename... AttributeType >
-        ConstSPtr< GridType > DataSet< GridType, AttributeType... >::getGrid() const
+        template< typename GridT, typename... AttributeT >
+        ConstSPtr< GridT > DataSet< GridT, AttributeT... >::getGrid() const
         {
             return m_grid;
         }

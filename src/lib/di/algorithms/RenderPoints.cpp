@@ -25,9 +25,6 @@
 #include <string>
 #include <vector>
 
-#define LogTag "algorithms/RenderPoints"
-#include <di/core/Logger.h>
-
 #include <di/core/data/PointDataSet.h>
 #include <di/core/Filesystem.h>
 
@@ -35,6 +32,9 @@
 #include <di/gfx/GLError.h>
 
 #include "RenderPoints.h"
+
+#include <di/core/Logger.h>
+#define LogTag "algorithms/RenderPoints"
 
 namespace di
 {

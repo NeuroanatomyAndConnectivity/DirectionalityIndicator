@@ -33,8 +33,6 @@
 #include <di/gui/ScaleLabel.h>
 
 #include <di/core/Algorithm.h>
-#define LogTag "gui/DataWidget"
-#include <di/core/Logger.h>
 
 #include <di/gui/CommandObserverQt.h>
 #include <di/gui/events/CommandObserverEvent.h>

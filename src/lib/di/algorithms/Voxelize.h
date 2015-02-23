@@ -28,14 +28,10 @@
 #include <mutex>
 
 #include <di/core/Algorithm.h>
+#include <di/core/data/DataSetTypes.h>
 
 namespace di
 {
-    namespace core
-    {
-        class TriangleDataSet;
-    }
-
     namespace algorithms
     {
         /**
@@ -64,6 +60,11 @@ namespace di
              * The triangle input to use.
              */
             SPtr< di::core::Connector< di::core::TriangleDataSet > > m_dataInput;
+
+            /**
+             * The voxel output to use.
+             */
+            SPtr< di::core::Connector< di::core::DataSetScalarRegular3d > > m_dataOutput;
 
             /**
              * The resolution used for voxelizing.

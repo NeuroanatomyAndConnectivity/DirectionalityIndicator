@@ -22,11 +22,11 @@
 //
 //---------------------------------------------------------------------------------------
 
-#define LogTag "gfx/Buffer"
-#include <di/core/Logger.h>
-#include <di/gfx/GLError.h>
-
 #include "Buffer.h"
+
+#include <di/core/Logger.h>
+#define LogTag "gfx/Buffer"
+#include <di/gfx/GLError.h>
 
 namespace di
 {

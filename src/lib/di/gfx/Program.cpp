@@ -25,13 +25,13 @@
 #include <string>
 #include <vector>
 
-#define LogTag "gfx/Program"
-#include <di/core/Logger.h>
-
 #include <di/gfx/Shader.h>
-#include <di/gfx/GLError.h>
 
 #include "Program.h"
+
+#include <di/core/Logger.h>
+#define LogTag "gfx/Program"
+#include <di/gfx/GLError.h>
 
 namespace di
 {

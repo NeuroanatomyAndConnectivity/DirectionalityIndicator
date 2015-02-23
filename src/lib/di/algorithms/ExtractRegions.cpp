@@ -33,10 +33,10 @@
 #include <di/core/data/Points.h>
 #include <di/core/data/Lines.h>
 
-#define LogTag "algorithms/ExtractRegions"
-#include <di/core/Logger.h>
-
 #include "ExtractRegions.h"
+
+#include <di/core/Logger.h>
+#define LogTag "algorithms/ExtractRegions"
 
 namespace di
 {

@@ -22,10 +22,10 @@
 //
 //---------------------------------------------------------------------------------------
 
-#define LogTag "algorithms/DataInject"
-#include <di/core/Logger.h>
-
 #include "DataInject.h"
+
+#include <di/core/Logger.h>
+#define LogTag "algorithms/DataInject"
 
 namespace di
 {

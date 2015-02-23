@@ -22,25 +22,5 @@
 //
 //---------------------------------------------------------------------------------------
 
-// A bit crude, but ensures the tag is undefined every time someone includes the logger.
-#ifdef LogTag
-    #undef LogTag
-#endif
+#include "GridRegular.h"
 
-#ifndef DI_LOGGER_H
-#define DI_LOGGER_H
-
-#include <iostream>
-
-// This file contains the preprocessor based logger. This is a rather simple logger, but as it uses a simple ostream interface, it can be replaced
-// later without the need for changes in the code.
-
-#define LogStream std::cout
-#define LogEnd std::endl;
-#define LogD LogStream << "DEBUG [" << LogTag << "]: "
-#define LogI LogStream << "INFO  [" << LogTag << "]: "
-#define LogW LogStream << "WARN  [" << LogTag << "]: "
-#define LogE LogStream << "ERROR [" << LogTag << "]: "
-#define LogGL LogStream
-
-#endif  // DI_LOGGER_H

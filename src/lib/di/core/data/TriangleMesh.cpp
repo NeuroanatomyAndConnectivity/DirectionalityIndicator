@@ -26,9 +26,6 @@
 #include <vector>
 #include <map>
 
-#define LogTag "core/data/TriangleMesh"
-#include <di/core/Logger.h>
-
 #include "TriangleMesh.h"
 
 namespace di

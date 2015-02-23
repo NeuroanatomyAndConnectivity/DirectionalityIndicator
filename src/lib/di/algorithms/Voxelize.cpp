@@ -22,15 +22,16 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <fstream>
 #include <map>
 #include <utility>
 
 #include <di/core/data/TriangleDataSet.h>
 
-#define LogTag "algorithms/Voxelize"
-#include <di/core/Logger.h>
-
 #include "Voxelize.h"
+
+#include <di/core/Logger.h>
+#define LogTag "algorithms/Voxelize"
 
 namespace di
 {
@@ -41,6 +42,10 @@ namespace di
                        "Create a voxel-version of the input data." )
         {
             // 1: the output
+            m_dataOutput = addOutput< di::core::DataSetScalarRegular3d >(
+                    "Voxel Mask",
+                    "The triangle data as bunch of voxels."
+            );
 
             // 2: the input
             m_dataInput = addInput< di::core::TriangleDataSet >(
@@ -63,6 +68,49 @@ namespace di
         {
             // Get input data
             auto triangleDataSet = m_dataInput->getData();
+
+            // Create the grid with the desired resolution:
+            auto grid = regularGridForBoundingBox( triangleDataSet->getGrid()->getBoundingBox(), m_resoultion, 10 );
+            auto values = std::make_shared< std::vector< double > >( grid->getSize() );
+
+            LogD << "Using grid: " << *grid << LogEnd;
+
+            // Iterate each triangle
+            for( auto tri : triangleDataSet->getGrid()->getTriangles() )
+            {
+                // Note: this is probably the worst way of rasterizing a triangle. Sufficient for now.
+                auto v1 = triangleDataSet->getGrid()->getVertex( tri.x );
+                auto v2 = triangleDataSet->getGrid()->getVertex( tri.y );
+                auto v3 = triangleDataSet->getGrid()->getVertex( tri.z );
+
+                ( *values )[ grid->voxelIndex( v1 ) ] = 1.0;
+                ( *values )[ grid->voxelIndex( v2 ) ] = 1.0;
+                ( *values )[ grid->voxelIndex( v3 ) ] = 1.0;
+
+                // Raster in between .. the ugly way:
+                auto v21m = v1 + 0.5f * ( v2 - v1 );
+                auto v31m = v1 + 0.5f * ( v3 - v1 );
+                auto v32m = v1 + 0.5f * ( v3 - v2 );
+
+                ( *values )[ grid->voxelIndex( v21m ) ] = 1.0;
+                ( *values )[ grid->voxelIndex( v31m ) ] = 1.0;
+                ( *values )[ grid->voxelIndex( v32m ) ] = 1.0;
+            }
+/*
+            std::ofstream f( "/home/seth/test" + std::to_string( grid->getSizeX() ) + "_" +
+                                                 std::to_string( grid->getSizeY() ) + "_" +
+                                                 std::to_string( grid->getSizeZ() ) +
+                    ".raw" , std::ios::out | std::ios::binary );
+            if( f.good() )
+            {
+                f.write( reinterpret_cast<const char*>(&values->data()[0]), values->size() * sizeof( double ) );
+            }
+
+            f.close();
+*/
+
+            // Construct result dataset:
+            m_dataOutput->setData( std::make_shared< di::core::DataSetScalarRegular3d >( "Voxels", grid, values ) );
         }
     }
 }

@@ -24,10 +24,10 @@
 
 #include <string>
 
-#define LogTag "core/CommandQueue"
-#include <di/core/Logger.h>
-
 #include "CommandQueue.h"
+
+#include <di/core/Logger.h>
+#define LogTag "core/CommandQueue"
 
 namespace di
 {
