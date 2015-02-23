@@ -96,18 +96,6 @@ namespace di
                 ( *values )[ grid->voxelIndex( v31m ) ] = 1.0;
                 ( *values )[ grid->voxelIndex( v32m ) ] = 1.0;
             }
-/*
-            std::ofstream f( "/home/seth/test" + std::to_string( grid->getSizeX() ) + "_" +
-                                                 std::to_string( grid->getSizeY() ) + "_" +
-                                                 std::to_string( grid->getSizeZ() ) +
-                    ".raw" , std::ios::out | std::ios::binary );
-            if( f.good() )
-            {
-                f.write( reinterpret_cast<const char*>(&values->data()[0]), values->size() * sizeof( double ) );
-            }
-
-            f.close();
-*/
 
             // Construct result dataset:
             m_dataOutput->setData( std::make_shared< di::core::DataSetScalarRegular3d >( "Voxels", grid, values ) );
