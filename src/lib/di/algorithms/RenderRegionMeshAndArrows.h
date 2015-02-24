@@ -22,13 +22,14 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_RENDERGRAPH_H
-#define DI_RENDERGRAPH_H
+#ifndef DI_RENDERREGIONMESHANDARROWS_H
+#define DI_RENDERREGIONMESHANDARROWS_H
 
 #include <di/gfx/GL.h>
 
 #include <di/core/Algorithm.h>
 #include <di/core/Visualization.h>
+#include <di/algorithms/ExtractRegions.h>
 
 namespace di
 {
@@ -43,19 +44,19 @@ namespace di
         /**
          * Render line Data. This class implements the algorithm and the visualization.
          */
-        class RenderGraph: public di::core::Algorithm,
-                           public di::core::Visualization
+        class RenderRegionMeshAndArrows: public di::core::Algorithm,
+                                         public di::core::Visualization
         {
         public:
             /**
              * Constructor. Initialize all inputs, outputs and parameters.
              */
-            RenderGraph();
+            RenderRegionMeshAndArrows();
 
             /**
              * Destructor. Clean up if needed.
              */
-            virtual ~RenderGraph();
+            virtual ~RenderRegionMeshAndArrows();
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Algorithm Specific Methods
@@ -117,6 +118,11 @@ namespace di
         protected:
         private:
             /**
+             * Region information to use.
+             */
+            SPtr< di::core::Connector< ExtractRegions::RegionDataSet > > m_regionInput;
+
+            /**
              * The line input to use.
              */
             SPtr< di::core::Connector< di::core::LineDataSet > > m_lineDataInput;
@@ -124,7 +130,22 @@ namespace di
             /**
              * The line data to visualize. We keep the pointer separate since process() and update()/render() work in different threads.
              */
-            ConstSPtr< di::core::LineDataSet > m_visLineData = nullptr;
+            ConstSPtr< std::vector< glm::vec3 > > m_visLineStrips = nullptr;
+
+            /**
+             * The line data to visualize. We keep the pointer separate since process() and update()/render() work in different threads.
+             */
+            ConstSPtr< std::vector< glm::vec3 > > m_visLineStripNormals = nullptr;
+
+            /**
+             * The line data to visualize. We keep the pointer separate since process() and update()/render() work in different threads.
+             */
+            ConstSPtr< RGBAArray > m_visLineStripColors = nullptr;
+
+            /**
+             * The vis bounding box.
+             */
+            core::BoundingBox m_visBB = core::BoundingBox();
 
             /**
              * The Vertex Attribute Array Object (VAO) used for the data.
@@ -142,16 +163,16 @@ namespace di
             SPtr< di::core::Buffer > m_vertexBuffer = nullptr;
 
             /**
+             * Normal data.
+             */
+            SPtr< di::core::Buffer > m_normalBuffer = nullptr;
+
+            /**
              * Color data.
              */
             SPtr< di::core::Buffer > m_colorBuffer = nullptr;
-
-            /**
-             * Index array.
-             */
-            SPtr< di::core::Buffer > m_indexBuffer = nullptr;
         };
     }
 }
 
-#endif  // DI_RENDERGRAPH_H
+#endif  // DI_RENDERREGIONMESHANDARROWS_H

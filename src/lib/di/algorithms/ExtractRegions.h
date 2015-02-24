@@ -28,17 +28,10 @@
 #include <mutex>
 
 #include <di/core/Algorithm.h>
+#include <di/core/data/DataSetTypes.h>
 
 namespace di
 {
-    namespace core
-    {
-        class LineDataSet;
-        class PointDataSet;
-        class Points;
-        class TriangleDataSet;
-    }
-
     namespace algorithms
     {
         /**
@@ -61,6 +54,27 @@ namespace di
              * Does nothing in this case, besides setting the injection data.
              */
             virtual void process();
+
+            /**
+             * Associate each region with its neighbours. The size_t is the region index.
+             */
+            typedef std::vector< std::set< size_t > > RegionNeighbourhood;
+
+            /**
+             * Associate each region with its connected region. The vector lists the source, the targets are in the set.
+             */
+            typedef std::vector< std::set< size_t > > RegionConnections;
+
+            /**
+             * The type used for storing region information. The point index is the region index.
+             */
+            typedef di::core::DataSet< core::Points, // set of center points, one per region. Point index is region index.
+                                       std::vector< glm::vec3 >,  // set of normals for each region. Index is region index.
+                                       di::RGBAArray, // region colors. One per region. Index is region index.
+                                       RegionNeighbourhood, // associate each region index with a set of direct neighbours.
+                                       RegionConnections  // associate a region index with a set of region indices that are connected.
+                                     > RegionDataSet;
+
         protected:
         private:
             /**
@@ -82,6 +96,11 @@ namespace di
              * The resulting center point data.
              */
             SPtr< di::core::Connector< di::core::PointDataSet > > m_centerPointOutput;
+
+            /**
+             * Region normals and colors.
+             */
+            SPtr< di::core::Connector< RegionDataSet > > m_regionOutput;
 
             /**
              * The triangle mesh input to use.

@@ -22,39 +22,52 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_DATASETTYPES_H
-#define DI_DATASETTYPES_H
+#ifndef DI_GAUSSSMOOTH_H
+#define DI_GAUSSSMOOTH_H
 
-#include <di/core/data/DataSet.h>
-#include <di/core/data/GridRegular.h>
-#include <di/core/data/GridTransformation.h>
-#include <di/core/data/GridBuilders.h>
+#include <mutex>
 
-#include <di/core/data/LineDataSet.h>
-#include <di/core/data/PointDataSet.h>
-#include <di/core/data/TriangleDataSet.h>
+#include <di/core/Algorithm.h>
+#include <di/core/data/DataSetTypes.h>
 
-// Now, define a bunch of default dataset types
 namespace di
 {
-    namespace core
+    namespace algorithms
     {
         /**
-         * Dataset in a 3D regular grid. The "d" in the name stands for "double".
+         * Gaussian filter the given scalar data.
          */
-        typedef DataSet< GridRegular3, std::vector< double > > DataSetScalarRegular3d;
+        class GaussSmooth: public di::core::Algorithm
+        {
+        public:
+            /**
+             * Constructor. Initialize all inputs, outputs and parameters.
+             */
+            GaussSmooth();
 
-        /**
-         * Dataset in a 3D regular grid. The "v3" in the name stands for "vector 3".
-         */
-        typedef DataSet< GridRegular3, std::vector< glm::vec3 > > DataSetScalarRegular3v3;
+            /**
+             * Destructor. Clean up if needed.
+             */
+            virtual ~GaussSmooth();
 
-        /**
-         * Dataset in a 3D regular grid as masks.
-         */
-        typedef DataSet< GridRegular3, std::vector< bool > > DataSetScalarRegular3b;
+            /**
+             * Does nothing in this case, besides setting the injection data.
+             */
+            virtual void process();
+        protected:
+        private:
+            /**
+             * The scalar input to use.
+             */
+            SPtr< di::core::Connector< di::core::DataSetScalarRegular3d > > m_dataInput;
+
+            /**
+             * The voxel output to use.
+             */
+            SPtr< di::core::Connector< di::core::DataSetScalarRegular3d > > m_dataOutput;
+        };
     }
 }
 
-#endif  // DI_DATASETTYPES_H
+#endif  // DI_GAUSSSMOOTH_H
 

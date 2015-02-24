@@ -62,6 +62,11 @@ namespace di
                     "Extracted center points of the regions."
             );
 
+            m_regionOutput = addOutput< RegionDataSet >(
+                    "Region Information",
+                    "Collection of useful information about the regions."
+            );
+
             m_connectionsOutput = addOutput< di::core::LineDataSet >(
                     "Connections",
                     "Extracted connections between regions."
@@ -136,11 +141,14 @@ namespace di
                     regionVertexCount += connectedAndEqual.size();
                 }
             }
+
             LogD << "Associated " << regionVertexCount << " vertices of " << triangles->getNumVertices() << " with "  <<
                     regionVertices.size() << " non-connected regions." << LogEnd;
 
             // Use them to calculate the region centers
             auto regionCenterPoints = std::make_shared< di::core::Points >();
+            auto regionFacingTo = std::make_shared< std::vector< glm::vec3 > >();
+            auto triBB = triangles->getBoundingBox();
             for( auto reg : regionVertices )
             {
                 // for each region, iterate vertices
@@ -151,10 +159,31 @@ namespace di
                 }
                 center /= static_cast< float >( reg.size() );
                 regionCenterPoints->addVertex( center );
+
+                // now, also calculate the directions pointing to "front" of the region
+                auto facingTo = glm::vec3( 0.0 );
+                for( auto v : reg )
+                {
+                    // Version 1: from BB center to vertex?
+                    // auto bbCenter = triBB.getCenter();
+                    // facingTo += glm::normalize(  triangles->getVertex( v ) - glm::vec3( bbCenter ) );
+
+                    // Version 2: from each vertex to center
+                    //facingTo -= glm::normalize( center - triangles->getVertex( v ) );
+
+                    // Version 3: normals of the mesh
+                    facingTo += triangles->getNormal( v );
+                }
+
+                // We need to let the normal point towards the bounding box
+                facingTo /= static_cast< float >( reg.size() );
+                facingTo = glm::normalize( facingTo );
+
+                regionFacingTo->push_back( facingTo );
             }
 
             // Use the following iteration for determining the neighbourhood of each region
-            std::vector< std::set< size_t > > regionNeighbours( regionVertices.size() ); // keep a set of direct neighbours of each regions
+            auto regionNeighbours = std::make_shared< RegionNeighbourhood >( regionVertices.size() ); // keep a set of direct neighbours of each reg
 
             // Iterate all triangles and transform to lines
             for( auto t : triangles->getTriangles() )
@@ -221,12 +250,32 @@ namespace di
                     {
                         LogE << "Could not find associated region?" << LogEnd;
                     }
-                    regionNeighbours[ regID1 ].insert( regID2 );
-                    regionNeighbours[ regID1 ].insert( regID3 );
-                    regionNeighbours[ regID2 ].insert( regID1 );
-                    regionNeighbours[ regID2 ].insert( regID3 );
-                    regionNeighbours[ regID3 ].insert( regID1 );
-                    regionNeighbours[ regID3 ].insert( regID2 );
+
+                    // Avoid reverse connections
+                    if( regID1 < regID2 )
+                    {
+                        ( *regionNeighbours )[ regID1 ].insert( regID2 );
+                    }
+                    if( regID1 < regID3 )
+                    {
+                        ( *regionNeighbours )[ regID1 ].insert( regID3 );
+                    }
+                    if( regID2 < regID1 )
+                    {
+                        ( *regionNeighbours )[ regID2 ].insert( regID2 );
+                    }
+                    if( regID2 < regID3 )
+                    {
+                        ( *regionNeighbours )[ regID2 ].insert( regID3 );
+                    }
+                    if( regID3 < regID1 )
+                    {
+                        ( *regionNeighbours )[ regID3 ].insert( regID1 );
+                    }
+                    if( regID3 < regID2 )
+                    {
+                        ( *regionNeighbours )[ regID3 ].insert( regID2 );
+                    }
 
                     // 2: the more interesting case: each color is different to each other.
                     if( ( c1 != c2 ) && ( c1 != c3 ) && ( c2 != c3 ) )
@@ -311,7 +360,7 @@ namespace di
             auto connectionColors = std::make_shared< di::RGBAArray >();
 
             // We need to connect each regions. This is an experiment. We need to find out more about the "how".
-            for( size_t regID = 0; regID < regionNeighbours.size(); ++regID )
+            for( size_t regID = 0; regID < regionNeighbours->size(); ++regID )
             {
                 // get the current region center point and its coordinates:
                 auto c = regionCenterPoints->getVertex( regID );
@@ -322,7 +371,7 @@ namespace di
                 connectionColors->push_back( cCol );
 
                 // Connect this with each neighbour
-                for( auto n : regionNeighbours[ regID ] )
+                for( auto n : regionNeighbours->operator[]( regID ) )
                 {
                     auto nC = regionCenterPoints->getVertex( n );
                     auto idxN = connectionLines->addVertex( nC );
@@ -334,9 +383,18 @@ namespace di
                 }
             }
 
+            auto regionConnections = regionNeighbours; // right now, we assume every region to be connected with each neighbour.
+
             // Re-package the region list into a point dataset
             m_centerPointOutput->setData( std::make_shared< di::core::PointDataSet >( "Region Centers", regionCenterPoints,
                                                                                                         regionColors ) );
+
+            // Collect everything into a dataset
+            m_regionOutput->setData( std::make_shared< RegionDataSet >( "Region Information", regionCenterPoints,
+                                                                                              regionFacingTo,
+                                                                                              regionColors,
+                                                                                              regionNeighbours,
+                                                                                              regionConnections ) );
 
             // Output connections
             m_connectionsOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Connections", connectionLines,

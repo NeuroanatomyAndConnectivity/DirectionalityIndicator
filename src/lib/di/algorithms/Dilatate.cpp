@@ -77,6 +77,8 @@ namespace di
                         auto cIdx = grid->index( x, y, z );
                         // neighbour
                         bool neighbourFilled = false;
+                        neighbourFilled = ( *inputValues )[ grid->index( x, y, z ) ] != 0.0 ? true : neighbourFilled;
+
                         neighbourFilled = ( *inputValues )[ grid->index( x - 1, y, z ) ] != 0.0 ? true : neighbourFilled;
                         neighbourFilled = ( *inputValues )[ grid->index( x + 1, y, z ) ] != 0.0 ? true : neighbourFilled;
                         neighbourFilled = ( *inputValues )[ grid->index( x, y - 1, z ) ] != 0.0 ? true : neighbourFilled;
@@ -116,25 +118,13 @@ namespace di
                         neighbourFilled = ( *inputValues )[ grid->index( x + 1, y + 1, z - 1 ) ] != 0.0 ? true : neighbourFilled;
                         neighbourFilled = ( *inputValues )[ grid->index( x + 1, y + 1, z + 1 ) ] != 0.0 ? true : neighbourFilled;
 
-                        ( *values )[ cIdx ] = neighbourFilled ? 1.0 : ( *values )[ cIdx ];
+                        ( *values )[ cIdx ] = neighbourFilled ? 1.0 : 0.0;
                     }
                 }
             }
 
-/*            std::ofstream f( "/home/seth/dilates2t" + std::to_string( grid->getSizeX() ) + "_" +
-                                                 std::to_string( grid->getSizeY() ) + "_" +
-                                                 std::to_string( grid->getSizeZ() ) +
-                    ".raw" , std::ios::out | std::ios::binary );
-            if( f.good() )
-            {
-                f.write( reinterpret_cast<const char*>(&values->data()[0]), values->size() * sizeof( double ) );
-            }
-
-            f.close();
-
-
             // Construct result dataset:
-            m_dataOutput->setData( std::make_shared< di::core::DataSetScalarRegular3d >( "Dilatetd", grid, values ) );*/
+            m_dataOutput->setData( std::make_shared< di::core::DataSetScalarRegular3d >( "Dilatetd", grid, values ) );
         }
     }
 }

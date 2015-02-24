@@ -22,39 +22,24 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_DATASETTYPES_H
-#define DI_DATASETTYPES_H
+#version 330
 
-#include <di/core/data/DataSet.h>
-#include <di/core/data/GridRegular.h>
-#include <di/core/data/GridTransformation.h>
-#include <di/core/data/GridBuilders.h>
+// Attribute data
+in vec3 position;
+in vec3 normal;
+in vec4 color;
 
-#include <di/core/data/LineDataSet.h>
-#include <di/core/data/PointDataSet.h>
-#include <di/core/data/TriangleDataSet.h>
+// Uniforms
+uniform mat4 u_ProjectionMatrix;
+uniform mat4 u_ViewMatrix;
 
-// Now, define a bunch of default dataset types
-namespace di
+// Varying out
+out vec4 v_color;
+
+void main()
 {
-    namespace core
-    {
-        /**
-         * Dataset in a 3D regular grid. The "d" in the name stands for "double".
-         */
-        typedef DataSet< GridRegular3, std::vector< double > > DataSetScalarRegular3d;
-
-        /**
-         * Dataset in a 3D regular grid. The "v3" in the name stands for "vector 3".
-         */
-        typedef DataSet< GridRegular3, std::vector< glm::vec3 > > DataSetScalarRegular3v3;
-
-        /**
-         * Dataset in a 3D regular grid as masks.
-         */
-        typedef DataSet< GridRegular3, std::vector< bool > > DataSetScalarRegular3b;
-    }
+    v_color = color;
+    vec4 pos = u_ProjectionMatrix * u_ViewMatrix * vec4( 45.0 * ( normal ) + position, 1.0 );
+    gl_Position = pos;
 }
-
-#endif  // DI_DATASETTYPES_H
 

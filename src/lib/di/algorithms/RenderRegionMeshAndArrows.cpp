@@ -31,65 +31,91 @@
 #include <di/gfx/GL.h>
 #include <di/gfx/GLError.h>
 
-#include "RenderGraph.h"
+#include "RenderRegionMeshAndArrows.h"
 
 #include <di/core/Logger.h>
-#define LogTag "algorithms/RenderGraph"
+#define LogTag "algorithms/RenderRegionMeshAndArrows"
 
 namespace di
 {
     namespace algorithms
     {
-        RenderGraph::RenderGraph():
-            Algorithm( "Render Graph",
-                       "This algorithm takes a bunch of lines and renders it as arrows." ),
+        RenderRegionMeshAndArrows::RenderRegionMeshAndArrows():
+            Algorithm( "Render Region Mesh and Arrows",
+                       "This algorithm takes pre-calculated region information and presents it in an appealing way." ),
             Visualization()
         {
             // We require some inputs.
-
-            // 1: the triangle mesh
-            m_lineDataInput = addInput< di::core::LineDataSet >(
-                    "Graph",
-                    "The lines representing the graph."
-            );
+            m_regionInput = addInput< ExtractRegions::RegionDataSet >(
+                                "Region Information",
+                                "Collection of necessary data created by the ExtractRegions algorithm."
+                            );
         }
 
-        RenderGraph::~RenderGraph()
+        RenderRegionMeshAndArrows::~RenderRegionMeshAndArrows()
         {
             // nothing to clean up so far
         }
 
-        void RenderGraph::process()
+        void RenderRegionMeshAndArrows::process()
         {
             // Get input data
-            auto data = m_lineDataInput->getData();
+            auto regionData = m_regionInput->getData();
+            auto regionCenters = regionData->getGrid();
+            auto regionNormal = regionData->getAttributes<0>();
+            auto regionColors = regionData->getAttributes<1>();
+            auto regionNeighbours = regionData->getAttributes<2>();
+            auto regionConnections = regionData->getAttributes<3>();
 
-            LogD << "Got " << data->getGrid()->getNumLines() << " lines with " << data->getGrid()->getNumVertices() << " vertices." << LogEnd;
+            auto lineStrips = std::make_shared< std::vector< glm::vec3 > >();
+            auto lineStripNormals = std::make_shared< std::vector< glm::vec3 > >();
+            auto lineStripColors = std::make_shared< di::RGBAArray >();
+            core::BoundingBox bb;
+
+            // go through each region,
+            for( size_t regID = 0; regID < regionCenters->getNumVertices(); ++regID )
+            {
+                // get this regions center and normal
+                auto normal = ( *regionNormal )[ regID ];
+                auto center = regionCenters->getVertex( regID );
+                auto color = ( *regionColors )[ regID ];
+                bb.include( center );
+
+                // create an arrow for each connected region as line strip
+                for( auto connectToRegID : ( *regionConnections )[ regID ] )
+                {
+                    auto targetNormal = ( *regionNormal )[ connectToRegID ];
+                    auto targetCenter = regionCenters->getVertex( connectToRegID );
+                    auto targetColor = ( *regionColors )[ connectToRegID ];
+
+                    bb.include( targetCenter );
+                    lineStrips->push_back( center );
+                    lineStrips->push_back( targetCenter );
+
+                    lineStripNormals->push_back( normal );
+                    lineStripNormals->push_back( targetNormal );
+
+                    lineStripColors->push_back( color );
+                    lineStripColors->push_back( targetColor );
+                }
+            }
 
             // Provide the needed information to the visualizer itself.
-            bool changeVis = ( m_visLineData != data );
-            m_visLineData = data;
+            m_visLineStrips = lineStrips;
+            m_visLineStripNormals = lineStripNormals;
+            m_visLineStripColors = lineStripColors;
+            m_visBB = bb;
 
             // As the rendering system does not render permanently, inform about the update.
-            if( changeVis )
-            {
-                renderRequest();
-            }
+            renderRequest();
         }
 
-        core::BoundingBox RenderGraph::getBoundingBox() const
+        core::BoundingBox RenderRegionMeshAndArrows::getBoundingBox() const
         {
-            if( m_visLineData )
-            {
-                return m_visLineData->getGrid()->getBoundingBox();
-            }
-            else
-            {
-                return core::BoundingBox();
-            }
+            return m_visBB;
         }
 
-        void RenderGraph::prepare()
+        void RenderRegionMeshAndArrows::prepare()
         {
             LogD << "Vis Prepare" << LogEnd;
 
@@ -98,9 +124,9 @@ namespace di
 
             std::string localShaderPath = core::getResourcePath() + "/algorithms/shaders/";
             vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
-                                                               core::readTextFile( localShaderPath + "RenderGraph-vertex.glsl" ) );
+                                                               core::readTextFile( localShaderPath + "RenderRegionMeshAndArrows-vertex.glsl" ) );
             fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
-                                                                 core::readTextFile( localShaderPath + "RenderGraph-fragment.glsl" ) );
+                                                                 core::readTextFile( localShaderPath + "RenderRegionMeshAndArrows-fragment.glsl" ) );
 
             // Link them to build the program itself
             // m_shaderProgram = std::make_shared< di::core::Program >( { m_vertexShader, m_fragmentShader } );
@@ -114,12 +140,12 @@ namespace di
             m_shaderProgram->realize();
         }
 
-        void RenderGraph::finalize()
+        void RenderRegionMeshAndArrows::finalize()
         {
             LogD << "Vis Finalize" << LogEnd;
         }
 
-        void RenderGraph::render( const core::View& view )
+        void RenderRegionMeshAndArrows::render( const core::View& view )
         {
             if( !( m_VAO && m_shaderProgram && m_vertexBuffer ) )
             {
@@ -135,18 +161,18 @@ namespace di
             glEnable( GL_BLEND );
 
             glBindVertexArray( m_VAO );
-            glDrawElements( GL_LINES, m_visLineData->getGrid()->getLines().size() * 2, GL_UNSIGNED_INT, NULL );
+            glDrawArrays( GL_LINES, 0, m_visLineStrips->size() );
 
             glDisable(  GL_BLEND );
             logGLError();
         }
 
-        void RenderGraph::update( const core::View& /* view */, bool reload )
+        void RenderRegionMeshAndArrows::update( const core::View& /* view */, bool reload )
         {
             // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
             // and many code parts repeat again and again.
 
-            if( !m_visLineData )
+            if( !m_visLineStrips )
             {
                 return;
             }
@@ -163,13 +189,14 @@ namespace di
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Create Vertex Array Object VAO and the corresponding Vertex Buffer Objects VBO for the mesh itself
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            LogD << "Creating Mesh VAO" << LogEnd;
+            LogD << "Creating Line Strip VAO" << LogEnd;
 
             m_shaderProgram->bind();
             logGLError();
 
             // get the location of attribute "position" in program
             GLint vertexLoc = m_shaderProgram->getAttribLocation( "position" );
+            GLint normalLoc = m_shaderProgram->getAttribLocation( "normal" );
             GLint colorLoc = m_shaderProgram->getAttribLocation( "color" );
             logGLError();
 
@@ -180,30 +207,32 @@ namespace di
 
             // Create some buffers
             m_vertexBuffer = std::make_shared< core::Buffer >();
+            m_normalBuffer = std::make_shared< core::Buffer >();
             m_colorBuffer = std::make_shared< core::Buffer >();
-            m_indexBuffer = std::make_shared< core::Buffer >( core::Buffer::BufferType::ElementArray );
             logGLError();
 
             // Set the data using the triangle mesh. Also set the location mapping of the shader using the VAO
             m_vertexBuffer->realize();
             m_vertexBuffer->bind();
-            m_vertexBuffer->data( m_visLineData->getGrid()->getVertices() );
+            m_vertexBuffer->data( m_visLineStrips );
             logGLError();
 
             glEnableVertexAttribArray( vertexLoc );
             glVertexAttribPointer( vertexLoc, 3, GL_FLOAT, 0, 0, 0 );
             logGLError();
 
+            m_normalBuffer->realize();
+            m_normalBuffer->bind();
+            m_normalBuffer->data( m_visLineStripNormals );
+            glEnableVertexAttribArray( normalLoc );
+            glVertexAttribPointer( normalLoc, 3, GL_FLOAT, 0, 0, 0 );
+
             m_colorBuffer->realize();
             m_colorBuffer->bind();
-            m_colorBuffer->data( m_visLineData->getAttributes() );
+            m_colorBuffer->data( m_visLineStripColors );
             glEnableVertexAttribArray( colorLoc );
             glVertexAttribPointer( colorLoc, 4, GL_FLOAT, 0, 0, 0 );
-            logGLError();
 
-            m_indexBuffer->realize();
-            m_indexBuffer->bind();
-            m_indexBuffer->data( m_visLineData->getGrid()->getLines() );
             logGLError();
         }
     }

@@ -22,39 +22,18 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_DATASETTYPES_H
-#define DI_DATASETTYPES_H
+#version 330
 
-#include <di/core/data/DataSet.h>
-#include <di/core/data/GridRegular.h>
-#include <di/core/data/GridTransformation.h>
-#include <di/core/data/GridBuilders.h>
+in vec4 v_color;
 
-#include <di/core/data/LineDataSet.h>
-#include <di/core/data/PointDataSet.h>
-#include <di/core/data/TriangleDataSet.h>
+out vec4 fragColor;
 
-// Now, define a bunch of default dataset types
-namespace di
+void main()
 {
-    namespace core
-    {
-        /**
-         * Dataset in a 3D regular grid. The "d" in the name stands for "double".
-         */
-        typedef DataSet< GridRegular3, std::vector< double > > DataSetScalarRegular3d;
+    // Write
+    fragColor = v_color;
 
-        /**
-         * Dataset in a 3D regular grid. The "v3" in the name stands for "vector 3".
-         */
-        typedef DataSet< GridRegular3, std::vector< glm::vec3 > > DataSetScalarRegular3v3;
-
-        /**
-         * Dataset in a 3D regular grid as masks.
-         */
-        typedef DataSet< GridRegular3, std::vector< bool > > DataSetScalarRegular3b;
-    }
+    // Small depth offset
+    gl_FragDepth = gl_FragCoord.z - 0.001;
 }
-
-#endif  // DI_DATASETTYPES_H
 
