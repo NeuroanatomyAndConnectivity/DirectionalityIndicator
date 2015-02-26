@@ -41,19 +41,31 @@ namespace di
             // nothing to do. Vectors get cleared on destruction.
         }
 
-        size_t Lines::addVertex( const glm::vec3& vertex )
+        size_t Lines::addVertex( const glm::vec3& vertex, bool ifUnique )
         {
+            if( ifUnique )
+            {
+                for( size_t vIdx = 0; vIdx < m_vertices.size(); ++vIdx )
+                {
+                    auto dist = glm::distance( vertex, m_vertices[ vIdx ] );
+                    if( dist < 0.001 )
+                    {
+                        return vIdx;
+                    }
+                }
+            }
+
             m_boundingBox.include( vertex );
             m_vertices.push_back( vertex );
             return m_vertices.size() - 1;
         }
 
-        size_t Lines::addVertex( float x, float y, float z )
+        size_t Lines::addVertex( float x, float y, float z, bool ifUnique )
         {
             return addVertex(
                 {
                     x, y, z
-                }
+                }, ifUnique
             );
         }
 
@@ -77,9 +89,19 @@ namespace di
             return m_vertices;
         }
 
+        glm::vec3 Lines::getVertex( size_t vertexID ) const
+        {
+            return m_vertices[ vertexID ];
+        }
+
         const IndexVec2Array& Lines::getLines() const
         {
             return m_lines;
+        }
+
+        glm::ivec2 Lines::getLine( size_t lineID ) const
+        {
+           return m_lines[ lineID ];
         }
 
         size_t Lines::getNumLines() const

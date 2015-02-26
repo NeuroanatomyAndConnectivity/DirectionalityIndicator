@@ -93,6 +93,11 @@ namespace di
             SPtr< di::core::Connector< di::core::LineDataSet > > m_connectionsOutput;
 
             /**
+             * Neighbour arrows
+             */
+            SPtr< di::core::Connector< di::core::LineDataSet > > m_neighbourArrowOutput;
+
+            /**
              * The resulting center point data.
              */
             SPtr< di::core::Connector< di::core::PointDataSet > > m_centerPointOutput;

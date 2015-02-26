@@ -59,10 +59,11 @@ namespace di
              * Add a vertex to the vertex list.
              *
              * \param vertex the vertex to add.
+             * \param ifUnique add vertex if not yet present. If already present, return its index.
              *
              * \return the index of the vertex.
              */
-            size_t addVertex( const glm::vec3& vertex );
+            size_t addVertex( const glm::vec3& vertex, bool ifUnique = false );
 
             /**
              * Add a vertex to the vertex list.
@@ -70,10 +71,11 @@ namespace di
              * \param x x component
              * \param y y component
              * \param z z component
+             * \param ifUnique add vertex if not yet present. If already present, return its index.
              *
              * \return the index of the vertex.
              */
-            size_t addVertex( float x, float y, float z );
+            size_t addVertex( float x, float y, float z, bool ifUnique = false );
 
             /**
              * Add the given indices to the index list to define a new line.
@@ -126,11 +128,29 @@ namespace di
             Line getVertices( size_t lineID ) const;
 
             /**
+             * Get vertex for the given ID.
+             *
+             * \param vertexID the ID
+             *
+             * \return the vertex.
+             */
+            glm::vec3 getVertex( size_t vertexID ) const;
+
+            /**
              * Get the lines index array.
              *
              * \return the index array.
              */
             const IndexVec2Array& getLines() const;
+
+            /**
+             * Get the lines index array.
+             *
+             * \param lineID the line to get
+             *
+             * \return the indices of start and end of the line.
+             */
+            glm::ivec2 getLine( size_t lineID ) const;
 
             /**
              * Set the lines index array. Overwrites previously set lines.

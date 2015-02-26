@@ -112,6 +112,7 @@ namespace di
             di::gui::AlgorithmWidget* algo7;
             di::gui::AlgorithmWidget* algo8;
             di::gui::AlgorithmWidget* algo9;
+            di::gui::AlgorithmWidget* algo10;
             di::gui::AlgorithmStrategy* s;
 
             // Create the strategies:
@@ -133,6 +134,7 @@ namespace di
             algo3 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderPoints ) ) );
             algo4 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
             algo5 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
+            algo10 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
 
             // Create arrow rendering:
             algo9 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderRegionMeshAndArrows ) ) );
@@ -153,6 +155,8 @@ namespace di
             getProcessingNetwork()->connectAlgorithms( algo6->getAlgorithm(), "Voxel Mask", algo7->getAlgorithm(), "Input" );
             getProcessingNetwork()->connectAlgorithms( algo7->getAlgorithm(), "Dilatated", algo8->getAlgorithm(), "Input" );
 
+            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Neighbour Arrows", algo10->getAlgorithm(), "Lines" );
+
             getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Region Information", algo9->getAlgorithm(), "Region Information" );
 
             // Connect all modules with a "Triangle Mesh" input.
@@ -162,10 +166,13 @@ namespace di
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            algo2->setActive( false );
+            //algo2->setActive( false );
             algo3->setActive( false );
+            algo9->setActive( false );
             algo4->setActive( false );
-            algo5->setActive( false );
+            algo6->setActive( false );
+            algo7->setActive( false );
+           // algo5->setActive( false );
             // algoT->setActive( false );
         }
     }

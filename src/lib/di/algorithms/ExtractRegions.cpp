@@ -26,6 +26,9 @@
 #include <utility>
 #include <set>
 #include <vector>
+#include <list>
+#include <map>
+#include <deque>
 
 #include <di/core/data/TriangleDataSet.h>
 #include <di/core/data/LineDataSet.h>
@@ -70,6 +73,10 @@ namespace di
             m_connectionsOutput = addOutput< di::core::LineDataSet >(
                     "Connections",
                     "Extracted connections between regions."
+            );
+            m_neighbourArrowOutput = addOutput< di::core::LineDataSet >(
+                    "Neighbour Arrows",
+                    "Extracted connections between neighbours as simple arrows."
             );
 
             // 2: the input
@@ -118,9 +125,19 @@ namespace di
             auto linesMesh = std::make_shared< di::core::Lines >();
             auto colorsMesh = std::make_shared< di::RGBAArray >();
 
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Extract Region Information
+            //  - Find regions and their neighbourhood
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
             // Create a list of regions, visit each vertex only once.
             std::vector< bool > visited( triangles->getNumVertices(), false );
             std::vector< std::vector< size_t > > regionVertices; // collect all vertices of the regions found
+            std::vector< int > vertexRegion( triangles->getNumVertices(), -1 ); // associate the region to each vertex.
+                                                                                // This is the dual list to regionVertices
+
             auto regionColors = std::make_shared< std::vector< glm::vec4 > >();       // create a palette of colors
             // Iterate all triangles and transform to lines
             size_t regionVertexCount = 0; // keep track of how many vertices where associated
@@ -139,11 +156,25 @@ namespace di
                     regionVertices.push_back( connectedAndEqual );
                     regionColors->push_back( attribute->at( vertID ) ); // take source color as palette here
                     regionVertexCount += connectedAndEqual.size();
+
+                    // also build the inverse list
+                    for( auto v : connectedAndEqual )
+                    {
+                        vertexRegion[ v ] = regionVertices.size() - 1;
+                    }
                 }
             }
 
             LogD << "Associated " << regionVertexCount << " vertices of " << triangles->getNumVertices() << " with "  <<
                     regionVertices.size() << " non-connected regions." << LogEnd;
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Extract Region Information 2
+            //  - Find regions centers and their "front".
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
             // Use them to calculate the region centers
             auto regionCenterPoints = std::make_shared< di::core::Points >();
@@ -182,8 +213,23 @@ namespace di
                 regionFacingTo->push_back( facingTo );
             }
 
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Build borders between regions
+            //  - Find region borders and build index of lines splitting them
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
             // Use the following iteration for determining the neighbourhood of each region
             auto regionNeighbours = std::make_shared< RegionNeighbourhood >( regionVertices.size() ); // keep a set of direct neighbours of each reg
+
+            // Keep track of the regions that each line splits - the pair are the indices of the regions splitted. The vector is the list of lines
+            // splitting those regions.
+            std::map< std::pair< size_t, size_t >, std::vector< size_t > > regionSplitLines;
+
+            std::map< size_t, glm::vec3 > lineNormals;
+            std::map< size_t, glm::vec3 > lineBinormals;
 
             // Iterate all triangles and transform to lines
             for( auto t : triangles->getTriangles() )
@@ -205,7 +251,7 @@ namespace di
                 linesMesh->addLine( v1I, v2I );
                 linesMesh->addLine( v1I, v3I );
                 linesMesh->addLine( v2I, v3I );
-                float a = 0.07125;
+                float a = 0.25;
                 colorsMesh->push_back( glm::vec4( c1.r, c1.g, c1.b, a ) );
                 colorsMesh->push_back( glm::vec4( c2.r, c2.g, c2.b, a ) );
                 colorsMesh->push_back( glm::vec4( c3.r, c3.g, c3.b, a ) );
@@ -293,16 +339,16 @@ namespace di
                         auto em3 = v2 + ( 0.5f * ( v3 - v2 ) );
 
                         // Add these vertices
-                        auto em1I = lines->addVertex( em1 );
-                        auto em2I = lines->addVertex( em2 );
-                        auto em3I = lines->addVertex( em3 );
-                        auto cI = lines->addVertex( c );
+                        auto em1I = lines->addVertex( em1, true );
+                        auto em2I = lines->addVertex( em2, true );
+                        auto em3I = lines->addVertex( em3, true );
+                        auto cI = lines->addVertex( c ); // definitely unique.
 
                         // Do not forget to add enough colors
                         colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
                         colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
                         colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
-                        colors->push_back( glm::vec4( 1.0, 0.0, 0.0, 1.0 ) );
+                        colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
 
                         // and connect edge middle points to center with lines:
                         lines->addLine( em1I, cI );
@@ -341,19 +387,130 @@ namespace di
                         auto ve1 = triangles->getVertex( otherI1 );
                         auto ve2 = triangles->getVertex( otherI2 );
 
+                        auto nd = triangles->getNormal( differentI );
+                        auto ne1 = triangles->getNormal( otherI1 );
+                        auto ne2 = triangles->getNormal( otherI2 );
+
                         // find the new vertices of the border. It just is the middle of the edge
                         auto bv1 = vd + ( 0.5f * ( ve1 - vd ) );
                         auto bv2 = vd + ( 0.5f * ( ve2 - vd ) );
 
                         // use this as border line segment -> add to lines
-                        auto li1 = lines->addVertex( bv1 );
-                        auto li2 = lines->addVertex( bv2 );
-                        lines->addLine( li1, li2 );
-                        colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
-                        colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
+                        auto li1 = lines->addVertex( bv1, true );
+                        auto li2 = lines->addVertex( bv2, true );
+                        auto lineIdx = lines->addLine( std::min( li1, li2 ), std::max( li1, li2 ) );
+                        colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 0.5 ) );
+                        colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 0.5 ) );
+
+                        // Build the pair of regions, use min/max to ensure commutativity
+                        regionSplitLines[ std::make_pair( std::min( vertexRegion[ differentI ], vertexRegion[ otherI1 ] ),
+                                                          std::max( vertexRegion[ differentI ], vertexRegion[ otherI1 ] )
+                                                        )
+                                        ].push_back( lineIdx ); // push the line index
+                        lineNormals[ lineIdx ] = glm::normalize( nd + ne1 + ne2 );
+                        lineBinormals[ lineIdx ] = glm::cross( lineNormals[ lineIdx ], glm::normalize( bv1 - bv2 ) );
+
                     }
                 }
             }
+
+            LogD << "Border Line Info: " << lines->getNumVertices() << " vertices and " << lines->getNumLines() << " lines." << LogEnd;
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Build a neighbourhood "arrow"
+            //  - Find a suitable point for placing them and build some line data
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            auto neighbourLines = std::make_shared< di::core::Lines >();
+            auto neighbourColors = std::make_shared< di::RGBAArray >();
+
+            // regionSplitLines contains the info we need here: map two regions to the line indices splitting them. We now build a strip of lines for
+            // the boders:
+            for( auto regionPairToLineIndieces : regionSplitLines )
+            {
+                auto regionPair = regionPairToLineIndieces.first;
+                auto lineIndices = regionPairToLineIndieces.second;
+
+                // NOTE: the lines use shared vertices.
+
+                // build strip:
+                std::deque< size_t > sortedLineVertices; // the line strip
+                sortedLineVertices.push_back( lines->getLine( lineIndices[ 0 ] ).x );
+                sortedLineVertices.push_back( lines->getLine( lineIndices[ 0 ] ).y );
+                std::deque< size_t > sortedLines;
+                sortedLines.push_back( lineIndices[ 0 ] );
+
+                // Brute-force find the connected line strip. Quadratic runtime! Needs to be improved!
+                while( sortedLines.size() != lineIndices.size() )
+                {
+                    // front ids
+                    int frontId = sortedLineVertices.front();
+                    int backId = sortedLineVertices.back();
+                    for( size_t i = 0; i < lineIndices.size(); ++i )
+                    {
+                        // is the next line before/after the current strip?
+                        glm::ivec2 ids = lines->getLine( lineIndices[ i ] );
+
+                        if( ids.x == frontId )
+                        {
+                            sortedLineVertices.push_front( ids.y );
+                            sortedLines.push_front( lineIndices[ i ] );
+                            break;
+                        }
+                        if( ids.y == frontId )
+                        {
+                            sortedLineVertices.push_front( ids.x );
+                            sortedLines.push_front( lineIndices[ i ] );
+                            break;
+                        }
+
+                        if( ids.x == backId )
+                        {
+                            sortedLineVertices.push_back( ids.y );
+                            sortedLines.push_back( lineIndices[ i ] );
+                            break;
+                        }
+                        if( ids.y == backId )
+                        {
+                            sortedLineVertices.push_back( ids.x );
+                            sortedLines.push_back( lineIndices[ i ] );
+                            break;
+                        }
+                    }
+                }
+
+                // We now have the strip.
+                size_t centerIdx = sortedLines.size() / 2;
+
+
+                 LogE << regionPair.first << " - " << regionPair.second << " ---- " << lineIndices.size() << "  - " << centerIdx << LogEnd;
+
+
+
+
+                auto normal = lineNormals[ sortedLines[ centerIdx ] ];
+                auto binormal = lineBinormals[ sortedLines[ centerIdx ] ];
+                auto point1 = lines->getVertex( sortedLineVertices[ centerIdx ] );
+                auto point2 = lines->getVertex( sortedLineVertices[ centerIdx + 1 ] );
+                auto centerPoint = normal + ( point1 + 0.5f * ( point2 - point1 ) );
+
+                float scale = 2.0f;
+                auto arrV1Idx = neighbourLines->addVertex( centerPoint + scale * binormal );
+                auto arrV2Idx = neighbourLines->addVertex( centerPoint - scale * binormal );
+                neighbourLines->addLine( arrV1Idx, arrV2Idx );
+                neighbourColors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
+                neighbourColors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
+            }
+
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Build a connectivity graph
+            //  - The dual graph to the region neighbourhood
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // Create the buffers we need to store lines and color information of the connection graph
             auto connectionLines = std::make_shared< di::core::Lines >();
@@ -385,6 +542,14 @@ namespace di
 
             auto regionConnections = regionNeighbours; // right now, we assume every region to be connected with each neighbour.
 
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Update outputs
+            //  - Most of them are for debugging
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
             // Re-package the region list into a point dataset
             m_centerPointOutput->setData( std::make_shared< di::core::PointDataSet >( "Region Centers", regionCenterPoints,
                                                                                                         regionColors ) );
@@ -399,6 +564,9 @@ namespace di
             // Output connections
             m_connectionsOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Connections", connectionLines,
                                                                                                            connectionColors ) );
+
+            m_neighbourArrowOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Neighbour Arrows", neighbourLines,
+                                                                                                                neighbourColors ) );
 
             // Create line dataset and set output
             m_borderLinesOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Borders", lines, colors ) );
