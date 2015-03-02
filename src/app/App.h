@@ -37,7 +37,6 @@ namespace di
     namespace gui
     {
         // Forward declarations
-        class OGLWidget;
         class AlgorithmStrategies;
         class DataWidget;
     }
@@ -86,11 +85,6 @@ namespace di
             void show() override;
 
         private:
-            /**
-             * The main graphics widget widget.
-             */
-            di::gui::OGLWidget* m_mainGLWidget = nullptr;
-
             /**
              * The data-handling widget.
              */

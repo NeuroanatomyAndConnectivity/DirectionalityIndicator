@@ -40,7 +40,7 @@
 #include <di/algorithms/GaussSmooth.h>
 #include <di/algorithms/RenderRegionMeshAndArrows.h>
 
-#include <di/gui/OGLWidget.h>
+#include <di/gui/ViewWidget.h>
 #include <di/gui/AlgorithmStrategies.h>
 #include <di/gui/AlgorithmStrategy.h>
 #include <di/gui/AlgorithmWidget.h>
@@ -74,8 +74,7 @@ namespace di
         void App::prepareUI()
         {
             // Create the GL output:
-            m_mainGLWidget = new di::gui::OGLWidget( getMainWindow() );
-            getMainWindow()->setCentralWidget( m_mainGLWidget );
+            getMainWindow()->setCentralWidget( new di::gui::ViewWidget( "Visualization" ) );
 
             // Create the data widget:
             m_dataWidget = new di::gui::DataWidget( getMainWindow() );
