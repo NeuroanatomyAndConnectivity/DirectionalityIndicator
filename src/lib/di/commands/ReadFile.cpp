@@ -24,6 +24,8 @@
 
 #include <string>
 
+#include <di/core/Reader.h>
+
 #include "ReadFile.h"
 
 namespace di
@@ -31,8 +33,15 @@ namespace di
     namespace commands
     {
         ReadFile::ReadFile( const std::string& filename, SPtr< di::core::CommandObserver > observer ):
+            ReadFile( nullptr, filename, observer )
+        {
+        }
+
+        ReadFile::ReadFile( SPtr< core::Reader > reader, const std::string& filename,
+                            SPtr< di::core::CommandObserver > observer ):
             Command( observer ),
-            m_filename( filename )
+            m_filename( filename ),
+            m_reader( reader )
         {
         }
 
@@ -63,6 +72,11 @@ namespace di
         void ReadFile::setResult( SPtr< di::core::DataSetBase > result )
         {
             m_result = result;
+        }
+
+        SPtr< core::Reader > ReadFile::getReader() const
+        {
+            return m_reader;
         }
     }
 }

@@ -61,6 +61,12 @@ namespace di
             connect( m_fileLoadBtn, SIGNAL( clicked( bool ) ), this, SLOT( loadFile() ) );
         }
 
+        FileWidget::FileWidget( SPtr< core::Reader > reader, const QIcon& icon, const QString& fileFilter, QWidget* parent ):
+            FileWidget( icon, fileFilter, parent )
+        {
+            m_reader = reader;
+        }
+
         FileWidget::~FileWidget()
         {
         }
@@ -86,7 +92,8 @@ namespace di
             Application::getSettings()->setValue( "LastFilePath", fi.path() );
 
             // Use deferred loading:
-            Application::getProcessingNetwork()->loadFile( selected.toStdString(),
+            Application::getProcessingNetwork()->loadFile( m_reader,    // NOTE: nullptr is allowed by loadFile.
+                                                           selected.toStdString(),
                                                        SPtr< CommandObserverQt >(
                                                            new CommandObserverQt( this,
                                                                                   {

@@ -110,9 +110,15 @@ namespace di
 
         SPtr< di::commands::ReadFile > ProcessingNetwork::loadFile( const std::string& fileName, SPtr< CommandObserver > observer )
         {
+            return loadFile( nullptr, fileName, observer );
+        }
+
+        SPtr< di::commands::ReadFile > ProcessingNetwork::loadFile( SPtr< Reader > reader, const std::string& fileName,
+                                                                    SPtr< CommandObserver > observer )
+        {
             return commit(
                 SPtr< di::commands::ReadFile >(
-                    new di::commands::ReadFile( fileName, observer )
+                    new di::commands::ReadFile( reader, fileName, observer )
                 )
             );
         }
@@ -206,23 +212,33 @@ namespace di
             SPtr< di::commands::ReadFile > readFileCmd = std::dynamic_pointer_cast< di::commands::ReadFile >( command );
             if( readFileCmd )
             {
-                bool foundReader = false;    // did we find a reader?
                 std::string fn = readFileCmd->getFilename();
                 LogD << "Try loading: \"" << fn << "\"" << LogEnd;
-                // iterate all known readers to find the best:
-                for( auto aReader : m_reader )
+
+                // iterate all known readers to find the best or use the given one
+                auto reader = readFileCmd->getReader();
+                if( !reader )
                 {
-                    if( aReader->canLoad( fn ) )
+                    for( auto aReader : m_reader )
                     {
-                        // NOTE: exceptions get handled in CommandQueue
-                        readFileCmd->setResult( aReader->load( fn ) );
-                        foundReader = true;
-                        break;
+                        if( aReader->canLoad( fn ) )
+                        {
+                            reader = aReader;
+                            break;
+                        }
                     }
                 }
+                else if( !reader->canLoad( fn ) )   // also ensure the provided reader can actually read this file
+                {
+                    reader = nullptr;
+                }
 
-                // Inform about failed command, as no reader was present
-                if( !foundReader )
+                if( reader )
+                {
+                    // NOTE: exceptions get handled in CommandQueue
+                    readFileCmd->setResult( reader->load( fn ) );
+                }
+                else
                 {
                     readFileCmd->fail( "No suitable reader found for \"" + fn  + "\"."  );
                 }

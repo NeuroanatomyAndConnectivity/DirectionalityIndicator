@@ -36,6 +36,11 @@
 
 namespace di
 {
+    namespace core
+    {
+        class Reader;
+    }
+
     namespace commands
     {
         /**
@@ -51,6 +56,16 @@ namespace di
              * \param filename the file to load
              */
             ReadFile( const std::string& filename,  SPtr< di::core::CommandObserver > observer = nullptr );
+
+            /**
+             * Create an loader command to load the specified file.
+             *
+             * \param reader the reader to use. Can be nullptr.
+             * \param observer an object that gets notified upon changes in this command's state.
+             * \param filename the file to load
+             */
+            ReadFile( SPtr< core::Reader > reader, const std::string& filename,
+                      SPtr< di::core::CommandObserver > observer = nullptr );
 
             /**
              * Clean up.
@@ -92,6 +107,13 @@ namespace di
              * \param result the result
              */
             void setResult( SPtr< di::core::DataSetBase > result );
+
+            /**
+             * Get the recommended reader for this command. This might return NULL and means that the processing queue needs to find a reader.
+             *
+             * \return the reader instance or nullptr.
+             */
+            SPtr< core::Reader > getReader() const;
         protected:
         private:
             /**
@@ -103,6 +125,11 @@ namespace di
              * The read result.
              */
             SPtr< di::core::DataSetBase > m_result = nullptr;
+
+            /**
+             * The reader to use. Can be null.
+             */
+            SPtr< core::Reader > m_reader = nullptr;
         };
     }
 }

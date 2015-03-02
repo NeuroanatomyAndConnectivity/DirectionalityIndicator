@@ -30,6 +30,7 @@
 #include <QToolButton>
 
 #include <di/algorithms/DataInject.h>
+#include <di/core/Reader.h>
 
 #include <di/Types.h>
 
@@ -54,6 +55,16 @@ namespace di
              * \param fileFilter the file filter to use
              */
             FileWidget( const QIcon& icon, const QString& fileFilter, QWidget* parent = nullptr );
+
+            /**
+             * Create the data widget.
+             *
+             * \param reader the reader to use for loading the data.
+             * \param icon the icon to use for the buttons
+             * \param parent the parent widget
+             * \param fileFilter the file filter to use
+             */
+            FileWidget( SPtr< core::Reader > reader, const QIcon& icon, const QString& fileFilter, QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
@@ -83,6 +94,11 @@ namespace di
 
         protected:
         private:
+            /**
+             * The reader to use for loading.
+             */
+            SPtr< core::Reader > m_reader = nullptr;
+
             /**
              * The label used for the file data
              */

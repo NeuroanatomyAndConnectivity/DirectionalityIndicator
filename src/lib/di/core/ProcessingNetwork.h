@@ -52,6 +52,8 @@ namespace di
 {
     namespace core
     {
+        class Reader;
+
         /**
          * Container class to control a data-flow network.
          *
@@ -139,6 +141,21 @@ namespace di
              *
              */
             virtual SPtr< di::commands::ReadFile > loadFile( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
+
+            /**
+             * Load the specified file. This operation is non-blocking and runs in this container's thread.
+             *
+             * \note equals to committing a di::commands::ReadFile( fileName, observer );
+             *
+             * \param reader the reader instance to use. Can be nullptr to use known readers automatically.
+             * \param fileName the file to load.
+             * \param observer the observer that gets informed about changes. Can be omitted.
+             *
+             * \return the command instance. Not needed to keep this.
+             *
+             */
+            virtual SPtr< di::commands::ReadFile > loadFile( SPtr< Reader > reader, const std::string& fileName,
+                                                             SPtr< CommandObserver > observer = nullptr );
 
             /**
              * Add an algorithm to the network. This operation is asynchronous. If you need to get informed about success, specify a observer.
