@@ -72,7 +72,7 @@ namespace di
             m_settings = new QSettings( "SE", QString::fromStdString( m_name ) );
 
             // Create main window to use
-            m_mainWindow = new MainWindow( "DirectionalityIndicator" );
+            m_mainWindow = new MainWindow( m_name );
             m_mainWindow->resize( 1024, 768 );
 
             // call users code:
