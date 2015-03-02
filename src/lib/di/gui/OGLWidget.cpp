@@ -29,9 +29,12 @@
 
 #include <QMouseEvent>
 
+#include <di/ext/bitmap_image.hpp>
+
 #include <di/core/Filesystem.h>
 #include <di/core/BoundingBox.h>
 #include <di/gfx/GL.h>
+#include <di/gfx/OffscreenView.h>
 #include <di/MathTypes.h>
 
 #include <di/gui/Application.h>
@@ -170,33 +173,6 @@ namespace di
                 LogI << "FPS " << fps << LogEnd;
             }
 
-            // Cleanup buffers
-            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Draw nice background
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            // Draw background first:
-            m_bgShaderProgram->bind();
-
-            glBindVertexArray( m_backgroundVAO );
-            glEnableVertexAttribArray( 0 );
-            glBindBuffer( GL_ARRAY_BUFFER, m_backgroundVBO );
-
-            glVertexAttribPointer(
-                0, // Attribute number.
-                3, // It is a vec3
-                GL_FLOAT, // floats
-                GL_FALSE, // not normalized
-                0,        // no stride
-                nullptr   // no buffer offset
-            );
-
-            // Draw the BG
-            glDepthMask( GL_FALSE );
-            glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
-
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Get scene BB
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -239,10 +215,36 @@ namespace di
                 glm::ortho( 0.5 * -getAspectRatio(), 0.5 * getAspectRatio(), -0.5, 0.5, near, far )
             );
 
-            glDepthMask( GL_TRUE );
-            glEnable( GL_BLEND );
-            glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-            glEnable( GL_DEPTH_TEST );
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Define render target
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            core::View* targetView = this;
+
+            // Screenshot?
+            SPtr< core::OffscreenView > screenshotView = nullptr;
+            if( m_screenShotRequest )
+            {
+                glEnable( GL_MULTISAMPLE );
+                logGLError();
+
+                LogD << "Screenshot requested. Creating offscreen view." << LogEnd;
+
+                // Create the offscreen view
+                screenshotView = std::make_shared< core::OffscreenView >( glm::vec2( 4096.0f, 4096.0f ), 4 );
+
+                // The screenshot view might have a different aspect:
+                core::Camera offCam = m_camera;
+                offCam.setProjectionMatrix(
+                    glm::ortho( 0.5 * -screenshotView->getAspectRatio(), 0.5 * screenshotView->getAspectRatio(), -0.5, 0.5, near, far )
+                );
+                screenshotView->setCamera( offCam );
+
+                // Init the FBO
+                screenshotView->prepare();
+
+                targetView = static_cast< core::View* >( screenshotView.get() );
+            }
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Update all visualizations
@@ -250,9 +252,9 @@ namespace di
 
             // Allow all visualizations to update:
             Application::getProcessingNetwork()->visitVisualizations(
-                [ this ]( SPtr< di::core::Visualization > vis )
+                [ this, targetView ]( SPtr< di::core::Visualization > vis )
                 {
-                    vis->update( *this, m_forceReload );
+                    vis->update( *targetView, m_forceReload );
                 }
             );
             m_forceReload = false;
@@ -261,15 +263,102 @@ namespace di
             // Draw
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            targetView->bind();
+            glViewport( targetView->getViewport().first.x, targetView->getViewport().first.y,
+                        targetView->getViewport().second.x, targetView->getViewport().second.y );
+
+            // Cleanup buffers
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Draw nice background
+
+            // Draw background first:
+            m_bgShaderProgram->bind();
+
+            glBindVertexArray( m_backgroundVAO );
+            glEnableVertexAttribArray( 0 );
+            glBindBuffer( GL_ARRAY_BUFFER, m_backgroundVBO );
+
+            glVertexAttribPointer(
+                0, // Attribute number.
+                3, // It is a vec3
+                GL_FLOAT, // floats
+                GL_FALSE, // not normalized
+                0,        // no stride
+                nullptr   // no buffer offset
+            );
+
+            // Draw the BG
+            glDepthMask( GL_FALSE );
+            glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Draw visualizations
+
+            glDepthMask( GL_TRUE );
+            glEnable( GL_BLEND );
+            glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+            glEnable( GL_DEPTH_TEST );
+
             Application::getProcessingNetwork()->visitVisualizations(
-                [ this ]( SPtr< di::core::Visualization > vis )
+                [ targetView ]( SPtr< di::core::Visualization > vis )
                 {
                     if( vis->isRenderingActive() )
                     {
-                        vis->render( *this );
+                        targetView->bind();
+                        vis->render( *targetView );
                     }
                 }
             );
+
+            // thats it.
+            m_screenShotRequest = false;
+            if( screenshotView )
+            {
+                // get image:
+                auto pixels = screenshotView->read();
+
+                // and store as image
+                bitmap_image image( screenshotView->getViewportSize().x, screenshotView->getViewportSize().y );
+
+                // set background to red. If we see a red pixel -> something was wrong
+                image.set_all_channels( 0, 0, 0 );
+
+                // Now write each pixel
+                const size_t nbChannels = 3;
+                for( size_t y = 0; y < screenshotView->getViewportSize().y; ++y )
+                {
+                    for( size_t x = 0; x < screenshotView->getViewportSize().x; ++x )
+                    {
+                        glm::ivec3 color;
+
+                        size_t idx = x + y * screenshotView->getViewportSize().x;
+                        color.x = pixels->operator[]( nbChannels * idx + 0 );
+                        color.y = pixels->operator[]( nbChannels * idx + 1 );
+                        color.z = pixels->operator[]( nbChannels * idx + 2 );
+
+                        // Bitmap has its (0,0) in the upper left corner. Fix this:
+                        image.set_pixel( x, screenshotView->getViewportSize().y - y - 1,
+                                color.x, color.y, color.z );
+                    }
+                }
+
+                // finally, save the file
+                image.save_image( "/home/sebastian/test.bmp" );
+
+                // cleanup the FBO
+                screenshotView->finalize();
+                glDisable( GL_MULTISAMPLE );
+            }
+        }
+
+        void OGLWidget::bind() const
+        {
+            // unbind previously bound FBOs
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+            glDrawBuffer( GL_BACK );
+            logGLError();
         }
 
         void OGLWidget::closeEvent( QCloseEvent* event )
@@ -403,6 +492,9 @@ namespace di
                 case Qt::Key_Period:
                     // forced reload
                     m_forceReload = true;
+                    break;
+                case Qt::Key_F12:
+                    m_screenShotRequest = true;
                     break;
             }
 

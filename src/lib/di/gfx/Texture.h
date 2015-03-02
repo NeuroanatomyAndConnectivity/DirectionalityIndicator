@@ -46,9 +46,10 @@ namespace di
              */
             enum class TextureType
             {
-                Tex1D, // GL_TEXTURE_1D
-                Tex2D, // GL_TEXTURE_2D
-                Tex3D  // GL_TEXTURE_3D
+                Tex1D,  // GL_TEXTURE_1D
+                Tex2D,  // GL_TEXTURE_2D
+                Tex3D,  // GL_TEXTURE_3D
+                Tex2D_MultiSample // GL_TEXTURE_2D_MULTISAMPLE
             };
 
             /**
@@ -117,6 +118,8 @@ namespace di
             /**
              * Commit data to this texture. If you need something special, derive and extend this. The method itself works for 1D,2D,3D textures.
              *
+             * \note this method should not be used for exotic texture types like multi-sample textures
+             *
              * \param width width of the texture.
              * \param height height of the texture. Ignored for 1D textures.
              * \param depth depth of the texture. Ignored for non 3D textures.
@@ -129,6 +132,33 @@ namespace di
                                GLint internalformat = GL_RGB,
                                GLint format = GL_RGB,
                                GLenum type = GL_UNSIGNED_BYTE );
+
+            /**
+             * Initialize an empty texture. Useful in combination with FBOs.
+             *
+             * \param width width of the texture.
+             * \param height height of the texture. Ignored for 1D textures.
+             * \param depth depth of the texture. Ignored for non 3D textures.
+             * \param internalformat defines the format internally used by GL. Default is GL_RGB.
+             * \param format format of the pixel data. Default is GL_RGB.
+             * \param type type of the pixel data. Default is GL_UNSIGNED_BYTE.
+             * \param samples the amount of samples. Used when the texture is a multisampling tex.
+             */
+            virtual void data( size_t width, size_t height = 1, size_t depth = 1, size_t samples = 1,
+                               GLint internalformat = GL_RGB,
+                               GLint format = GL_RGB,
+                               GLenum type = GL_UNSIGNED_BYTE );
+
+            /**
+             * Read back texture data.
+             *
+             * \param pixels memory for storing the data. It is your job to allocate the memory
+             * \param format the format to query
+             * \param type the type of data
+             */
+            virtual void read( void* pixels, GLint format = GL_RGB,
+                                             GLenum type = GL_UNSIGNED_BYTE ) const;
+
         protected:
 
             /**
@@ -138,7 +168,7 @@ namespace di
              *
              * \return the GL enum
              */
-            GLenum toGLType( const TextureType& type );
+            GLenum toGLType( const TextureType& type ) const;
 
             /**
              * Map texture wrap to GL values.
@@ -147,7 +177,7 @@ namespace di
              *
              * \return the GL enum
              */
-            GLint toGLType( const TextureWrap& type );
+            GLint toGLType( const TextureWrap& type ) const;
 
             /**
              * Map texture filter to GL values.
@@ -156,7 +186,7 @@ namespace di
              *
              * \return the GL enum
              */
-            GLint toGLType( const TextureFilter& type );
+            GLint toGLType( const TextureFilter& type ) const;
         private:
             /**
              * The type of this texture.

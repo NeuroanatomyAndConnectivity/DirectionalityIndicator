@@ -22,33 +22,61 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <utility>
+#ifndef DI_VIEWWIDGET_H
+#define DI_VIEWWIDGET_H
 
-#include "View.h"
+#include <QDockWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+
+#include <di/gui/OGLWidget.h>
+
+#include <di/Types.h>
 
 namespace di
 {
-    namespace core
+    namespace gui
     {
-        View::View()
+        /**
+         * A simple widget to provide the view to a scene.
+         */
+        class ViewWidget: public QDockWidget
         {
-            // nothing
-        }
+            Q_OBJECT
+        public:
+            /**
+             * Create the view widget.
+             *
+             * \param parent the parent widget.
+             * \param title the window title
+             */
+            ViewWidget( const QString& title, QWidget* parent = nullptr );
 
-        View::~View()
-        {
-            // nothing
-        }
+            /**
+             * Destroy and clean up.
+             */
+            virtual ~ViewWidget();
 
-        std::pair< glm::vec2, glm::vec2 > View::getViewport() const
-        {
-            return std::make_pair( getViewportOrigin(), getViewportOrigin() + getViewportSize() );
-        }
+        protected:
+        private:
+            /**
+             * The contents
+             */
+            QVBoxLayout* m_contentLayout = nullptr;
 
-        double View::getAspectRatio() const
-        {
-            return getViewportSize().x / getViewportSize().y;
-        }
+            /**
+             * The title widget
+             */
+            QHBoxLayout* m_titleLayout = nullptr;
+
+            /**
+             * The rendering
+             */
+            OGLWidget* m_oglWidget = nullptr;
+        };
     }
 }
+
+#endif  // DI_VIEWWIDGET_H
+
 

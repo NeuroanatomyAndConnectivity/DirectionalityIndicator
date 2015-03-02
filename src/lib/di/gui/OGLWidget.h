@@ -89,6 +89,11 @@ namespace di
              * \return the camera.
              */
             const core::Camera& getCamera() const override;
+
+            /**
+             * Bind this view as rendering target. You should issue this if you use your own FBOs.
+             */
+            void bind() const override;
         protected:
             /**
              * Do the necessary setup.
@@ -268,6 +273,11 @@ namespace di
              * The camera of the view.
              */
             core::Camera m_camera;
+
+            /**
+             * If true, a screenshot is requested.
+             */
+            bool m_screenShotRequest = false;
         };
     }
 }

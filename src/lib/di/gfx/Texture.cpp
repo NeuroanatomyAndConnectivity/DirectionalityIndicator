@@ -54,8 +54,13 @@ namespace di
             glGenTextures( 1, &m_object );
             logGLError();
             bind();
-            setTextureWrap();
-            setTextureFilter();
+
+            // on multi-sample textures, this causes errors.
+            if( TextureType::Tex2D_MultiSample != m_textureType )
+            {
+                setTextureWrap();
+                setTextureFilter();
+            }
 
             // according to the GL doc, this will never fail (when valid parameters are given, which is the case here).
             return true;
@@ -98,10 +103,49 @@ namespace di
                 case TextureType::Tex3D:
                     glTexImage3D( GL_TEXTURE_3D, 0, internalformat, width, height, depth, 0, format, type, pixels );
                     break;
+                case TextureType::Tex2D_MultiSample:
+                    LogW << "Do not use Texture::data for multi-sample textures." << LogEnd;
+                    glTexImage2DMultisample( GL_TEXTURE_2D_MULTISAMPLE, 1, internalformat, width, height, false );
+                    break;
+                default:
+                    LogE << "Unknown texture type for data call." << LogEnd;
+                    break;
             }
         }
 
-        GLenum Texture::toGLType( const TextureType& type )
+        void Texture::data( size_t width, size_t height, size_t depth, size_t samples,
+                               GLint internalformat,
+                               GLint format,
+                               GLenum type )
+        {
+            switch( m_textureType )
+            {
+                case TextureType::Tex1D:
+                    glTexImage1D( GL_TEXTURE_1D, 0, internalformat, width, 0, format, type, nullptr );
+                    break;
+                case TextureType::Tex2D:
+                    glTexImage2D( GL_TEXTURE_2D, 0, internalformat, width, height, 0, format, type, nullptr );
+                    break;
+                case TextureType::Tex3D:
+                    glTexImage3D( GL_TEXTURE_3D, 0, internalformat, width, height, depth, 0, format, type, nullptr );
+                    break;
+                case TextureType::Tex2D_MultiSample:
+                    glTexImage2DMultisample( GL_TEXTURE_2D_MULTISAMPLE, samples, internalformat, width, height, false );
+                    break;
+                default:
+                    LogE << "Unknown texture type for data call." << LogEnd;
+                    break;
+            }
+            logGLError();
+        }
+
+        void Texture::read( void* pixels, GLint format, GLenum type ) const
+        {
+            glGetTexImage( toGLType( m_textureType ), 0, format, type, pixels );
+            logGLError();
+        }
+
+        GLenum Texture::toGLType( const TextureType& type ) const
         {
             switch( type )
             {
@@ -111,12 +155,14 @@ namespace di
                     return GL_TEXTURE_2D;
                 case TextureType::Tex3D:
                     return GL_TEXTURE_3D;
+                case TextureType::Tex2D_MultiSample:
+                    return GL_TEXTURE_2D_MULTISAMPLE;
                 default:
                     return -1;
             }
         }
 
-        GLint Texture::toGLType( const TextureFilter& type )
+        GLint Texture::toGLType( const TextureFilter& type ) const
         {
             switch( type )
             {
@@ -137,7 +183,7 @@ namespace di
             }
         }
 
-        GLint Texture::toGLType( const TextureWrap& type )
+        GLint Texture::toGLType( const TextureWrap& type ) const
         {
             switch( type )
             {

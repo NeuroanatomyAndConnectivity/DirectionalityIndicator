@@ -75,6 +75,11 @@ namespace di
              * \return the camera.
              */
             virtual const Camera& getCamera() const = 0;
+
+            /**
+             * Bind this view as rendering target. You should issue this if you use your own FBOs.
+             */
+            virtual void bind() const = 0;
         protected:
             /**
              * Construct the view.

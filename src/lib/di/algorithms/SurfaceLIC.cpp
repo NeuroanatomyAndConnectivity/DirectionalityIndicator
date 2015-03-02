@@ -257,10 +257,8 @@ namespace di
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Final Step - Merge everything and output to the normal framebuffer:
 
-            // unbind previously bound FBOs
-            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
-            glDrawBuffer( GL_BACK );
-            logGLError();
+            // Set the view to be the target.
+            view.bind();
 
             // draw a big quad
             m_composeProgram->bind();
