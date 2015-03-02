@@ -50,7 +50,7 @@
 
 // include some icons as XPM. This will be replaced by a proper file loading.
 #include "icons/iconMesh.xpm"
-#include "icons/iconLabels.xpm"
+// #include "icons/iconLabels.xpm"
 
 #include "App.h"
 
