@@ -29,6 +29,7 @@
 
 #include <di/core/Algorithm.h>
 #include <di/core/data/DataSetTypes.h>
+#include <di/algorithms/RenderIllustrativeLines.h>
 
 namespace di
 {
@@ -95,7 +96,7 @@ namespace di
             /**
              * Neighbour arrows
              */
-            SPtr< di::core::Connector< di::core::LineDataSet > > m_neighbourArrowOutput;
+            SPtr< di::core::Connector< RenderIllustrativeLines::LineDataSetWithNormals > > m_neighbourArrowOutput;
 
             /**
              * The resulting center point data.

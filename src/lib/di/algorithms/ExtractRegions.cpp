@@ -74,7 +74,7 @@ namespace di
                     "Connections",
                     "Extracted connections between regions."
             );
-            m_neighbourArrowOutput = addOutput< di::core::LineDataSet >(
+            m_neighbourArrowOutput = addOutput<  RenderIllustrativeLines::LineDataSetWithNormals >(
                     "Neighbour Arrows",
                     "Extracted connections between neighbours as simple arrows."
             );
@@ -425,6 +425,7 @@ namespace di
 
             auto neighbourLines = std::make_shared< di::core::Lines >();
             auto neighbourColors = std::make_shared< di::RGBAArray >();
+            auto neighbourNormals = std::make_shared< di::NormalArray >();
 
             // regionSplitLines contains the info we need here: map two regions to the line indices splitting them. We now build a strip of lines for
             // the boders:
@@ -484,26 +485,21 @@ namespace di
                 // We now have the strip.
                 size_t centerIdx = sortedLines.size() / 2;
 
-
-                 LogE << regionPair.first << " - " << regionPair.second << " ---- " << lineIndices.size() << "  - " << centerIdx << LogEnd;
-
-
-
-
                 auto normal = lineNormals[ sortedLines[ centerIdx ] ];
                 auto binormal = lineBinormals[ sortedLines[ centerIdx ] ];
                 auto point1 = lines->getVertex( sortedLineVertices[ centerIdx ] );
                 auto point2 = lines->getVertex( sortedLineVertices[ centerIdx + 1 ] );
-                auto centerPoint = normal + ( point1 + 0.5f * ( point2 - point1 ) );
+                auto centerPoint = point1 + 0.5f * ( point2 - point1 );
 
-                float scale = 2.0f;
+                float scale = 1.0f;
                 auto arrV1Idx = neighbourLines->addVertex( centerPoint + scale * binormal );
                 auto arrV2Idx = neighbourLines->addVertex( centerPoint - scale * binormal );
                 neighbourLines->addLine( arrV1Idx, arrV2Idx );
                 neighbourColors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
                 neighbourColors->push_back( glm::vec4( 1.0, 1.0, 1.0, 1.0 ) );
+                neighbourNormals->push_back( normal );
+                neighbourNormals->push_back( normal );
             }
-
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -565,8 +561,10 @@ namespace di
             m_connectionsOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Connections", connectionLines,
                                                                                                            connectionColors ) );
 
-            m_neighbourArrowOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Neighbour Arrows", neighbourLines,
-                                                                                                                neighbourColors ) );
+            m_neighbourArrowOutput->setData(
+                    std::make_shared< RenderIllustrativeLines::LineDataSetWithNormals >( "Region Neighbour Arrows", neighbourLines,
+                                                                                                                    neighbourColors,
+                                                                                                                    neighbourNormals ) );
 
             // Create line dataset and set output
             m_borderLinesOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Borders", lines, colors ) );

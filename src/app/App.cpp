@@ -33,6 +33,7 @@
 #include <di/algorithms/SurfaceLIC.h>
 #include <di/algorithms/RenderTriangles.h>
 #include <di/algorithms/RenderLines.h>
+#include <di/algorithms/RenderIllustrativeLines.h>
 #include <di/algorithms/RenderPoints.h>
 #include <di/algorithms/ExtractRegions.h>
 #include <di/algorithms/Voxelize.h>
@@ -133,7 +134,7 @@ namespace di
             algo3 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderPoints ) ) );
             algo4 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
             algo5 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
-            algo10 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
+            algo10 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderIllustrativeLines ) ) );
 
             // Create arrow rendering:
             algo9 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderRegionMeshAndArrows ) ) );
