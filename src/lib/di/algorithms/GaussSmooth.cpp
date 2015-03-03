@@ -24,6 +24,7 @@
 
 #include <fstream>
 #include <map>
+#include <vector>
 #include <utility>
 
 #include "GaussSmooth.h"

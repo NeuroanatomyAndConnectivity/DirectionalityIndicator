@@ -85,7 +85,7 @@ namespace di
              *
              * \param matrix the matrix.
              */
-            GridTransformation( const glm::mat4& matrix ):
+            explicit GridTransformation( const glm::mat4& matrix ):
                 m_matrix( matrix )
             {
             }

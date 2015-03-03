@@ -25,6 +25,8 @@
 #ifndef DI_DATASETTYPES_H
 #define DI_DATASETTYPES_H
 
+#include <vector>
+
 #include <di/core/data/DataSet.h>
 #include <di/core/data/GridRegular.h>
 #include <di/core/data/GridTransformation.h>

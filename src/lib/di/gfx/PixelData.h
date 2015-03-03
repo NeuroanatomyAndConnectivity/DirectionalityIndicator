@@ -26,6 +26,7 @@
 #define DI_PIXELDATA_H
 
 #include <string>
+#include <vector>
 
 #include <di/Types.h>
 #include <di/MathTypes.h>
@@ -46,7 +47,6 @@ namespace di
         class PixelData
         {
         public:
-
             /**
              * Construct a pixel data storage object. Define a depth of 1 for 2d images.
              *

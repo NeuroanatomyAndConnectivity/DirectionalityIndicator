@@ -122,7 +122,7 @@ namespace di
             m_location->setToolTip( "Change the location where images will be saved." );
             m_location->setIcon( QIcon( QPixmap( xpm_folder ) ) );
             m_location->setText( QDir::homePath() );
-            m_location->setToolButtonStyle( Qt::ToolButtonTextBesideIcon	);
+            m_location->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
             m_location->setAutoRaise( true );
             m_location->setSizePolicy( QSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::Minimum ) );
             connect( m_location, SIGNAL( released() ), this, SLOT( queryImagePath() ) );
@@ -184,7 +184,7 @@ namespace di
         {
             // Use time to construct filename
             auto now = std::time( nullptr );
-            auto localTime = std::localtime( &now );
+            auto localTime = std::localtime( &now );    // NOLINT: do not use localtime_r
 
             std::ostringstream fn;
             fn << m_location->text().toStdString() << "/Screenshot_"
@@ -244,7 +244,6 @@ namespace di
             Application::getSettings()->setValue( "ScreenShotWidget_Samples", m_sampleCombo->currentIndex() );
             Application::getSettings()->setValue( "ScreenShotWidget_Location", m_location->text() );
         }
-
     }
 }
 

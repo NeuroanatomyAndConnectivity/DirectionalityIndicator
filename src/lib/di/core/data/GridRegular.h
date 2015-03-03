@@ -56,7 +56,9 @@ namespace di
              * \tparam Is index sequence
              */
             template<int... Is>
-            struct seq { };
+            struct seq
+            {
+            };
 
             /**
              * Sequence generator. Recursive template to generate the \ref seq sequence.
@@ -65,7 +67,9 @@ namespace di
              * \tparam Is The current set of indices.
              */
             template<int N, int... Is>
-            struct gen_seq : gen_seq<N - 1, N - 1, Is...> { };
+            struct gen_seq : gen_seq<N - 1, N - 1, Is...>
+            {
+            };
 
             /**
              * Sequence generator. Recursive template to generate the \ref seq sequence. Stop recursion.
@@ -73,7 +77,9 @@ namespace di
              * \tparam Is The current set of indices.
              */
             template<int... Is>
-            struct gen_seq<0, Is...> : seq<Is...> { };
+            struct gen_seq<0, Is...> : seq<Is...>
+            {
+            };
         }
 
         /**
@@ -87,7 +93,7 @@ namespace di
             /**
              * The number of dimensions of this grid.
              */
-            const static size_t Dimensions = NumberOfDimensions;
+            static const size_t Dimensions = NumberOfDimensions;
 
             /**
              * The type used for indices.
@@ -169,7 +175,12 @@ namespace di
              */
             GridRegular( const GridTransformation< Dimensions >& transform, const IndexType& voxelsX, const IndexType& voxelsY = 1,
                          const IndexType& voxelsZ = 1, const IndexType& voxelsT = 1 ):
-                GridRegular( transform, std::initializer_list< IndexType >( { voxelsX, voxelsY, voxelsZ, voxelsT } ) )
+                GridRegular( transform, std::initializer_list< IndexType >(
+                                                                            {
+                                                                                voxelsX, voxelsY, voxelsZ, voxelsT
+                                                                            }
+                                                                          )
+                           )
             {
             }
 
@@ -526,7 +537,10 @@ namespace di
             IndexType accumulateSizes( IndexType upToButNotIncluding ) const
             {
                 IndexType ac = std::accumulate( m_sizes.begin(), m_sizes.begin() + upToButNotIncluding, static_cast< IndexType >( 1 ),
-                                                [](int i, int j) { return i * j; } // multiply
+                                                []( int i, int j )
+                                                {
+                                                    return i * j;
+                                                } // multiply
                                );
                 return ac;
             }

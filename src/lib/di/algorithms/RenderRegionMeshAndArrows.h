@@ -25,6 +25,8 @@
 #ifndef DI_RENDERREGIONMESHANDARROWS_H
 #define DI_RENDERREGIONMESHANDARROWS_H
 
+#include <vector>
+
 #include <di/gfx/GL.h>
 
 #include <di/core/Algorithm.h>

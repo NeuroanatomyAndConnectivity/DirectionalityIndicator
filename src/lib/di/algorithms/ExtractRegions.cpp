@@ -22,7 +22,7 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <map>
+#include <algorithm>
 #include <utility>
 #include <set>
 #include <vector>
@@ -409,7 +409,6 @@ namespace di
                                         ].push_back( lineIdx ); // push the line index
                         lineNormals[ lineIdx ] = glm::normalize( nd + ne1 + ne2 );
                         lineBinormals[ lineIdx ] = glm::cross( lineNormals[ lineIdx ], glm::normalize( bv1 - bv2 ) );
-
                     }
                 }
             }
@@ -431,7 +430,7 @@ namespace di
             // the boders:
             for( auto regionPairToLineIndieces : regionSplitLines )
             {
-                auto regionPair = regionPairToLineIndieces.first;
+                // auto regionPair = regionPairToLineIndieces.first;
                 auto lineIndices = regionPairToLineIndieces.second;
 
                 // NOTE: the lines use shared vertices.

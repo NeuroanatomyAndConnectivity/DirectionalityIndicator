@@ -26,6 +26,8 @@
 #define DI_EXTRACTREGIONS_H
 
 #include <mutex>
+#include <set>
+#include <vector>
 
 #include <di/core/Algorithm.h>
 #include <di/core/data/DataSetTypes.h>

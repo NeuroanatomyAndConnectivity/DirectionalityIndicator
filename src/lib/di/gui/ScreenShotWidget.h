@@ -26,6 +26,8 @@
 #define DI_SCREENSHOTWIDGET_H
 
 #include <tuple>
+#include <string>
+#include <vector>
 
 #include <QWidget>
 #include <QComboBox>
