@@ -61,6 +61,13 @@ namespace di
              * Save the current GUI states and sizes. Useful to retain user GUI setup during sessions.
              */
             virtual void saveStates();
+
+        signals:
+            /**
+             * On shutdown ...
+             */
+            void shutdown();
+
         protected:
             /**
              * Called on close. For more details, refer to QWidget::closeEvent.

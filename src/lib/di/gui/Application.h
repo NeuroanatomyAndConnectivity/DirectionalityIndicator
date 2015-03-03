@@ -50,6 +50,7 @@ namespace di
          */
         class Application
         {
+            friend class MainWindow;
         public:
             /**
              * Create application instance. It does not create any GUI. To actually initialize and startup the application, use \ref run.
@@ -99,6 +100,14 @@ namespace di
              * \return the name
              */
             std::string getName() const;
+
+            /**
+             * Get the main window used by the application. Add your widgets in here.
+             *
+             * \return the mainwindow
+             */
+            MainWindow* getMainWindow();
+
         protected:
             /**
              * Implement your specific UI code here. The network was not yet started. So only do GUI stuff here.
@@ -116,11 +125,15 @@ namespace di
             virtual void show() = 0;
 
             /**
-             * Get the main window used by the application. Add your widgets in here.
-             *
-             * \return the mainwindow
+             * Called when using the default MainWindow on shutdown. Implement all your state-save operations here.
              */
-            MainWindow* getMainWindow();
+            virtual void close() = 0;
+
+            /**
+             * On shutdown. Called externally by the main window.
+             */
+            void onShutdown();
+
         private:
             /**
              * The application main window.

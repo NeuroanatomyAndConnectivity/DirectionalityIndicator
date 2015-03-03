@@ -29,6 +29,7 @@
 
 #include <QWidget>
 #include <QComboBox>
+#include <QToolButton>
 #include <QVBoxLayout>
 
 #include <di/gfx/PixelData.h>
@@ -38,6 +39,8 @@ namespace di
 {
     namespace gui
     {
+        class ScaleLabel;
+
         /**
          * A simple widget to provide screenshot functionality.
          */
@@ -96,10 +99,21 @@ namespace di
              * Save the pixel data as screenshot.
              *
              * \param pixels the image
+             *
+             * \return false on error
              */
-            void saveScreenShot( SPtr< core::RGBA8Image > pixels );
+            bool saveScreenShot( SPtr< core::RGBA8Image > pixels );
 
-        protected:
+        protected slots:
+            /**
+             * Handle shutdown. Emited by the main windows
+             */
+            virtual void shutdown();
+
+            /**
+             * Query the image path for screenshots.
+             */
+            virtual void queryImagePath();
         private:
              /**
              * The load/file widget layout.
@@ -135,6 +149,11 @@ namespace di
              * Resolution combobox.
              */
             QComboBox* m_resolutionCombo = nullptr;
+
+            /**
+             * Where to place the screenshots.
+             */
+            QToolButton* m_location = nullptr;
         };
     }
 }

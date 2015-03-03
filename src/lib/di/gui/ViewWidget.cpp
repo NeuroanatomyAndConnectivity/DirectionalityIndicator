@@ -27,6 +27,7 @@
 #include <QToolButton>
 #include <QWidgetAction>
 #include <QMenu>
+#include <QMessageBox>
 
 #include <di/gui/OGLWidget.h>
 #include <di/gui/ScaleLabel.h>
@@ -139,7 +140,11 @@ namespace di
             m_screenshotButton->setDisabled( false );
 
             // and forward
-            m_screenShotWidget->saveScreenShot( pixels );
+            if( !m_screenShotWidget->saveScreenShot( pixels ) )
+            {
+                // report
+                QMessageBox::critical( this, "Screenshot failed.", "Unable to write the screenshot to disk." );
+            }
         }
     }
 }

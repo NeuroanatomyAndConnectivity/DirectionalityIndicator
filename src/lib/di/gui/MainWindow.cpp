@@ -58,6 +58,12 @@ namespace di
         void MainWindow::closeEvent( QCloseEvent* event )
         {
             saveStates();
+
+            emit( shutdown() );
+
+            // also manually forward:
+            Application::getInstance()->onShutdown();
+
             QMainWindow::closeEvent( event );
         }
     }

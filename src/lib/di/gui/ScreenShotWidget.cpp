@@ -24,6 +24,10 @@
 
 #include <algorithm>
 #include <string>
+#include <chrono>
+#include <ctime>
+#include <sstream>
+#include <iomanip>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -33,9 +37,11 @@
 #include <QComboBox>
 #include <QCheckBox>
 
+#include <di/gui/Application.h>
 #include <di/gui/ScaleLabel.h>
 #include <di/ext/bitmap_image.hpp>
 
+#include "icons/folder.xpm"
 #include "ScreenShotWidget.h"
 
 #include <di/core/Logger.h>
@@ -100,27 +106,53 @@ namespace di
                 std::string entry = w + " x " + h + " (" + name + ")";
                 m_resolutionCombo->addItem( QString::fromStdString( entry ) );
             }
-            m_resolutionCombo->setCurrentIndex( 4 );
-
             // Add a multisample combo:
             m_sampleCombo = new QComboBox( this );
             for( auto sample : m_samples )
             {
                 m_sampleCombo->addItem( QString::fromStdString( std::get< 0 >( sample ) ) );
             }
-            m_sampleCombo->setCurrentIndex( 3 );
 
             m_sampleCombo->setToolTip(
                 "The amount of samples to take for each screenshot. A higher number generates a more smooth result but takes more time."
             );
 
-            // Finish layout
+            // Path to the files:
+            m_location = new QToolButton( this );
+            m_location->setToolTip( "Change the location where images will be saved." );
+            m_location->setIcon( QIcon( QPixmap( xpm_folder ) ) );
+            m_location->setText( QDir::homePath() );
+            m_location->setToolButtonStyle( Qt::ToolButtonTextBesideIcon	);
+            m_location->setAutoRaise( true );
+            m_location->setSizePolicy( QSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::Minimum ) );
+            connect( m_location, SIGNAL( released() ), this, SLOT( queryImagePath() ) );
 
+            // Finish layout
+            m_contentLayout->addWidget( new QLabel( "File Location", this ) );
+            m_contentLayout->addWidget( m_location );
             m_contentLayout->addWidget( new QLabel( "Resolution", this ) );
             m_contentLayout->addWidget( m_resolutionCombo );
-            m_contentLayout->addWidget( new QLabel( "Multi-sampling", this ) );
+            m_contentLayout->addWidget( new QLabel( "Multi-Sampling", this ) );
             m_contentLayout->addWidget( m_sampleCombo );
             m_contentLayout->setAlignment( Qt::AlignTop );
+
+            // Restore values:
+            m_resolutionCombo->setCurrentIndex( Application::getSettings()->value( "ScreenShotWidget_Resolution", 4 ).toInt() );
+            m_sampleCombo->setCurrentIndex( Application::getSettings()->value( "ScreenShotWidget_Samples", 3 ).toInt() );
+            m_location->setText( Application::getSettings()->value( "ScreenShotWidget_Location", QDir::homePath() ).toString() );
+
+            // As we want to store values, register for shutdown. The Mainwindow notifies everyone.
+            connect( Application::getInstance()->getMainWindow(), SIGNAL( shutdown() ), this, SLOT( shutdown() ) );
+        }
+
+        void ScreenShotWidget::queryImagePath()
+        {
+            QString dir = QFileDialog::getExistingDirectory( this, tr( "Select Screenshot Directory" ), m_location->text(),
+                                                             QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks );
+            if( !dir.isEmpty() )
+            {
+                m_location->setText( dir );
+            }
         }
 
         int ScreenShotWidget::getWidth() const
@@ -148,9 +180,19 @@ namespace di
             m_maxRes = res;
         }
 
-        void ScreenShotWidget::saveScreenShot( SPtr< core::RGBA8Image > pixels )
+        bool ScreenShotWidget::saveScreenShot( SPtr< core::RGBA8Image > pixels )
         {
-            LogD << "Saving screenshot to file \"\"" << LogEnd;
+            // Use time to construct filename
+            auto now = std::time( nullptr );
+            auto localTime = std::localtime( &now );
+
+            std::ostringstream fn;
+            fn << m_location->text().toStdString() << "/Screenshot_"
+               << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << "_"
+               << localTime->tm_hour << "-" << localTime->tm_min << "-" << localTime->tm_sec
+               << ".bmp";
+
+            LogD << "Saving screenshot to file \"" << fn.str() << "\"" << LogEnd;
             // and store as image
             bitmap_image image( pixels->getWidth(), pixels->getHeight() );
 
@@ -170,8 +212,39 @@ namespace di
             }
 
             // finally, save the file
-            image.save_image( "/home/sebastian/testyyy.bmp" );
+            // We ensure we can open the target file before we use save_image as this only returns without any info on success:
+            std::ofstream file( fn.str().c_str(), std::ios::binary );
+            auto status = file.good();
+            file.close();
+            if( status )
+            {
+                try
+                {
+                    image.save_image( fn.str() );
+                }
+                catch( ... )
+                {
+                    LogE << "Cannot write file \"" + fn.str() + "\"." << LogEnd;
+                    return false;
+                }
+            }
+            else
+            {
+                LogE << "Cannot open file \"" + fn.str() + "\" for writing." << LogEnd;
+                return false;
+            }
+
+            return true;
         }
+
+        void ScreenShotWidget::shutdown()
+        {
+            // Save values
+            Application::getSettings()->setValue( "ScreenShotWidget_Resolution", m_resolutionCombo->currentIndex() );
+            Application::getSettings()->setValue( "ScreenShotWidget_Samples", m_sampleCombo->currentIndex() );
+            Application::getSettings()->setValue( "ScreenShotWidget_Location", m_location->text() );
+        }
+
     }
 }
 

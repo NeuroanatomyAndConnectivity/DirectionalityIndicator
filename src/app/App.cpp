@@ -174,5 +174,10 @@ namespace di
            // algo5->setActive( false );
             // algoT->setActive( false );
         }
+
+        void App::close()
+        {
+            LogD << "Shutdown. Bye!" << LogEnd;
+        }
     }
 }

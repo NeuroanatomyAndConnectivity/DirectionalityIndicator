@@ -104,6 +104,11 @@ namespace di
             return retVal;
         }
 
+        void Application::onShutdown()
+        {
+            close();
+        }
+
         QSettings* Application::getSettings()
         {
             return Application::getInstance()->m_settings;

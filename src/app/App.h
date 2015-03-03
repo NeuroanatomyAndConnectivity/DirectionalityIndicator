@@ -84,6 +84,11 @@ namespace di
              */
             void show() override;
 
+            /**
+             * Called when using the default MainWindow on shutdown. Implement all your state-save operations here.
+             */
+            void close() override;
+
         private:
             /**
              * The data-handling widget.
