@@ -29,8 +29,6 @@
 
 #include <QMouseEvent>
 
-#include <di/ext/bitmap_image.hpp>
-
 #include <di/core/Filesystem.h>
 #include <di/core/BoundingBox.h>
 #include <di/gfx/GL.h>
@@ -38,6 +36,7 @@
 #include <di/MathTypes.h>
 
 #include <di/gui/Application.h>
+#include <di/gui/ScreenShotWidget.h>
 
 #include "OGLWidget.h"
 
@@ -148,6 +147,22 @@ namespace di
                 }
             );
 
+            // Configure the screenshot widget
+            if( m_screenShotWidget )
+            {
+                GLint maxSamples = 0;
+                glGetIntegerv( GL_MAX_SAMPLES, &maxSamples );
+                m_screenShotWidget->setMaxSamples( maxSamples );
+
+                GLint maxSize = 0;
+                glGetIntegerv(  GL_MAX_TEXTURE_SIZE, &maxSize );
+                m_screenShotWidget->setMaxResolution( maxSize );
+            }
+            else
+            {
+                LogW << "No ScreenShotWidget defined during initializeGL." << LogEnd;
+            }
+
             m_redrawTimer->start();
         }
 
@@ -222,19 +237,26 @@ namespace di
             core::View* targetView = this;
 
             // Screenshot?
+            if( m_screenShotRequest && !m_screenShotWidget  )
+            {
+                LogE << "Before requesting a screenshot, define a responsible ScreenShotWidget." << LogEnd;
+                m_screenShotRequest = false;
+            }
+
             SPtr< core::OffscreenView > screenshotView = nullptr;
             if( m_screenShotRequest )
             {
-                glEnable( GL_MULTISAMPLE );
-                logGLError();
-
                 LogD << "Screenshot requested. Creating offscreen view." << LogEnd;
 
                 // Create the offscreen view
-                screenshotView = std::make_shared< core::OffscreenView >( glm::vec2( 4096.0f, 4096.0f ), 4 );
+                screenshotView = std::make_shared< core::OffscreenView >(
+                            glm::vec2( m_screenShotWidget->getWidth(),
+                                       m_screenShotWidget->getHeight() ),
+                            m_screenShotWidget->getSamples()
+                        );
 
                 // The screenshot view might have a different aspect:
-                core::Camera offCam = m_camera;
+                core::Camera offCam( m_camera );
                 offCam.setProjectionMatrix(
                     glm::ortho( 0.5 * -screenshotView->getAspectRatio(), 0.5 * screenshotView->getAspectRatio(), -0.5, 0.5, near, far )
                 );
@@ -316,40 +338,11 @@ namespace di
             m_screenShotRequest = false;
             if( screenshotView )
             {
-                // get image:
-                auto pixels = screenshotView->read();
-
-                // and store as image
-                bitmap_image image( screenshotView->getViewportSize().x, screenshotView->getViewportSize().y );
-
-                // set background to red. If we see a red pixel -> something was wrong
-                image.set_all_channels( 0, 0, 0 );
-
-                // Now write each pixel
-                const size_t nbChannels = 3;
-                for( size_t y = 0; y < screenshotView->getViewportSize().y; ++y )
-                {
-                    for( size_t x = 0; x < screenshotView->getViewportSize().x; ++x )
-                    {
-                        glm::ivec3 color;
-
-                        size_t idx = x + y * screenshotView->getViewportSize().x;
-                        color.x = pixels->operator[]( nbChannels * idx + 0 );
-                        color.y = pixels->operator[]( nbChannels * idx + 1 );
-                        color.z = pixels->operator[]( nbChannels * idx + 2 );
-
-                        // Bitmap has its (0,0) in the upper left corner. Fix this:
-                        image.set_pixel( x, screenshotView->getViewportSize().y - y - 1,
-                                color.x, color.y, color.z );
-                    }
-                }
-
-                // finally, save the file
-                image.save_image( "/home/sebastian/test.bmp" );
+                // get image and report back
+                emit screenshotDone( screenshotView->read() );
 
                 // cleanup the FBO
                 screenshotView->finalize();
-                glDisable( GL_MULTISAMPLE );
             }
         }
 
@@ -541,6 +534,17 @@ namespace di
         const core::Camera& OGLWidget::getCamera() const
         {
             return m_camera;
+        }
+
+        void OGLWidget::screenshot()
+        {
+            m_screenShotRequest = true;
+            LogD << "Requesting screenshot ..." << LogEnd;
+        }
+
+        void OGLWidget::setResponsibleScreenShotWidget( ScreenShotWidget* screenShotWidget )
+        {
+            m_screenShotWidget = screenShotWidget;
         }
     }
 }

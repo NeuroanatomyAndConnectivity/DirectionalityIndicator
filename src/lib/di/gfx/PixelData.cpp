@@ -22,33 +22,5 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_GFXTYPES_H
-#define DI_GFXTYPES_H
-
-// NOTE: This file is mostly used to include some standard graphics types, like vector arrays and similar.
-
-#include <vector>
-
-// we need the math types
-#include <di/MathTypes.h>
-
-#include <di/gfx/PixelData.h>
-
-namespace di
-{
-    typedef std::vector< glm::vec2 > Vec2Array;
-    typedef std::vector< glm::vec3 > Vec3Array;
-    typedef std::vector< glm::vec4 > Vec4Array;
-
-    typedef std::vector< glm::vec3 > NormalArray;
-
-    typedef std::vector< glm::vec4 > RGBAArray;
-
-    typedef std::vector< glm::ivec2 > IndexVec2Array;
-    typedef std::vector< glm::ivec3 > IndexVec3Array;
-    typedef std::vector< glm::ivec4 > IndexVec4Array;
-}
-
-#endif  // DI_GFXTYPES_H
-
+#include "PixelData.h"
 

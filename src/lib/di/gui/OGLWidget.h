@@ -35,12 +35,15 @@
 // #include <QOpenGLWidget>
 #include <QGLWidget>
 
+#include <di/gfx/PixelData.h>
 #include <di/GfxTypes.h>
 
 namespace di
 {
     namespace gui
     {
+        class ScreenShotWidget;
+
         /**
          * A wrapper around the Qt OpenGL widget. This specific widget implements the basic interaction and visualization functionalities of this
          * application.
@@ -94,6 +97,29 @@ namespace di
              * Bind this view as rendering target. You should issue this if you use your own FBOs.
              */
             void bind() const override;
+
+            /**
+             * Set the screenshot widget responsible for this view. You should set this before showing the OGLWidget.
+             *
+             * \param screenShotWidget the widget.
+             */
+            void setResponsibleScreenShotWidget( ScreenShotWidget* screenShotWidget );
+
+        signals:
+            /**
+             * Issued whenever a screenshot is ready.
+             *
+             * \param screenshot the pixel data of the image.
+             */
+            void screenshotDone( SPtr< core::RGBA8Image > image );
+
+        public slots:
+
+            /**
+             * Call to take a screenshot.
+             */
+            void screenshot();
+
         protected:
             /**
              * Do the necessary setup.
@@ -264,8 +290,8 @@ namespace di
             /**
              * Camera zoom.
              *
-             * The default is 1.732 (~sqrt(3)) - 0.1. This copes with the fact that the down-scaler to fit to the scene calculates the diagonal of the scene
-             * cube. The default zoom ensures a maximally zoomed initial scene.
+             * The default is 1.732 (~sqrt(3)) - 0.1. This copes with the fact that the down-scaler to fit to the scene calculates the diagonal of
+             * the scene cube. The default zoom ensures a maximally zoomed initial scene.
              */
             double m_zoom = 1.732;
 
@@ -278,6 +304,11 @@ namespace di
              * If true, a screenshot is requested.
              */
             bool m_screenShotRequest = false;
+
+            /**
+             * The widget responsible for setting up the screenshotter
+             */
+            ScreenShotWidget* m_screenShotWidget = nullptr;
         };
     }
 }

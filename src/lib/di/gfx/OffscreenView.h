@@ -27,6 +27,7 @@
 
 #include <utility>
 
+#include <di/gfx/PixelData.h>
 #include <di/gfx/View.h>
 #include <di/GfxTypes.h>
 
@@ -102,7 +103,7 @@ namespace di
              *
              * \return the image
              */
-            SPtr< std::vector< uint8_t > > read() const;
+            SPtr< RGBA8Image > read() const;
         protected:
         private:
             /**

@@ -27,16 +27,19 @@
 
 #include <QDockWidget>
 #include <QVBoxLayout>
+#include <QToolButton>
 #include <QHBoxLayout>
 
-#include <di/gui/OGLWidget.h>
-
+#include <di/gfx/PixelData.h>
 #include <di/Types.h>
 
 namespace di
 {
     namespace gui
     {
+        class OGLWidget;
+        class ScreenShotWidget;
+
         /**
          * A simple widget to provide the view to a scene.
          */
@@ -57,6 +60,20 @@ namespace di
              */
             virtual ~ViewWidget();
 
+        public slots:
+            /**
+             * Take screenshot.
+             */
+            void screenshot();
+
+        protected slots:
+            /**
+             * Reports back whenever a screenshot was taken.
+             *
+             * \param pixels the image
+             */
+            void screenshotDone( SPtr< core::RGBA8Image > pixels );
+
         protected:
         private:
             /**
@@ -73,6 +90,16 @@ namespace di
              * The rendering
              */
             OGLWidget* m_oglWidget = nullptr;
+
+            /**
+             * The screenshot widget.
+             */
+            ScreenShotWidget* m_screenShotWidget = nullptr;
+
+            /**
+             * Button for screenshots
+             */
+            QToolButton* m_screenshotButton;
         };
     }
 }

@@ -159,6 +159,22 @@ namespace di
             virtual void read( void* pixels, GLint format = GL_RGB,
                                              GLenum type = GL_UNSIGNED_BYTE ) const;
 
+            /**
+             * Read back texture data.
+             *
+             * \param pixels memory for storing the data. It is your job to allocate the memory
+             * \param format the format to query
+             * \param type the type of data
+             *
+             * \tparam ValueStoreType the type where to store the data. It needs to provide a plain data pointer via data().
+             */
+            template< typename ValueStoreType >
+            void read( ValueStoreType& pixels, GLint format = GL_RGB,
+                                               GLenum type = GL_UNSIGNED_BYTE ) const
+            {
+                read( pixels.data(), format, type );
+            }
+
         protected:
 
             /**
