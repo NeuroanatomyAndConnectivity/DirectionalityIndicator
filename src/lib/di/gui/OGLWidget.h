@@ -109,7 +109,7 @@ namespace di
             /**
              * Issued whenever a screenshot is ready.
              *
-             * \param screenshot the pixel data of the image.
+             * \param image the pixel data of the image.
              */
             void screenshotDone( SPtr< core::RGBA8Image > image );
 

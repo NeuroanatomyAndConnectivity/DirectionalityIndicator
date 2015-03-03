@@ -78,7 +78,7 @@ namespace di
 
         /**
          * Implementation of an standard regular grid of arbitrary dimension. The class mainly serves as a "indexer" to the linear data layout in the
-         * value stores used in the \ref Field class.
+         * value stores used in the \ref DataSet class.
          */
         template< size_t NumberOfDimensions = 3, typename IndexType = size_t >
         class GridRegular
@@ -135,6 +135,7 @@ namespace di
              * Construct a grid using the given voxel dimensions
              *
              * \param voxels the number of voxels in each direction
+             * \param transform the grid transformation describing the orientation in space.
              */
             explicit GridRegular( const GridTransformation< Dimensions >& transform, const std::array< IndexType, Dimensions >& voxels ):
                 m_transform( transform )
@@ -164,6 +165,7 @@ namespace di
              * \param voxelsY the number of voxels in the 2nd direction
              * \param voxelsZ the number of voxels in the 3rd direction
              * \param voxelsT the number of voxels in the 4th direction
+             * \param transform the grid transformation describing the orientation in space.
              */
             GridRegular( const GridTransformation< Dimensions >& transform, const IndexType& voxelsX, const IndexType& voxelsY = 1,
                          const IndexType& voxelsZ = 1, const IndexType& voxelsT = 1 ):
@@ -175,6 +177,7 @@ namespace di
              * Construct a grid using the given voxel dimensions
              *
              * \param voxels the number of voxels in each direction
+             * \param transform the grid transformation describing the orientation in space.
              */
             explicit GridRegular( const GridTransformation< Dimensions >& transform, const glm::ivec4& voxels ):
                 GridRegular( transform, voxels.x, voxels.y, voxels.z, voxels.w  )
@@ -185,6 +188,7 @@ namespace di
              * Construct a grid using the given voxel dimensions
              *
              * \param voxels the number of voxels in each direction
+             * \param transform the grid transformation describing the orientation in space.
              */
             explicit GridRegular( const GridTransformation< Dimensions >& transform, const glm::ivec3& voxels ):
                 GridRegular( transform, voxels.x, voxels.y, voxels.z )
@@ -195,6 +199,7 @@ namespace di
              * Construct a grid using the given voxel dimensions
              *
              * \param voxels the number of voxels in each direction
+             * \param transform the grid transformation describing the orientation in space.
              */
             explicit GridRegular( const GridTransformation< Dimensions >& transform, const glm::ivec2& voxels ):
                 GridRegular( transform, voxels.x, voxels.y )
@@ -354,24 +359,24 @@ namespace di
              * \note this is a recursive template function.
              *
              * \tparam dim the dimension currently handled.
-             * \param c current coordinate
+             * \param coords current coordinate
              *
              * \throw std::out_of_range if a coordinate is too large.
              *
              * \return the index in a linear memory
              */
             template< IndexType dim = 0 >
-            IndexType index( IndexType c ) const
+            IndexType index( IndexType coords ) const
             {
                 // handle d) directly
-                if( c >= m_sizes[ dim ] )
+                if( coords >= m_sizes[ dim ] )
                 {
-                    throw std::out_of_range( "Coordinate " + std::to_string( dim ) + " is too large: " + std::to_string( c ) + ">=" +
+                    throw std::out_of_range( "Coordinate " + std::to_string( dim ) + " is too large: " + std::to_string( coords ) + ">=" +
                                              std::to_string( m_sizes[ dim ] ) + "." );
                 }
 
                 // NOTE: the case b) mentioned below is handled implicitly.
-                return accumulateSizes( dim ) * c;
+                return accumulateSizes( dim ) * coords;
             }
 
             /**
@@ -383,7 +388,7 @@ namespace di
              *
              * \tparam dim the dimension currently handled.
              * \tparam NextCoords the remaining coordinates not yet handled.
-             * \param c current coordinate
+             * \param coords current coordinate
              * \param nextCoords the remaining coordinate not yet handled.
              *
              * \throw std::out_of_range if a coordinate is too large.
@@ -391,7 +396,7 @@ namespace di
              * \return the index in a linear memory
              */
             template< IndexType dim = 0, typename... NextCoords >
-            IndexType index( IndexType c, NextCoords... nextCoords ) const
+            IndexType index( IndexType coords, NextCoords... nextCoords ) const
             {
                 // Memory index is calculated as follows
                 //
@@ -419,9 +424,9 @@ namespace di
                 // d) a coordinate is too huge
 
                 // handle d) directly
-                if( c >= m_sizes[ dim ] )
+                if( coords >= m_sizes[ dim ] )
                 {
-                    throw std::out_of_range( "Coordinate " + std::to_string( dim ) + " is too large: " + std::to_string( c ) + ">=" +
+                    throw std::out_of_range( "Coordinate " + std::to_string( dim ) + " is too large: " + std::to_string( coords ) + ">=" +
                                              std::to_string( m_sizes[ dim ] ) + "." );
                 }
 
@@ -429,12 +434,12 @@ namespace di
                 if( dim + 1 == getDimensions() )
                 {
                     // all the remaining coordinates in "nextCoords" are assumed to be 0 -> do not influence offset anymore
-                    return accumulateSizes( dim ) * c;
+                    return accumulateSizes( dim ) * coords;
                 }
 
                 // Accumulate all previous sizes ...
                 // ... and multiply this offset with the current coord and add to the offset of the next dimensions.
-                return index< dim + 1 >( nextCoords... ) + ( accumulateSizes( dim ) * c );
+                return index< dim + 1 >( nextCoords... ) + ( accumulateSizes( dim ) * coords );
             }
 
             /**
@@ -443,12 +448,11 @@ namespace di
              * \tparam dims size of the input array
              * \tparam Is the indices up to "dims"
              * \param coords coord array
-             * \param detail::seq index sequence that gets "inflated" to forward to the variadic template function \ref index
              *
              * \return the index.
              */
             template< size_t dims, int... Is >
-            IndexType index( const std::array< IndexType, dims >& coords, detail::seq< Is... > ) const
+            IndexType index( const std::array< IndexType, dims >& coords, detail::seq< Is... > /* seq */ ) const
             {
                 return index( coords[Is]... );
             }
