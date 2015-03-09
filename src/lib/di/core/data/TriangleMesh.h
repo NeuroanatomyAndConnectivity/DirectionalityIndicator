@@ -77,6 +77,26 @@ namespace di
             size_t addVertex( float x, float y, float z );
 
             /**
+             * Add the given normal.
+             *
+             * \param x x component
+             * \param y y component
+             * \param z z component
+             *
+             * \return the index of the normal.
+             */
+            size_t addNormal( float x, float y, float z );
+
+            /**
+             * Add the given normal.
+             *
+             * \param normal the normal to add
+             *
+             * \return the index of the normal.
+             */
+            size_t addNormal( const glm::vec3& normal );
+
+            /**
              * Add the given indices to the index list to define a new triangle.
              *
              * \param index1 index of first vertex

@@ -58,6 +58,21 @@ namespace di
             );
         }
 
+        size_t TriangleMesh::addNormal( float x, float y, float z )
+        {
+            return addNormal(
+                {
+                    x, y, z
+                }
+            );
+        }
+
+        size_t TriangleMesh::addNormal( const glm::vec3& normal )
+        {
+            m_normals.push_back( normal );
+            return m_normals.size() - 1;
+        }
+
         size_t TriangleMesh::addTriangle( glm::ivec3 indices )
         {
             m_triangles.push_back( indices );
