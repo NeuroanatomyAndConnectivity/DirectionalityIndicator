@@ -30,10 +30,12 @@ namespace di
     {
         SPtr< TriangleMesh > buildCuboid( const BoundingBox& bb )
         {
-            auto cuboid = std::make_shared< TriangleMesh >();
+            return buildCuboid( bb.getMin(), bb.getMax() );
+        }
 
-            auto min = bb.getMin();
-            auto max = bb.getMax();
+        SPtr< TriangleMesh > buildCuboid( const glm::vec3& min, const glm::vec3& max )
+        {
+            auto cuboid = std::make_shared< TriangleMesh >();
 
             // Side 1:
 

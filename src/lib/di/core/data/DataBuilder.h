@@ -45,6 +45,17 @@ namespace di
          * \return the resulting cuboid.
          */
         SPtr< TriangleMesh > buildCuboid( const BoundingBox& bb );
+
+        /**
+         * Build a solid cuboid by using the given BoundingBox. Note that this function creates the edge vertices 3 times to allow a normal for each
+         * side-plane.
+         *
+         * \param min the minimum.
+         * \param max the maximum, including.
+         *
+         * \return the resulting cuboid.
+         */
+        SPtr< TriangleMesh > buildCuboid( const glm::vec3& min, const glm::vec3& max );
     }
 }
 
