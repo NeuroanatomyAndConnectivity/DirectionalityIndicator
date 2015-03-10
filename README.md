@@ -23,7 +23,6 @@ repository, MacPorts, and MSYS2.
 * Qt5OpenGL for 3D graphics
 * CMake >= 3.0
 * CLang or GCC, supporting basic C++11 functionality.
-* GLEW >= 1.7.0
 
 ### Runtime Dependencies
 
@@ -42,7 +41,7 @@ $ cd build
 # -> CMake will complain about missing depenencies.
 $ cmake ../src
 # -> CMake does not find Qt5 on your system? Help Cmake to find it by defining the QTDIR variable:
-$ QTDIR=/path/to/Qt cmake ../src
+$ DI_QTDIR=/path/to/Qt cmake ../src
 # Build using make
 $ make
 # Run the software
