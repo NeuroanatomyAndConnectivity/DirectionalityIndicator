@@ -61,7 +61,7 @@ void main()
     // discard
     if( shade < 0.01 )
     {
-        discard;
+       // discard;
     }
 
     // Light
@@ -70,6 +70,7 @@ void main()
     // Write
     vec4 finalColor = vec4( light * v_color.rgb * shade, v_color.a );
     fragColor = finalColor;
+    fragColor = v_color.rgba;
 
     // Small depth offset
     gl_FragDepth = gl_FragCoord.z;

@@ -74,10 +74,6 @@ namespace di
                     "Connections",
                     "Extracted connections between regions."
             );
-            m_neighbourArrowOutput = addOutput<  RenderIllustrativeLines::LineDataSetWithNormals >(
-                    "Neighbour Arrows",
-                    "Extracted connections between neighbours as simple arrows."
-            );
 
             // 2: the input
             m_dataInput = addInput< di::core::TriangleDataSet >(
@@ -562,10 +558,12 @@ namespace di
             m_connectionsOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Connections", connectionLines,
                                                                                                            connectionColors ) );
 
+            /*
             m_neighbourArrowOutput->setData(
                     std::make_shared< RenderIllustrativeLines::LineDataSetWithNormals >( "Region Neighbour Arrows", neighbourLines,
                                                                                                                     neighbourColors,
                                                                                                                     neighbourNormals ) );
+                                                                                                                    */
 
             // Create line dataset and set output
             m_borderLinesOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Borders", lines, colors ) );

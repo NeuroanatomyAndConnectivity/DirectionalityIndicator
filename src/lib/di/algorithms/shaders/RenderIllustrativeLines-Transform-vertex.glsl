@@ -24,34 +24,27 @@
 
 #version 330
 
-// Textures
-uniform sampler2D u_colorSampler;
-uniform sampler2D u_vecSampler;
-uniform sampler2D u_normalSampler;
-uniform sampler2D u_posSampler;
-uniform sampler2D u_depthSampler;
-
-// Uniforms
-uniform vec2 u_viewportScale = vec2( 1.0 );
-
 // Attribute data
 in vec3 position;
+in vec4 color;
+in vec3 normal;
+
+// Uniforms
+uniform mat4 u_ProjectionMatrix;
+uniform mat4 u_ViewMatrix;
 
 // Varying out
-out vec4 v_pointColor;
-out vec4 v_pointPos;
-out vec4 v_pointVec;
-out vec4 v_pointNormal;
+out vec4 v_color;
+out vec3 v_normal;
+out vec4 v_posView;
 
 void main()
 {
-    vec2 texCoord = u_viewportScale * position.xy;
+    v_color = color;
+    v_normal = ( u_ViewMatrix * vec4( normal, 0.0 ) ).xyz;
+    v_posView = u_ViewMatrix * vec4( position, 1.0 );
 
-    v_pointColor  = texture( u_colorSampler, texCoord.xy );
-    v_pointPos    = texture( u_posSampler, texCoord.xy );
-    v_pointVec    = texture( u_vecSampler, texCoord.xy );
-    v_pointNormal = texture( u_normalSampler, texCoord.xy );
-
-    gl_Position = vec4( position, 1.0 );
+    vec4 pos = u_ProjectionMatrix * v_posView;
+    gl_Position = pos;
 }
 

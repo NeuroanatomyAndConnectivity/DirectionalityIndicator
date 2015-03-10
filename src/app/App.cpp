@@ -39,7 +39,6 @@
 #include <di/algorithms/Voxelize.h>
 #include <di/algorithms/Dilatate.h>
 #include <di/algorithms/GaussSmooth.h>
-#include <di/algorithms/RenderRegionMeshAndArrows.h>
 
 #include <di/gui/ViewWidget.h>
 #include <di/gui/AlgorithmStrategies.h>
@@ -97,83 +96,42 @@ namespace di
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
             // BEGIN:
 
-            // Load mesh:
-            m_dataWidget->addFileWidget( new di::gui::FileWidget( QIcon( QPixmap( iconMesh_xpm ) ),
-                                                                  QString( "Stanford Poly Format (*.ply)" ) ) );
-
-            // ALgorithm Temporaries ... needed to hard-code connections
-            di::gui::AlgorithmWidget* algoT;
-            di::gui::AlgorithmWidget* algo1;
-            di::gui::AlgorithmWidget* algo2;
-            di::gui::AlgorithmWidget* algo3;
-            di::gui::AlgorithmWidget* algo4;
-            di::gui::AlgorithmWidget* algo5;
-            di::gui::AlgorithmWidget* algo6;
-            di::gui::AlgorithmWidget* algo7;
-            di::gui::AlgorithmWidget* algo8;
-            di::gui::AlgorithmWidget* algo9;
-            di::gui::AlgorithmWidget* algo10;
-            di::gui::AlgorithmStrategy* s;
+            // Load mesh
+            auto fileWidget = new di::gui::FileWidget( QIcon( QPixmap( iconMesh_xpm ) ),
+                                                       QString( "Stanford Poly Format (*.ply)" ) );
+            m_dataWidget->addFileWidget( fileWidget );
 
             // Create the strategies:
             // Strategy 1:
-            s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface with Region Boundaries" ) );
+            auto s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface with Region Boundaries" ) );
 
             // Take the mesh data and extract the region information needed
-            algo1 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::ExtractRegions ) ) );
-
-            // Take the mesh data and voxelize
-            algo6 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::Voxelize ) ) );
-            // Take voxelized mesh -> "inflate" the data to build a proper hull around the mesh
-            algo7 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::Dilatate ) ) );
-            algo8 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::GaussSmooth ) ) );
-
-            // Useful debug outputs -> render results
-            algoT = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderTriangles ) ) );
-            algo2 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
-            algo3 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderPoints ) ) );
-            algo4 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
-            algo5 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) ) );
-            algo10 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderIllustrativeLines ) ) );
-
-            // Create arrow rendering:
-            algo9 = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderRegionMeshAndArrows ) ) );
+            auto extractRegions = s->addAlgorithm(
+                new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::ExtractRegions ) )
+            );
+            auto renderArrows = s->addAlgorithm(
+                new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderIllustrativeLines ) )
+            );
 
             // Strategy 2:
             s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface LIC" ) );
-            s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC ) ) );
+            auto lic = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC ) ) );
 
             // Tell the data widget that the processing network is ready.
             m_dataWidget->prepareProcessingNetwork();
             m_algorithmStrategies->prepareProcessingNetwork();
 
             // Connect everything in strategy 1
-            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Regions", algo2->getAlgorithm(), "Lines" );
-            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Region Centers", algo3->getAlgorithm(), "Points" );
-            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Connections", algo4->getAlgorithm(), "Lines" );
-            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Region Meshes", algo5->getAlgorithm(), "Lines" );
-            getProcessingNetwork()->connectAlgorithms( algo6->getAlgorithm(), "Voxel Mask", algo7->getAlgorithm(), "Input" );
-            getProcessingNetwork()->connectAlgorithms( algo7->getAlgorithm(), "Dilatated", algo8->getAlgorithm(), "Input" );
-
-            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Neighbour Arrows", algo10->getAlgorithm(), "Lines" );
-
-            getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Region Information", algo9->getAlgorithm(), "Region Information" );
+            // getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Neighbour Arrows", algo10->getAlgorithm(), "Lines" );
 
             // Connect all modules with a "Triangle Mesh" input.
-            m_dataWidget->connectDataToStrategies( m_algorithmStrategies );
+            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", extractRegions->getAlgorithm(), "Triangle Mesh" );
+            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", renderArrows->getAlgorithm(), "Triangle Mesh" );
+            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", lic->getAlgorithm(), "Triangle Mesh" );
 
             // END:
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            //algo2->setActive( false );
-            algo3->setActive( false );
-            algo9->setActive( false );
-            algo4->setActive( false );
-            algo6->setActive( false );
-            algo7->setActive( false );
-           // algo5->setActive( false );
-            // algoT->setActive( false );
         }
 
         void App::close()

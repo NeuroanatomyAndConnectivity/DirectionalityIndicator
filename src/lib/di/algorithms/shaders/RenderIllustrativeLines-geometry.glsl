@@ -25,7 +25,7 @@
 #version 330
 
 // Define input and output
-layout( lines ) in;
+layout( points ) in;
 layout( triangle_strip, max_vertices = 4 ) out;
 
 // Uniforms
@@ -33,8 +33,11 @@ uniform mat4 u_ProjectionMatrix;
 uniform mat4 u_ViewMatrix;
 
 // Inputs
-in vec4 v_lineColor[];
-in vec3 v_lineNormal[];
+// NOTE: everything is in cam space
+in vec4 v_pointColor[];
+in vec4 v_pointPos[];
+in vec4 v_pointVec[];
+in vec4 v_pointNormal[];
 // in vec4 v_position[]; // NOTE: implicit by gl_Position
 
 // Outputs
@@ -52,14 +55,63 @@ void main()
     const float dist = 1.0;
 
     // Vector input
-    vec3 lv1 = gl_in[0].gl_Position.xyz;
-    vec3 lv2 = gl_in[1].gl_Position.xyz;
+//    vec3 lv1 = v_pointPos[0].xyz + v_pointVec[0].xyz;
+//    vec3 lv2 = v_pointPos[0].xyz - v_pointVec[0].xyz;
 
+    float scale = 0.01;
+    float z =  -0.5;
+    vec3 lv1 = gl_in[0].gl_Position.xyz + vec3( -scale, -scale,  z );
+    vec3 lv2 = gl_in[0].gl_Position.xyz + vec3( -scale,  scale, z );
+    vec3 lv3 = gl_in[0].gl_Position.xyz + vec3(  scale, -scale, z );
+    vec3 lv4 = gl_in[0].gl_Position.xyz + vec3(  scale,  scale, z );
+/*
+    vec3 lv1 = v_pointPos[0].xyz + scale * vec3( -1.0, -1.0, 0.0 );
+    vec3 lv2 = v_pointPos[0].xyz + scale *  vec3( -1.0,  1.0, 0.0 );
+    vec3 lv3 = v_pointPos[0].xyz + scale *  vec3(  1.0, -1.0, 0.0 );
+    vec3 lv4 = v_pointPos[0].xyz + scale *  vec3(  1.0,  1.0, 0.0 );
+*/
+
+
+    // v1
+    gl_Position = u_ProjectionMatrix * vec4( lv1, 1.0 );
+    v_color = v_pointColor[0];
+    v_normal = v_pointNormal[0].xyz;
+    v_surfaceUV = vec2( -1.0, -1.0 );
+    EmitVertex();
+
+    // v2
+    gl_Position = u_ProjectionMatrix * vec4( lv2, 1.0 );
+    v_color = v_pointColor[0];
+    v_normal = v_pointNormal[0].xyz;
+    v_surfaceUV = vec2( -1.0, 1.0 );
+    EmitVertex();
+
+    // v3
+    gl_Position = u_ProjectionMatrix * vec4( lv3, 1.0 );
+    v_color = v_pointColor[0];
+    v_normal = v_pointNormal[0].xyz;
+    v_surfaceUV = vec2( 1.0, -1.0 );
+    EmitVertex();
+
+    // v4
+    gl_Position = u_ProjectionMatrix * vec4( lv4, 1.0 );
+    v_color = v_pointColor[0];
+    v_normal = v_pointNormal[0].xyz;
+    v_surfaceUV = vec2( 1.0, 1.0 );
+    EmitVertex();
+
+    EndPrimitive();
+
+
+
+
+
+/*
     // Color and normal
-    vec4 lc1 = v_lineColor[0];
-    vec4 lc2 = v_lineColor[1];
-    vec3 ln1 = v_lineNormal[0];
-    vec3 ln2 = v_lineNormal[1];
+    vec4 lc1 = v_pointColor[0];
+    vec4 lc2 = v_pointColor[0];
+    vec3 ln1 = v_pointNormal[0].xyz;
+    vec3 ln2 = v_pointNormal[0].xyz;
 
     /////////////////////////////////////////////////////////////////////////////////////
     // Calculate plane and triangles:
@@ -72,8 +124,8 @@ void main()
     vec3 biNormal2 = cross( ln2, tangent );
 
     // transfer normals to screenspace:
-    vec3 viewN1 = ( u_ViewMatrix * vec4( ln1, 0.0 ) ).xyz;
-    vec3 viewN2 = ( u_ViewMatrix * vec4( ln2, 0.0 ) ).xyz;
+    vec3 viewN1 = ln1;
+    vec3 viewN2 = ln2;
 
     // NOTE: the vertices should have a distance of 2 - two times a normalized binormal in the host code around the center point. So it NOW has a
     // length of 2
@@ -93,7 +145,7 @@ void main()
     vec3 tv4 = ( ( lv2 + tangent * 0.25 * length ) + dist * ln2 )
                + biNormal2 * 0.5 * width;
 
-    gl_Position = u_ProjectionMatrix * u_ViewMatrix * vec4( tv1, 1.0 );
+    gl_Position = u_ProjectionMatrix * vec4( tv1, 1.0 );
     v_color = lc1;
     v_normal = viewN1;
 
@@ -102,26 +154,26 @@ void main()
     EmitVertex();
 
     // v2
-    gl_Position = u_ProjectionMatrix * u_ViewMatrix * vec4( tv2, 1.0 );
+    gl_Position = u_ProjectionMatrix * vec4( tv2, 1.0 );
     v_color = lc2;
     v_normal = viewN2;
     v_surfaceUV = vec2( -1.0, 1.0 );
     EmitVertex();
 
     // v3
-    gl_Position = u_ProjectionMatrix * u_ViewMatrix * vec4( tv3, 1.0 );
+    gl_Position = u_ProjectionMatrix * vec4( tv3, 1.0 );
     v_color = lc1;
     v_normal = viewN1;
     v_surfaceUV = vec2( 1.0, -1.0 );
     EmitVertex();
 
     // v4
-    gl_Position = u_ProjectionMatrix * u_ViewMatrix * vec4( tv4, 1.0 );
+    gl_Position = u_ProjectionMatrix * vec4( tv4, 1.0 );
     v_color = lc2;
     v_normal = viewN2;
     v_surfaceUV = vec2( 1.0, 1.0 );
     EmitVertex();
 
-    EndPrimitive();
+    EndPrimitive();*/
 }
 

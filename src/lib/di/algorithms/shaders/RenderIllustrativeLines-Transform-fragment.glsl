@@ -24,34 +24,31 @@
 
 #version 330
 
-// Textures
-uniform sampler2D u_colorSampler;
-uniform sampler2D u_vecSampler;
-uniform sampler2D u_normalSampler;
-uniform sampler2D u_posSampler;
-uniform sampler2D u_depthSampler;
+in vec4 v_color;
+in vec3 v_normal;
+in vec4 v_posView;
 
-// Uniforms
-uniform vec2 u_viewportScale = vec2( 1.0 );
+uniform mat4 u_ViewMatrix;
 
-// Attribute data
-in vec3 position;
+out vec4 fragColor;
+out vec4 fragNormal;
+out vec4 fragVec;
+out vec4 fragPos;
 
-// Varying out
-out vec4 v_pointColor;
-out vec4 v_pointPos;
-out vec4 v_pointVec;
-out vec4 v_pointNormal;
+// NOTE the following is LIB code. Load Shading.glsl on host side
+float blinnPhongIlluminationIntensityFullDiffuse( in vec3 normal );
 
 void main()
 {
-    vec2 texCoord = u_viewportScale * position.xy;
+    float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.rgb ) );
 
-    v_pointColor  = texture( u_colorSampler, texCoord.xy );
-    v_pointPos    = texture( u_posSampler, texCoord.xy );
-    v_pointVec    = texture( u_vecSampler, texCoord.xy );
-    v_pointNormal = texture( u_normalSampler, texCoord.xy );
+    // Right now, we use the color as input vector. This changes to something else as soon as we have the data
+    vec3 vector = ( vec4( v_color.rgb, 0.0 ) ).rgb;
 
-    gl_Position = vec4( position, 1.0 );
+    // Write
+    fragColor = vec4( light * v_color.xyz, 1.0 );
+    fragVec = vec4( normalize( vector ), 1.0 );
+    fragPos = v_posView;
+    fragNormal = vec4( normalize( v_normal ), 1.0 );
 }
 

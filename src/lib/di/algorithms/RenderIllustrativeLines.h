@@ -36,8 +36,9 @@ namespace di
 {
     namespace core
     {
-        class LineDataSet;
+        class TriangleDataSet;
         class View;
+        class Points;
     }
 
     namespace algorithms
@@ -116,21 +117,22 @@ namespace di
              */
             virtual core::BoundingBox getBoundingBox() const;
 
-            /**
-             * An extended line data type with normal.
-             */
-            typedef di::core::DataSet< di::core::Lines, di::RGBAArray, di::NormalArray > LineDataSetWithNormals;
         protected:
         private:
             /**
-             * The line input to use.
+             * The triangle mesh input to use.
              */
-            SPtr< di::core::Connector< LineDataSetWithNormals > > m_lineDataInput;
+            SPtr< di::core::Connector< di::core::TriangleDataSet > > m_triangleDataInput;
 
             /**
-             * The line data to visualize. We keep the pointer separate since process() and update()/render() work in different threads.
+             * The data to visualize. We keep the pointer separate since process() and update()/render() work in different threads.
              */
-            ConstSPtr< LineDataSetWithNormals > m_visLineData = nullptr;
+            ConstSPtr< di::core::TriangleDataSet > m_visTriangleData = nullptr;
+
+            /**
+             * The array storing the arrow points
+             */
+            SPtr< di::core::Points > m_points = nullptr;
 
             /**
              * The Vertex Attribute Array Object (VAO) used for the data.
@@ -138,9 +140,24 @@ namespace di
             GLuint m_VAO = 0;
 
             /**
+             * The Vertex Attribute Array Object (VAO) used for the point data.
+             */
+            GLuint m_pointVAO = 0;
+
+            /**
              * The shader used for rendering
              */
+            SPtr< di::core::Program > m_transformShaderProgram = nullptr;
+
+            /**
+             * The shader used for rendering arrows
+             */
             SPtr< di::core::Program > m_shaderProgram = nullptr;
+
+            /**
+             * The shader used for rendering the arrows
+             */
+            SPtr< di::core::Program > m_arrowShaderProgram = nullptr;
 
             /**
              * Vertex data.
@@ -161,6 +178,37 @@ namespace di
              * Index array.
              */
             SPtr< di::core::Buffer > m_indexBuffer = nullptr;
+
+            /**
+             * The fbo ID, step 1.
+             */
+            GLuint m_fboTransform = 0;
+
+            /**
+             * Result texture of step 1
+             */
+            SPtr< di::core::Texture > m_step1ColorTex = nullptr;
+
+            /**
+             * Result texture of step 1
+             */
+            SPtr< di::core::Texture > m_step1VecTex = nullptr;
+
+            /**
+             * Result texture of step 1
+             */
+            SPtr< di::core::Texture > m_step1NormalTex = nullptr;
+
+            /**
+             * Result texture of step 1
+             */
+            SPtr< di::core::Texture > m_step1PosTex = nullptr;
+
+            /**
+             * Result texture of step 1 (depth)
+             */
+            SPtr< di::core::Texture > m_step1DepthTex = nullptr;
+
         };
     }
 }
