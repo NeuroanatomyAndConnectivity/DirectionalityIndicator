@@ -443,6 +443,8 @@ namespace di
                 sortedLines.push_back( lineIndices[ 0 ] );
 
                 // Brute-force find the connected line strip. Quadratic runtime! Needs to be improved!
+                //
+                // NOTE: this is buggy. the resulting list contains always the same index ...
                 while( sortedLines.size() != lineIndices.size() )
                 {
                     // front ids
