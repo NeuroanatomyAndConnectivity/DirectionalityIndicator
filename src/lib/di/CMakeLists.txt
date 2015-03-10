@@ -35,7 +35,17 @@ INCLUDE_DIRECTORIES( "${CMAKE_CURRENT_SOURCE_DIR}/ext" )
 # Setup GLM
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Is header-only. Use /ext as include search path (see above)
+# Is header-only. Use ext as include search path (see above)
+INCLUDE_DIRECTORIES( "${CMAKE_CURRENT_SOURCE_DIR}/ext" )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Setup GLEW
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Include correct path to ensure that the usual #include <GL/glew.h> is working properly
+INCLUDE_DIRECTORIES( "${CMAKE_CURRENT_SOURCE_DIR}/ext/glew" )
+# Build the code below. Just store path here.
+SET( TARGET_EXT_GLEW_C_FILES "${CMAKE_CURRENT_SOURCE_DIR}/ext/glew/glew.c" )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 # Setup RPly
@@ -80,7 +90,7 @@ SET( BinName "di" )
 
 # Setup the target
 # ADD_EXECUTABLE( ${BinName} ${TARGET_CPP_FILES} ${TARGET_H_FILES} ${TARGET_EXT_RPLY_CPP_FILES} )
-ADD_LIBRARY( ${BinName} SHARED ${TARGET_CPP_FILES} ${TARGET_H_FILES} ${TARGET_EXT_RPLY_CPP_FILES} )
+ADD_LIBRARY( ${BinName} SHARED ${TARGET_CPP_FILES} ${TARGET_H_FILES} ${TARGET_EXT_RPLY_CPP_FILES} ${TARGET_EXT_GLEW_C_FILES} )
 
 # Some Linux distributions need to explicitly link against X11. We add this lib here.
 IF( CMAKE_HOST_SYSTEM MATCHES "Linux" )
