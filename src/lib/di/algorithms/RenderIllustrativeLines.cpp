@@ -170,6 +170,7 @@ namespace di
             // Bind it to be able to modify and configure:
             glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboTransform );
 
+            glDisable(  GL_BLEND );
             m_transformShaderProgram->bind();
             m_transformShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             m_transformShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
@@ -230,6 +231,7 @@ namespace di
             // Final Step - Merge everything and output to the normal framebuffer:
             // Set the view to be the target.
 
+            glEnable( GL_BLEND );
             view.bind();
 
             // draw a big quad and compose
@@ -251,6 +253,10 @@ namespace di
             glActiveTexture( GL_TEXTURE3 );
             m_step2DepthTex->bind();
             glGenerateMipmap( GL_TEXTURE_2D );
+
+            glActiveTexture( GL_TEXTURE4 );
+            m_step1VecTex->bind();
+
 
             // Render
             glBindVertexArray( m_screenQuadVAO );
@@ -559,6 +565,7 @@ namespace di
             m_composeShaderProgram->setUniform( "u_arrowColorSampler", 1 );
             m_composeShaderProgram->setUniform( "u_meshDepthSampler",  2 );
             m_composeShaderProgram->setUniform( "u_arrowDepthSampler", 3 );
+            m_composeShaderProgram->setUniform( "u_hmSampler", 4 );
         }
     }
 }

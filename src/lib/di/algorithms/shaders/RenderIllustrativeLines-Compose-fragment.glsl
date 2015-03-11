@@ -29,6 +29,7 @@ uniform sampler2D u_meshColorSampler;
 uniform sampler2D u_arrowColorSampler;
 uniform sampler2D u_meshDepthSampler;
 uniform sampler2D u_arrowDepthSampler;
+uniform sampler2D u_hmSampler;
 
 // Varyings
 in vec2 v_texCoord;
@@ -43,6 +44,8 @@ void main()
     vec4 arrowColor = texture( u_arrowColorSampler,  v_texCoord ).rgba;
     float arrowDepth = texture( u_arrowDepthSampler, v_texCoord ).r;
 
+    fragColor = vec4(  texture( u_hmSampler, v_texCoord ).rgb, 1.0 );
+    //return;
     if( arrowDepth > meshDepth )
     {
         fragColor = meshColor;
