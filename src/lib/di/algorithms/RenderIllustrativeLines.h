@@ -145,6 +145,11 @@ namespace di
             GLuint m_pointVAO = 0;
 
             /**
+             * The screen filling quad for texture processing
+             */
+            GLuint m_screenQuadVAO = 0;
+
+            /**
              * The shader used for rendering
              */
             SPtr< di::core::Program > m_transformShaderProgram = nullptr;
@@ -152,12 +157,12 @@ namespace di
             /**
              * The shader used for rendering arrows
              */
-            SPtr< di::core::Program > m_shaderProgram = nullptr;
+            SPtr< di::core::Program > m_arrowShaderProgram = nullptr;
 
             /**
-             * The shader used for rendering the arrows
+             * The shader used for rendering the composed arrows+geometry
              */
-            SPtr< di::core::Program > m_arrowShaderProgram = nullptr;
+            SPtr< di::core::Program > m_composeShaderProgram = nullptr;
 
             /**
              * Vertex data.
@@ -180,9 +185,19 @@ namespace di
             SPtr< di::core::Buffer > m_indexBuffer = nullptr;
 
             /**
+             * Fullscreen quad used for texture processing
+             */
+            SPtr< di::core::Buffer > m_screenQuadVertexBuffer = nullptr;
+
+            /**
              * The fbo ID, step 1.
              */
             GLuint m_fboTransform = 0;
+
+            /**
+             * The fbo ID, step 2.
+             */
+            GLuint m_fboArrow = 0;
 
             /**
              * Result texture of step 1
@@ -209,6 +224,15 @@ namespace di
              */
             SPtr< di::core::Texture > m_step1DepthTex = nullptr;
 
+            /**
+             * Result texture of step 2
+             */
+            SPtr< di::core::Texture > m_step2ColorTex = nullptr;
+
+            /**
+             * Result texture of step 2 (depth)
+             */
+            SPtr< di::core::Texture > m_step2DepthTex = nullptr;
         };
     }
 }

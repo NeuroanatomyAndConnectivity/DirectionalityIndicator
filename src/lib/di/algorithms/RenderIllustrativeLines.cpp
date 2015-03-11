@@ -113,30 +113,43 @@ namespace di
             ) );
             m_transformShaderProgram->realize();
 
-            SPtr< di::core::Shader > vertexShader = nullptr;
-            SPtr< di::core::Shader > fragmentShader = nullptr;
-            SPtr< di::core::Shader > geometryShader = nullptr;
-
-            vertexShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
-                                                               core::readTextFile( localShaderPath + "RenderIllustrativeLines-vertex.glsl" ) );
-            fragmentShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
-                                                                 core::readTextFile( localShaderPath + "RenderIllustrativeLines-fragment.glsl" ) );
-            geometryShader = std::make_shared< core::Shader >( core::Shader::ShaderType::Geometry,
-                                                                 core::readTextFile( localShaderPath + "RenderIllustrativeLines-geometry.glsl" ) );
+            auto arrowVertex = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
+                                                                 core::readTextFile(
+                                                                     localShaderPath + "RenderIllustrativeLines-Arrows-vertex.glsl" ) );
+            auto arrowsFragment = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                                    core::readTextFile(
+                                                                        localShaderPath + "RenderIllustrativeLines-Arrows-fragment.glsl" ) );
+            auto arrowGeometry = std::make_shared< core::Shader >( core::Shader::ShaderType::Geometry,
+                                                                   core::readTextFile(
+                                                                       localShaderPath + "RenderIllustrativeLines-Arrows-geometry.glsl" ) );
 
             // Link them to build the program itself
-            // m_shaderProgram = std::make_shared< di::core::Program >( { m_vertexShader, m_fragmentShader } );
-            // NOTE: the above code does not compile on CLang.
-            m_shaderProgram = SPtr< di::core::Program >( new di::core::Program(
+            m_arrowShaderProgram = SPtr< di::core::Program >( new di::core::Program(
                         {
-                            vertexShader,
-                            fragmentShader,
-                            geometryShader,
+                            arrowVertex,
+                            arrowsFragment,
+                            arrowGeometry,
                             std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
                                                               core::readTextFile( localShaderPath + "Shading.glsl" ) )
                         }
             ) );
-            m_shaderProgram->realize();
+            m_arrowShaderProgram->realize();
+
+            auto composeVertex = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
+                                                                   core::readTextFile(
+                                                                       localShaderPath + "RenderIllustrativeLines-Compose-vertex.glsl" ) );
+            auto composeFragment = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                                     core::readTextFile(
+                                                                        localShaderPath + "RenderIllustrativeLines-Compose-fragment.glsl" ) );
+
+            // Link them to build the program itself
+            m_composeShaderProgram = SPtr< di::core::Program >( new di::core::Program(
+                        {
+                            composeVertex,
+                            composeFragment
+                        }
+            ) );
+            m_composeShaderProgram->realize();
         }
 
         void RenderIllustrativeLines::finalize()
@@ -169,26 +182,25 @@ namespace di
             glDrawBuffers( 4, drawBuffers );
             logGLError();
 
+            glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-            glClearColor( 1.0f, 0.0f, 0.0f, .0f );
 
             glBindVertexArray( m_VAO );
             glDrawElements( GL_TRIANGLES, m_visTriangleData->getGrid()->getTriangles().size() * 3, GL_UNSIGNED_INT, NULL );
             logGLError();
 
-           ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Final Step - Merge everything and output to the normal framebuffer:
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 2 - Draw Arrows:
 
-            // Set the view to be the target.
-            view.bind();
+            // Bind it to be able to modify and configure:
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboArrow );
 
-            // draw a big quad
-            m_shaderProgram->bind();
-            m_shaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
-            m_shaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
-            // m_shaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
-            m_shaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
-
+            // draw a big grid of points as arrows
+            m_arrowShaderProgram->bind();
+            m_arrowShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
+            // m_arrowShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
+            // m_arrowShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
+            m_arrowShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
             logGLError();
 
             glActiveTexture( GL_TEXTURE0 );
@@ -202,9 +214,49 @@ namespace di
             glActiveTexture( GL_TEXTURE4 );
             m_step1DepthTex->bind();
 
+            // NOTE: keep original Viewport
+            // glViewport( 0, 0, view.getViewportSize().x, view.getViewportSize().y );
+            logGLError();
+            GLenum drawBuffersStep2[1] = { GL_COLOR_ATTACHMENT0 };
+            glDrawBuffers( 1, drawBuffersStep2 );
+            logGLError();
+
+            glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
             glBindVertexArray( m_pointVAO );
             glDrawArrays( GL_POINTS, 0, m_points->getVertices().size() );
+            logGLError();
 
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Final Step - Merge everything and output to the normal framebuffer:
+            // Set the view to be the target.
+
+            view.bind();
+
+            // draw a big quad and compose
+            m_composeShaderProgram->bind();
+            // m_composeShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
+            // m_arrowShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
+            // m_arrowShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
+            m_composeShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            logGLError();
+
+            // Textures
+            glActiveTexture( GL_TEXTURE0 );
+            m_step1ColorTex->bind();
+            glActiveTexture( GL_TEXTURE1 );
+            m_step2ColorTex->bind();
+            glActiveTexture( GL_TEXTURE2 );
+            m_step1DepthTex->bind();
+            glGenerateMipmap( GL_TEXTURE_2D );
+            glActiveTexture( GL_TEXTURE3 );
+            m_step2DepthTex->bind();
+            glGenerateMipmap( GL_TEXTURE_2D );
+
+            // Render
+            glBindVertexArray( m_screenQuadVAO );
+            glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
             logGLError();
         }
 
@@ -306,11 +358,11 @@ namespace di
                 }
             }
 
-            m_shaderProgram->bind();
+            m_arrowShaderProgram->bind();
             logGLError();
 
             // get the location of attribute "position" in program
-            GLint vertexPointLoc = m_shaderProgram->getAttribLocation( "position" );
+            GLint vertexPointLoc = m_arrowShaderProgram->getAttribLocation( "position" );
             logGLError();
 
             // Create the VAO
@@ -404,13 +456,6 @@ namespace di
             glBindFragDataLocation( m_transformShaderProgram->getObjectID(), 3, "fragPos" );
             logGLError();
 
-            // Allow the next shader to access them
-            m_shaderProgram->setUniform( "u_colorSampler",  0 );
-            m_shaderProgram->setUniform( "u_vecSampler",    1 );
-            m_shaderProgram->setUniform( "u_normalSampler", 2 );
-            m_shaderProgram->setUniform( "u_posSampler",    3 );
-            m_shaderProgram->setUniform( "u_depthSampler",  4 );
-
             // Final Check
             if( glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
             {
@@ -418,126 +463,96 @@ namespace di
             }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            /*
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Create Vertex Array Object VAO and the corresponding Vertex Buffer Objects VBO for the mesh itself
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            LogD << "Creating Mesh VAO" << LogEnd;
+            // Step 2: Render and transform to image space
+            LogD << "Creating Arrow Pass FBO" << LogEnd;
 
-            m_shaderProgram->bind();
+            // The framebuffer
+            glGenFramebuffers( 1, &m_fboArrow );
+
+            // Bind it to be able to modify and configure:
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboArrow );
             logGLError();
 
-            // get the location of attribute "position" in program
-            GLint vertexLoc = m_shaderProgram->getAttribLocation( "position" );
-            GLint colorLoc = m_shaderProgram->getAttribLocation( "color" );
-            GLint normalLoc = m_shaderProgram->getAttribLocation( "normal" );
+            // We need two target texture: color and noise
+            m_step2ColorTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step2ColorTex->realize();
+            m_step2ColorTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            // TODO(sebastian): fixed size textures are a problem ...
+            m_step2ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            m_step2ColorTex->setTextureFilter( core::Texture::TextureFilter::Linear, core::Texture::TextureFilter::Linear );
             logGLError();
 
-            // Create the VAO
-            glGenVertexArrays( 1, &m_VAO );
-            glBindVertexArray( m_VAO );
+            m_step2DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step2DepthTex->realize();
+            m_step2DepthTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            m_step2DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
+            m_step2DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
             logGLError();
 
-            // Create some buffers
-            m_vertexBuffer = std::make_shared< core::Buffer >();
-            m_colorBuffer = std::make_shared< core::Buffer >();
-            m_normalBuffer = std::make_shared< core::Buffer >();
-            m_indexBuffer = std::make_shared< core::Buffer >( core::Buffer::BufferType::ElementArray );
+            // Bind textures to FBO
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_step2ColorTex->getObjectID() , 0 );
+            logGLError();
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  m_step2DepthTex->getObjectID() , 0 );
             logGLError();
 
-            // Set the data using the triangle mesh. Also set the location mapping of the shader using the VAO
-            m_vertexBuffer->realize();
-            m_vertexBuffer->bind();
-            m_vertexBuffer->data( m_visLineData->getGrid()->getVertices() );
+            m_arrowShaderProgram->bind();
+
+            // Define the out vars to bind to the attachments
+            glBindFragDataLocation( m_arrowShaderProgram->getObjectID(), 0, "fragColor" );
             logGLError();
 
-            glEnableVertexAttribArray( vertexLoc );
-            glVertexAttribPointer( vertexLoc, 3, GL_FLOAT, 0, 0, 0 );
+            // Allow the next shader to access step 1 textures
+            m_arrowShaderProgram->setUniform( "u_colorSampler",  0 );
+            m_arrowShaderProgram->setUniform( "u_vecSampler",    1 );
+            m_arrowShaderProgram->setUniform( "u_normalSampler", 2 );
+            m_arrowShaderProgram->setUniform( "u_posSampler",    3 );
+            m_arrowShaderProgram->setUniform( "u_depthSampler",  4 );
+
+            // Check for validity
+            if( glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+            {
+                LogE << "glCheckFramebufferStatus failed for Step 2." << LogEnd;
+            }
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Create an VAO containing the full-screen quad
+            LogD << "Creating flat VAO" << LogEnd;
+
+            // Create the full-screen quad.
+            float points[] = {
+             -1.0f,  1.0f,  0.0f,
+              1.0f,  1.0f,  0.0f,
+              1.0f, -1.0f,  0.0f,
+
+              1.0f, -1.0f,  0.0f,
+             -1.0f, -1.0f,  0.0f,
+             -1.0f,  1.0f,  0.0f
+            };
+
+            // Create Vertex Array Object
+            glGenVertexArrays( 1, &m_screenQuadVAO );
+            glBindVertexArray( m_screenQuadVAO );
             logGLError();
 
-            m_colorBuffer->realize();
-            m_colorBuffer->bind();
-            m_colorBuffer->data( m_visLineData->getAttributes() );
-            glEnableVertexAttribArray( colorLoc );
-            glVertexAttribPointer( colorLoc, 4, GL_FLOAT, 0, 0, 0 );
+            m_screenQuadVertexBuffer = std::make_shared< core::Buffer >();
+            m_screenQuadVertexBuffer->realize();
+            m_screenQuadVertexBuffer->bind();
+            m_screenQuadVertexBuffer->data( 9 * 2 * sizeof( float ), points );
             logGLError();
 
-            m_normalBuffer->realize();
-            m_normalBuffer->bind();
-            m_normalBuffer->data( m_visLineData->getAttributes< 1 >() );
-            glEnableVertexAttribArray( normalLoc );
-            glVertexAttribPointer( normalLoc, 3, GL_FLOAT, 0, 0, 0 );
+            glEnableVertexAttribArray( 0 );
+            glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
             logGLError();
 
-            m_indexBuffer->realize();
-            m_indexBuffer->bind();
-            m_indexBuffer->data( m_visLineData->getGrid()->getLines() );
-            logGLError();
-            */
+            // Do not forget to make the textures available to the final step
+            m_composeShaderProgram->bind();
+            m_composeShaderProgram->setUniform( "u_meshColorSampler",  0 );
+            m_composeShaderProgram->setUniform( "u_arrowColorSampler", 1 );
+            m_composeShaderProgram->setUniform( "u_meshDepthSampler",  2 );
+            m_composeShaderProgram->setUniform( "u_arrowDepthSampler", 3 );
         }
     }
 }

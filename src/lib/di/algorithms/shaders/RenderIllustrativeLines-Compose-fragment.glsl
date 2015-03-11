@@ -24,34 +24,34 @@
 
 #version 330
 
-// Textures
-uniform sampler2D u_colorSampler;
-uniform sampler2D u_vecSampler;
-uniform sampler2D u_normalSampler;
-uniform sampler2D u_posSampler;
-uniform sampler2D u_depthSampler;
-
 // Uniforms
-uniform vec2 u_viewportScale = vec2( 1.0 );
+uniform sampler2D u_meshColorSampler;
+uniform sampler2D u_arrowColorSampler;
+uniform sampler2D u_meshDepthSampler;
+uniform sampler2D u_arrowDepthSampler;
 
-// Attribute data
-in vec3 position;
+// Varyings
+in vec2 v_texCoord;
 
-// Varying out
-out vec4 v_pointColor;
-out vec4 v_pointPos;
-out vec4 v_pointVec;
-out vec4 v_pointNormal;
+// Outputs
+out vec4 fragColor;
 
 void main()
 {
-    vec2 texCoord = u_viewportScale * position.xy;
+    vec4 meshColor = texture( u_meshColorSampler,  v_texCoord ).rgba;
+    float meshDepth = texture( u_meshDepthSampler, v_texCoord ).r;
+    vec4 arrowColor = texture( u_arrowColorSampler,  v_texCoord ).rgba;
+    float arrowDepth = texture( u_arrowDepthSampler, v_texCoord ).r;
 
-    v_pointColor  = texture( u_colorSampler, texCoord.xy );
-    v_pointPos    = texture( u_posSampler, texCoord.xy );
-    v_pointVec    = texture( u_vecSampler, texCoord.xy );
-    v_pointNormal = texture( u_normalSampler, texCoord.xy );
+    //meshColor.a = 1.0;
+    //arrowColor.a = 1.0;
+    if( arrowColor.a >= 0.01 )
+    {
+        fragColor =  vec4( 1.0, 1.0, 1.0, 1.0 );
+        return;
+    }
 
-    gl_Position = vec4( position, 1.0 );
+    fragColor = mix( arrowColor, meshColor, 0.5 );
+    //gl_FragDepth = depth;
 }
 

@@ -38,6 +38,7 @@ in vec4 v_pointColor[];
 in vec4 v_pointPos[];
 in vec4 v_pointVec[];
 in vec4 v_pointNormal[];
+in float v_pointDepth[];
 // in vec4 v_position[]; // NOTE: implicit by gl_Position
 
 // Outputs
@@ -50,26 +51,32 @@ void main()
     /////////////////////////////////////////////////////////////////////////////////////
     // Given:
 
+    if( v_pointDepth[0] > 0.99 )
+    {
+        return;
+    }
+
     const float width = 2.0;
     const float length = 5.0;
     const float dist = 1.0;
 
-    // Vector input
-//    vec3 lv1 = v_pointPos[0].xyz + v_pointVec[0].xyz;
-//    vec3 lv2 = v_pointPos[0].xyz - v_pointVec[0].xyz;
-
     float scale = 0.01;
     float z =  -0.5;
-    vec3 lv1 = gl_in[0].gl_Position.xyz + vec3( -scale, -scale,  z );
+    /*vec3 lv1 = gl_in[0].gl_Position.xyz + vec3( -scale, -scale, z );
     vec3 lv2 = gl_in[0].gl_Position.xyz + vec3( -scale,  scale, z );
     vec3 lv3 = gl_in[0].gl_Position.xyz + vec3(  scale, -scale, z );
-    vec3 lv4 = gl_in[0].gl_Position.xyz + vec3(  scale,  scale, z );
-/*
+    vec3 lv4 = gl_in[0].gl_Position.xyz + vec3(  scale,  scale, z );*/
+
+    vec3 lv1 = v_pointPos[0].xyz + vec3( -scale, -scale, z );
+    vec3 lv2 = v_pointPos[0].xyz + vec3( -scale,  scale, z );
+    vec3 lv3 = v_pointPos[0].xyz + vec3(  scale, -scale, z );
+    vec3 lv4 = v_pointPos[0].xyz + vec3(  scale,  scale, z );
+    /*
     vec3 lv1 = v_pointPos[0].xyz + scale * vec3( -1.0, -1.0, 0.0 );
     vec3 lv2 = v_pointPos[0].xyz + scale *  vec3( -1.0,  1.0, 0.0 );
     vec3 lv3 = v_pointPos[0].xyz + scale *  vec3(  1.0, -1.0, 0.0 );
     vec3 lv4 = v_pointPos[0].xyz + scale *  vec3(  1.0,  1.0, 0.0 );
-*/
+    */
 
 
     // v1
