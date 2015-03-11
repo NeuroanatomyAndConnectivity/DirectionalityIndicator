@@ -200,7 +200,7 @@ namespace di
             m_arrowShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             // m_arrowShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
             // m_arrowShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
-            m_arrowShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            m_arrowShaderProgram->setUniform( "u_viewportScale", ( view.getViewportSize() - glm::vec2( 1.0 ) ) / glm::vec2( 2048, 2048 ) );
             logGLError();
 
             glActiveTexture( GL_TEXTURE0 );
@@ -211,8 +211,6 @@ namespace di
             m_step1NormalTex->bind();
             glActiveTexture( GL_TEXTURE3 );
             m_step1PosTex->bind();
-            glActiveTexture( GL_TEXTURE4 );
-            m_step1DepthTex->bind();
 
             // NOTE: keep original Viewport
             // glViewport( 0, 0, view.getViewportSize().x, view.getViewportSize().y );
@@ -347,9 +345,9 @@ namespace di
 
             const size_t xSize = 25;
             const size_t ySize = 25;
-            for( size_t y = 0; y < ySize; ++y )
+            for( size_t y = 0; y <= ySize; ++y )
             {
-                for( size_t x = 0; x < xSize; ++x )
+                for( size_t x = 0; x <= xSize; ++x )
                 {
                     m_points->addVertex( static_cast< float >( x ) / static_cast< float >( xSize ),
                                          static_cast< float >( y ) / static_cast< float >( ySize ),
@@ -393,6 +391,8 @@ namespace di
             // Step 1: Render and transform to image space
             LogD << "Creating Transform Pass FBO" << LogEnd;
 
+            m_transformShaderProgram->bind();
+
             // The framebuffer
             glGenFramebuffers( 1, & m_fboTransform );
 
@@ -407,6 +407,7 @@ namespace di
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
             m_step1ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            m_step1ColorTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             logGLError();
 
             m_step1VecTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -414,6 +415,7 @@ namespace di
             m_step1VecTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step1VecTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
+            m_step1VecTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             logGLError();
 
             m_step1NormalTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -421,6 +423,7 @@ namespace di
             m_step1NormalTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step1NormalTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
+            m_step1NormalTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             logGLError();
 
             m_step1PosTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -428,6 +431,7 @@ namespace di
             m_step1PosTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step1PosTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
+            m_step1PosTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             logGLError();
 
             m_step1DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -435,6 +439,7 @@ namespace di
             m_step1DepthTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step1DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
+            //m_step1DepthTex->setTextureFilter( core::Texture::TextureFilter::Nearest, core::Texture::TextureFilter::Nearest );
             m_step1DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
             logGLError();
 
@@ -467,6 +472,8 @@ namespace di
             // Step 2: Render and transform to image space
             LogD << "Creating Arrow Pass FBO" << LogEnd;
 
+            m_arrowShaderProgram->bind();
+
             // The framebuffer
             glGenFramebuffers( 1, &m_fboArrow );
 
@@ -490,6 +497,8 @@ namespace di
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step2DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
             m_step2DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
+//            m_step2DepthTex->setTextureFilter( core::Texture::TextureFilter::Nearest, core::Texture::TextureFilter::Nearest );
+
             logGLError();
 
             // Bind textures to FBO
@@ -497,8 +506,6 @@ namespace di
             logGLError();
             glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  m_step2DepthTex->getObjectID() , 0 );
             logGLError();
-
-            m_arrowShaderProgram->bind();
 
             // Define the out vars to bind to the attachments
             glBindFragDataLocation( m_arrowShaderProgram->getObjectID(), 0, "fragColor" );
@@ -509,7 +516,6 @@ namespace di
             m_arrowShaderProgram->setUniform( "u_vecSampler",    1 );
             m_arrowShaderProgram->setUniform( "u_normalSampler", 2 );
             m_arrowShaderProgram->setUniform( "u_posSampler",    3 );
-            m_arrowShaderProgram->setUniform( "u_depthSampler",  4 );
 
             // Check for validity
             if( glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )

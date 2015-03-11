@@ -44,6 +44,13 @@ void main()
     v_normal = ( u_ViewMatrix * vec4( normal, 0.0 ) ).xyz;
     v_posView = u_ViewMatrix * vec4( position, 1.0 );
 
+    // Maybe switch normal. Point towards viewer
+    vec3 toViewer = vec3( 0.0, 0.0, 1.0 );
+    if( dot( toViewer, v_normal ) < 0.0 )
+    {
+        v_normal *= -v_normal;
+    }
+
     vec4 pos = u_ProjectionMatrix * v_posView;
     gl_Position = pos;
 }

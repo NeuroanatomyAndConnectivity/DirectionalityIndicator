@@ -43,15 +43,13 @@ void main()
     vec4 arrowColor = texture( u_arrowColorSampler,  v_texCoord ).rgba;
     float arrowDepth = texture( u_arrowDepthSampler, v_texCoord ).r;
 
-    //meshColor.a = 1.0;
-    //arrowColor.a = 1.0;
-    if( arrowColor.a >= 0.01 )
+    if( arrowDepth > meshDepth )
     {
-        fragColor =  vec4( 1.0, 1.0, 1.0, 1.0 );
-        return;
+        fragColor = meshColor;
     }
-
-    fragColor = mix( arrowColor, meshColor, 0.5 );
-    //gl_FragDepth = depth;
+    else
+    {
+        fragColor = arrowColor;
+    }
 }
 

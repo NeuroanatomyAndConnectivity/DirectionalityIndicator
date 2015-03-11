@@ -37,6 +37,8 @@ void main()
 {
     // arrow :-)
     float shade = 1.0;
+    vec4 arrowColor = v_color;
+    arrowColor = vec4( 1.0 );
 
     // the head: above a threshold along y axis (longitudinal)
     if( v_surfaceUV.y >= 0.5 )
@@ -61,18 +63,18 @@ void main()
     // discard
     if( shade < 0.01 )
     {
-       // discard;
+       discard;
     }
 
     // Light
     float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.xyz ) );
 
     // Write
-    vec4 finalColor = vec4( light * v_color.rgb * shade, v_color.a );
+    vec4 finalColor = vec4( light * arrowColor.rgb * shade, v_color.a );
     fragColor = finalColor;
-    fragColor = v_color.rgba;
+    //fragColor = v_color.rgba;
 
     // Small depth offset
-    gl_FragDepth = gl_FragCoord.z;
+    //gl_FragDepth = gl_FragCoord.z;
 }
 

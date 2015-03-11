@@ -31,8 +31,8 @@ in vec4 v_posView;
 uniform mat4 u_ViewMatrix;
 
 out vec4 fragColor;
-out vec4 fragNormal;
 out vec4 fragVec;
+out vec4 fragNormal;
 out vec4 fragPos;
 
 // NOTE the following is LIB code. Load Shading.glsl on host side
@@ -43,11 +43,11 @@ void main()
     float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.rgb ) );
 
     // Right now, we use the color as input vector. This changes to something else as soon as we have the data
-    vec3 vector = ( vec4( v_color.rgb, 0.0 ) ).rgb;
+    vec3 vector = v_color.rgb;
 
     // Write
     fragColor = vec4( light * v_color.xyz, 1.0 );
-    fragVec = vec4( normalize( vector ), 1.0 );
+    fragVec = vec4( normalize( ( u_ViewMatrix * vec4( vector, 0.0 ) ).xyz ), 1.0 );
     fragPos = v_posView;
     fragNormal = vec4( normalize( v_normal ), 1.0 );
 }
