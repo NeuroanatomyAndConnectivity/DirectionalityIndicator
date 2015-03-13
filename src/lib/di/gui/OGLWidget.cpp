@@ -255,6 +255,9 @@ namespace di
                             m_screenShotWidget->getSamples()
                         );
 
+                // Force high quality
+                screenshotView->setHQMode( true );
+
                 // The screenshot view might have a different aspect:
                 core::Camera offCam( m_camera );
                 offCam.setProjectionMatrix(

@@ -52,6 +52,7 @@ namespace di
         Program::~Program()
         {
             // Clean up.
+            finalize();
         }
 
         bool Program::realize()
@@ -99,6 +100,15 @@ namespace di
             }
 
             return true;
+        }
+
+        void Program::finalize()
+        {
+            if( isRealized() )
+            {
+                glDeleteProgram( m_object );
+                m_object = 0;
+            }
         }
 
         void Program::bind()

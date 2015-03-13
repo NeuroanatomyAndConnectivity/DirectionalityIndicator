@@ -72,6 +72,11 @@ namespace di
             bool realize() override;
 
             /**
+             * Clean up. Delete Object.
+             */
+            void finalize() override;
+
+            /**
              * Texture wrapping modes.
              */
             enum class TextureWrap

@@ -27,6 +27,10 @@
 
 #include <di/gfx/OpenGL.h>
 
+#include <di/core/Logger.h>
+#define LogTag "gfx/GLObject"
+#include <di/gfx/GLError.h>
+
 namespace di
 {
     namespace core
@@ -63,6 +67,11 @@ namespace di
             {
                 return m_object;
             }
+
+            /**
+             * Clean up. Delete Object.
+             */
+            virtual void finalize() = 0;
         protected:
             /**
              * Constructor.
@@ -76,6 +85,10 @@ namespace di
              */
             virtual ~GLObject()
             {
+                if( isRealized() )
+                {
+                    LogW << "Deleting GLObject that is not yet finalized. Possible memory leak!" << LogEnd;
+                }
             };
 
             /**

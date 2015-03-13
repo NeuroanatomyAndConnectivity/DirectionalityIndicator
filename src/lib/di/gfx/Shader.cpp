@@ -46,6 +46,7 @@ namespace di
         Shader::~Shader()
         {
             // Clean up.
+            finalize();
         }
 
         bool Shader::realize()
@@ -111,6 +112,15 @@ namespace di
             }
 
             return true;
+        }
+
+        void Shader::finalize()
+        {
+            if( isRealized() )
+            {
+                glDeleteShader( m_object );
+                m_object = 0;
+            }
         }
     }
 }

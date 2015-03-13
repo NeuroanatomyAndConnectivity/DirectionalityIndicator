@@ -74,6 +74,11 @@ namespace di
              */
             bool realize() override;
 
+            /**
+             * Clean up. Delete Object.
+             */
+            void finalize() override;
+
         protected:
         private:
             /**

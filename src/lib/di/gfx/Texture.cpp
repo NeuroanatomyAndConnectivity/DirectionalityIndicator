@@ -42,6 +42,7 @@ namespace di
         Texture::~Texture()
         {
             // Clean up.
+            finalize();
         }
 
         bool Texture::realize()
@@ -64,6 +65,15 @@ namespace di
 
             // according to the GL doc, this will never fail (when valid parameters are given, which is the case here).
             return true;
+        }
+
+        void Texture::finalize()
+        {
+            if( isRealized() )
+            {
+                glDeleteTextures( 1, &m_object );
+                m_object = 0;
+            }
         }
 
         void Texture::bind()

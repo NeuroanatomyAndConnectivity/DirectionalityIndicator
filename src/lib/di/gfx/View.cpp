@@ -49,6 +49,16 @@ namespace di
         {
             return getViewportSize().x / getViewportSize().y;
         }
+
+        bool View::isHQMode() const
+        {
+            return m_hqMode;
+        }
+
+        void View::setHQMode( bool hq )
+        {
+            m_hqMode = hq;
+        }
     }
 }
 

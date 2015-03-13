@@ -42,6 +42,7 @@ namespace di
         Buffer::~Buffer()
         {
             // Clean up.
+            finalize();
         }
 
         bool Buffer::realize()
@@ -58,6 +59,16 @@ namespace di
 
             // according to the GL doc, this will never fail (when valid parameters are given, which is the case here).
             return true;
+        }
+
+
+        void Buffer::finalize()
+        {
+            if( isRealized() )
+            {
+                glDeleteBuffers( 1, &m_object );
+                m_object = 0;
+            }
         }
 
         void Buffer::bind()

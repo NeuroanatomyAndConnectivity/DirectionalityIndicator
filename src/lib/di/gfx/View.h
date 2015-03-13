@@ -80,6 +80,20 @@ namespace di
              * Bind this view as rendering target. You should issue this if you use your own FBOs.
              */
             virtual void bind() const = 0;
+
+            /**
+             * If true, the rendering should provide high quality.
+             *
+             * \return true if HQ
+             */
+            bool isHQMode() const;
+
+            /**
+             * Activate HQ mode.
+             *
+             * \param hq true to activate.
+             */
+            void setHQMode( bool hq = true );
         protected:
             /**
              * Construct the view.
@@ -91,6 +105,11 @@ namespace di
              */
             virtual ~View();
         private:
+
+            /**
+             * HQ Mode?
+             */
+            bool m_hqMode = false;
         };
     }
 }

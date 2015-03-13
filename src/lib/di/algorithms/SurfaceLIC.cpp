@@ -303,6 +303,20 @@ namespace di
 
             prepare();
 
+            // house-keeping
+            if( m_fboEdge )
+            {
+                glDeleteFramebuffers( 1, &m_fboEdge );
+            }
+            if( m_fboAdvect )
+            {
+                glDeleteFramebuffers( 1, &m_fboAdvect );
+            }
+            if( m_fboTransform )
+            {
+                glDeleteFramebuffers( 1, &m_fboTransform );
+            }
+
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Create Vertex Array Object VAO and the corresponding Vertex Buffer Objects VBO for the mesh itself
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -76,6 +76,11 @@ namespace di
             bool realize() override;
 
             /**
+             * Clean up. Delete Object.
+             */
+            void finalize() override;
+
+            /**
              * Bind the program.
              */
             void bind() override;

@@ -264,6 +264,14 @@ namespace di
             // m_composeShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
             m_composeShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
             m_composeShaderProgram->setUniform( "u_bbSize", getBoundingBox().getSize() );
+            if( view.isHQMode() )
+            {
+                m_composeShaderProgram->setUniform( "u_samples", 128 );
+            }
+            else
+            {
+                m_composeShaderProgram->setUniform( "u_samples", 16 );
+            }
             logGLError();
 
             // Textures
@@ -352,6 +360,20 @@ namespace di
             resetRenderingRequest();
 
             prepare();
+
+            // house-keeping
+            if( m_fboTransform )
+            {
+                glDeleteFramebuffers( 1, &m_fboTransform );
+            }
+            if( m_fboArrow )
+            {
+                glDeleteFramebuffers( 1, &m_fboArrow );
+            }
+            if( m_fboCompose )
+            {
+                glDeleteFramebuffers( 1, &m_fboCompose );
+            }
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Create Vertex Array Object VAO and the corresponding Vertex Buffer Objects VBO for the mesh itself
