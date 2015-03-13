@@ -26,22 +26,15 @@
 
 // Uniforms
 uniform vec2 u_viewportScale = vec2( 1.0 );
-uniform mat4 u_ViewMatrix;
-uniform vec3 u_bbSize;
 
 // Attribute data
 in vec3 position;
 
 // Varying out
 out vec2 v_texCoord;
-out float v_zoom;
 
 void main()
 {
-
-    vec4 scaled = u_ViewMatrix * length( u_bbSize ) * normalize( vec4( 1.0, 1.0, 1.0, 0.0 ) );
-    v_zoom = length( scaled );
-
     v_texCoord = u_viewportScale * 0.5 * ( vec2( 1.0, 1.0 ) + position.xy );
     gl_Position = vec4( vec3( position.xy, 0.0 ), 1.0 );
 }

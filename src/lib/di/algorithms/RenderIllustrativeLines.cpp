@@ -94,6 +94,9 @@ namespace di
 
             std::string localShaderPath = core::getResourcePath() + "/algorithms/shaders/";
 
+            auto shadingLib = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                                core::readTextFile( localShaderPath + "Shading.glsl" ) );
+
             // Transformation Stage
             auto transformVertex = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
                                                                      core::readTextFile(
@@ -107,8 +110,7 @@ namespace di
                         {
                             transformVertex,
                             transformFragment,
-                            std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
-                                                              core::readTextFile( localShaderPath + "Shading.glsl" ) )
+                            shadingLib
                         }
             ) );
             m_transformShaderProgram->realize();
@@ -129,8 +131,7 @@ namespace di
                             arrowVertex,
                             arrowsFragment,
                             arrowGeometry,
-                            std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
-                                                              core::readTextFile( localShaderPath + "Shading.glsl" ) )
+                            shadingLib
                         }
             ) );
             m_arrowShaderProgram->realize();
@@ -146,10 +147,28 @@ namespace di
             m_composeShaderProgram = SPtr< di::core::Program >( new di::core::Program(
                         {
                             composeVertex,
-                            composeFragment
+                            composeFragment,
+                            shadingLib
                         }
             ) );
             m_composeShaderProgram->realize();
+
+            auto finalVertex = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
+                                                                   core::readTextFile(
+                                                                       localShaderPath + "RenderIllustrativeLines-Final-vertex.glsl" ) );
+            auto finalFragment = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                                     core::readTextFile(
+                                                                        localShaderPath + "RenderIllustrativeLines-Final-fragment.glsl" ) );
+
+            // Link them to build the program itself
+            m_finalShaderProgram = SPtr< di::core::Program >( new di::core::Program(
+                        {
+                            finalVertex,
+                            finalFragment
+                        }
+            ) );
+            m_finalShaderProgram->realize();
+
         }
 
         void RenderIllustrativeLines::finalize()
@@ -206,12 +225,16 @@ namespace di
 
             glActiveTexture( GL_TEXTURE0 );
             m_step1ColorTex->bind();
+            m_step1ColorTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             glActiveTexture( GL_TEXTURE1 );
             m_step1VecTex->bind();
+            m_step1VecTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             glActiveTexture( GL_TEXTURE2 );
             m_step1NormalTex->bind();
+            m_step1NormalTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             glActiveTexture( GL_TEXTURE3 );
             m_step1PosTex->bind();
+            m_step1PosTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
 
             // NOTE: keep original Viewport
             // glViewport( 0, 0, view.getViewportSize().x, view.getViewportSize().y );
@@ -228,35 +251,82 @@ namespace di
             logGLError();
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Final Step - Merge everything and output to the normal framebuffer:
+            // Step 3 - Merge everything and output to the normal framebuffer:
             // Set the view to be the target.
 
-            glEnable( GL_BLEND );
-            view.bind();
+            // Bind it to be able to modify and configure:
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboCompose );
 
             // draw a big quad and compose
             m_composeShaderProgram->bind();
             // m_composeShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
-            // m_arrowShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
-            // m_arrowShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
+            m_composeShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
+            // m_composeShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
             m_composeShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            m_composeShaderProgram->setUniform( "u_bbSize", getBoundingBox().getSize() );
             logGLError();
 
             // Textures
             glActiveTexture( GL_TEXTURE0 );
             m_step1ColorTex->bind();
+            m_step1ColorTex->setTextureFilter( di::core::Texture::TextureFilter::Linear, di::core::Texture::TextureFilter::Linear );
             glActiveTexture( GL_TEXTURE1 );
             m_step2ColorTex->bind();
+            m_step2ColorTex->setTextureFilter( di::core::Texture::TextureFilter::Linear, di::core::Texture::TextureFilter::Linear );
             glActiveTexture( GL_TEXTURE2 );
             m_step1DepthTex->bind();
             glGenerateMipmap( GL_TEXTURE_2D );
             glActiveTexture( GL_TEXTURE3 );
             m_step2DepthTex->bind();
             glGenerateMipmap( GL_TEXTURE_2D );
-
             glActiveTexture( GL_TEXTURE4 );
-            m_step1VecTex->bind();
+            m_step1NormalTex->bind();
+            m_step1NormalTex->setTextureFilter( di::core::Texture::TextureFilter::Linear, di::core::Texture::TextureFilter::Linear );
+            glActiveTexture( GL_TEXTURE5 );
+            m_whiteNoiseTex->bind();
 
+
+            // NOTE: keep original Viewport
+            // glViewport( 0, 0, view.getViewportSize().x, view.getViewportSize().y );
+            logGLError();
+            GLenum drawBuffersStep3[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+            glDrawBuffers( 2, drawBuffersStep3 );
+            logGLError();
+
+            glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+            // Render
+            glBindVertexArray( m_screenQuadVAO );
+            glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
+            logGLError();
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 4 -
+
+            view.bind();
+            glEnable( GL_BLEND );
+
+            // draw a big quad and compose
+            m_finalShaderProgram->bind();
+            m_finalShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            logGLError();
+
+            // Textures
+            glActiveTexture( GL_TEXTURE0 );
+            m_step3ColorTex->bind();
+            m_step3ColorTex->setTextureFilter( di::core::Texture::TextureFilter::LinearMipmapLinear, di::core::Texture::TextureFilter::Linear );
+            glGenerateMipmap( GL_TEXTURE_2D );
+
+            glActiveTexture( GL_TEXTURE1 );
+            m_step3DepthTex->bind();
+            m_step3DepthTex->setTextureFilter( di::core::Texture::TextureFilter::LinearMipmapLinear, di::core::Texture::TextureFilter::Linear );
+            glGenerateMipmap( GL_TEXTURE_2D );
+
+            glActiveTexture( GL_TEXTURE2 );
+            m_step3AOTex->bind();
+            m_step3AOTex->setTextureFilter( di::core::Texture::TextureFilter::LinearMipmapLinear, di::core::Texture::TextureFilter::Linear );
+            glGenerateMipmap( GL_TEXTURE_2D );
 
             // Render
             glBindVertexArray( m_screenQuadVAO );
@@ -413,7 +483,6 @@ namespace di
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
             m_step1ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
-            m_step1ColorTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             logGLError();
 
             m_step1VecTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -421,7 +490,6 @@ namespace di
             m_step1VecTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step1VecTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
-            m_step1VecTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             logGLError();
 
             m_step1NormalTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -429,7 +497,6 @@ namespace di
             m_step1NormalTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step1NormalTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
-            m_step1NormalTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             logGLError();
 
             m_step1PosTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -437,16 +504,14 @@ namespace di
             m_step1PosTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step1PosTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
-            m_step1PosTex->setTextureFilter( di::core::Texture::TextureFilter::Nearest, di::core::Texture::TextureFilter::Nearest );
             logGLError();
 
             m_step1DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
             m_step1DepthTex->realize();
             m_step1DepthTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
-            //m_step1DepthTex->setTextureFilter( core::Texture::TextureFilter::Nearest, core::Texture::TextureFilter::Nearest );
             m_step1DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
+            m_step1DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
             logGLError();
 
             // Bind textures to FBO
@@ -494,17 +559,14 @@ namespace di
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
             m_step2ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
-            m_step2ColorTex->setTextureFilter( core::Texture::TextureFilter::Linear, core::Texture::TextureFilter::Linear );
             logGLError();
 
             m_step2DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
             m_step2DepthTex->realize();
             m_step2DepthTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step2DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
             m_step2DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
-//            m_step2DepthTex->setTextureFilter( core::Texture::TextureFilter::Nearest, core::Texture::TextureFilter::Nearest );
-
+            m_step2DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
             logGLError();
 
             // Bind textures to FBO
@@ -529,8 +591,29 @@ namespace di
                 LogE << "glCheckFramebufferStatus failed for Step 2." << LogEnd;
             }
 
+            // We need 3D noise.
+            m_whiteNoiseTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_whiteNoiseTex->realize();
+            m_whiteNoiseTex->bind();
+            logGLError();
+
+            const size_t noiseWidth = 128;
+
+            // create some noise
+            std::srand( time( 0 ) );
+            std::vector< unsigned char > randData;
+            randData.reserve( noiseWidth * noiseWidth * 3 );
+            for( size_t i = 0; i < noiseWidth * noiseWidth * 3; ++i )
+            {
+                unsigned char r = static_cast< unsigned char >( std::rand() % 255 );  // NOLINT - no we want std::rand instead of rand_r
+                randData.push_back( r );
+            }
+
+            // Commit data
+            m_whiteNoiseTex->data( randData.data(), noiseWidth, noiseWidth, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE );
+
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Create an VAO containing the full-screen quad
+            // Step 3 - Compose
             LogD << "Creating flat VAO" << LogEnd;
 
             // Create the full-screen quad.
@@ -565,7 +648,75 @@ namespace di
             m_composeShaderProgram->setUniform( "u_arrowColorSampler", 1 );
             m_composeShaderProgram->setUniform( "u_meshDepthSampler",  2 );
             m_composeShaderProgram->setUniform( "u_arrowDepthSampler", 3 );
-            m_composeShaderProgram->setUniform( "u_hmSampler", 4 );
+            m_composeShaderProgram->setUniform( "u_meshNormalSampler",  4 );
+            m_composeShaderProgram->setUniform( "u_noiseSampler",  5 );
+            logGLError();
+
+            LogD << "Creating Compose Pass FBO" << LogEnd;
+
+            // The framebuffer
+            glGenFramebuffers( 1, &m_fboCompose );
+
+            // Bind it to be able to modify and configure:
+            glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboCompose );
+            logGLError();
+
+            // We need two target texture: color and noise
+            m_step3ColorTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step3ColorTex->realize();
+            m_step3ColorTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            // TODO(sebastian): fixed size textures are a problem ...
+            m_step3ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            logGLError();
+
+            // We need two target texture: color and noise
+            m_step3AOTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step3AOTex->realize();
+            m_step3AOTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            // TODO(sebastian): fixed size textures are a problem ...
+            m_step3AOTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            logGLError();
+
+            m_step3DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
+            m_step3DepthTex->realize();
+            m_step3DepthTex->bind();
+            // NOTE: to use an FBO, the texture needs to be initalized empty.
+            m_step3DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
+            m_step3DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
+            logGLError();
+
+            // Bind textures to FBO
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_step3ColorTex->getObjectID() , 0 );
+            logGLError();
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_step3AOTex->getObjectID() , 0 );
+            logGLError();
+            glFramebufferTexture( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  m_step3DepthTex->getObjectID() , 0 );
+            logGLError();
+
+            // Define the out vars to bind to the attachments
+            glBindFragDataLocation( m_composeShaderProgram->getObjectID(), 0, "fragColor" );
+            glBindFragDataLocation( m_composeShaderProgram->getObjectID(), 1, "fragAO" );
+            logGLError();
+
+            // Check for validity
+            if( glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+            {
+                LogE << "glCheckFramebufferStatus failed for Step 3." << LogEnd;
+            }
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Step 4 - Compose
+
+            m_finalShaderProgram->bind();
+            m_finalShaderProgram->setUniform( "u_colorSampler",  0 );
+            m_finalShaderProgram->setUniform( "u_depthSampler", 1 );
+            m_finalShaderProgram->setUniform( "u_aoSampler",  2 );
+            logGLError();
+
+
+
         }
     }
 }

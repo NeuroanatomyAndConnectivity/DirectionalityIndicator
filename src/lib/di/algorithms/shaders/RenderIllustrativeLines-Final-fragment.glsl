@@ -25,24 +25,24 @@
 #version 330
 
 // Uniforms
-uniform vec2 u_viewportScale = vec2( 1.0 );
-uniform mat4 u_ViewMatrix;
-uniform vec3 u_bbSize;
+uniform sampler2D u_colorSampler;
+uniform sampler2D u_depthSampler;
+uniform sampler2D u_aoSampler;
 
-// Attribute data
-in vec3 position;
+// Varyings
+in vec2 v_texCoord;
 
-// Varying out
-out vec2 v_texCoord;
-out float v_zoom;
+// Outputs
+out vec4 fragColor;
 
 void main()
 {
+    vec4 color = texture( u_colorSampler,  v_texCoord ).rgba;
+    float depth = texture( u_depthSampler, v_texCoord ).r;
+    vec4 ao = textureLod( u_aoSampler,  v_texCoord, 0.0 ).rgba;
 
-    vec4 scaled = u_ViewMatrix * length( u_bbSize ) * normalize( vec4( 1.0, 1.0, 1.0, 0.0 ) );
-    v_zoom = length( scaled );
-
-    v_texCoord = u_viewportScale * 0.5 * ( vec2( 1.0, 1.0 ) + position.xy );
-    gl_Position = vec4( vec3( position.xy, 0.0 ), 1.0 );
+    fragColor = vec4( 1.3*color.rgb * ( 0.0 + ao.r ), color.a );
+    //fragColor = vec4( vec3( ao.r ), color.a );
+    gl_FragDepth = depth;
 }
 

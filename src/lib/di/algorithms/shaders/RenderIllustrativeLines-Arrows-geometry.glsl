@@ -52,7 +52,7 @@ void main()
 
     const float width = 2.0;
     const float length = 5.0;
-    const float dist = 1.0;
+    const float dist = 2.0;
 
     float scale = 0.005;
     float lscale = scale * width;

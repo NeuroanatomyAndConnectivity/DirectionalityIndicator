@@ -165,6 +165,11 @@ namespace di
             SPtr< di::core::Program > m_composeShaderProgram = nullptr;
 
             /**
+             * The shader used for rendering the composed arrows+geometry and its shading.
+             */
+            SPtr< di::core::Program > m_finalShaderProgram = nullptr;
+
+            /**
              * Vertex data.
              */
             SPtr< di::core::Buffer > m_vertexBuffer = nullptr;
@@ -200,6 +205,11 @@ namespace di
             GLuint m_fboArrow = 0;
 
             /**
+             * The fbo ID, step 3
+             */
+            GLuint m_fboCompose = 0;
+
+            /**
              * Result texture of step 1
              */
             SPtr< di::core::Texture > m_step1ColorTex = nullptr;
@@ -233,6 +243,26 @@ namespace di
              * Result texture of step 2 (depth)
              */
             SPtr< di::core::Texture > m_step2DepthTex = nullptr;
+
+            /**
+             * Noise needed for post-processing
+             */
+            SPtr< di::core::Texture > m_whiteNoiseTex = nullptr;
+
+            /**
+             * Color
+             */
+            SPtr< di::core::Texture > m_step3ColorTex = nullptr;
+
+            /**
+             * AO
+             */
+            SPtr< di::core::Texture > m_step3AOTex = nullptr;
+
+            /**
+             * Depth
+             */
+            SPtr< di::core::Texture > m_step3DepthTex = nullptr;
         };
     }
 }

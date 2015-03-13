@@ -75,6 +75,6 @@ void main()
     //fragColor = v_color.rgba;
 
     // Small depth offset
-    //gl_FragDepth = gl_FragCoord.z;
+    gl_FragDepth = gl_FragCoord.z;
 }
 
