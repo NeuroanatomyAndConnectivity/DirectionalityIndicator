@@ -38,10 +38,14 @@ out vec4 fragColor;
 void main()
 {
     vec4 color = texture( u_colorSampler,  v_texCoord ).rgba;
-    float depth = texture( u_depthSampler, v_texCoord ).r;
-    vec4 ao = textureLod( u_aoSampler,  v_texCoord, 0.0 ).rgba;
 
-    fragColor = vec4( 1.3*color.rgb * ( 0.0 + ao.r ), color.a );
+    float depth = texture( u_depthSampler, v_texCoord ).r;
+    float ao1 = textureLod( u_aoSampler,  v_texCoord, 0.0 ).r;
+    float ao2 = textureLod( u_aoSampler,  v_texCoord, 1.0 ).r;
+
+    float finalAO = mix( ao1, ao2, 0.55 );
+
+    fragColor = vec4( 1.3 * color.rgb * finalAO, color.a );
     //fragColor = vec4( vec3( ao.r ), color.a );
     gl_FragDepth = depth;
 }
