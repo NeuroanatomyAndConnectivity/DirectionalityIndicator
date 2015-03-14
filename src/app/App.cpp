@@ -69,6 +69,9 @@ namespace di
 
         void App::show()
         {
+            // ensure visibility of the docks
+            m_dataWidget->show();
+            m_tbDock->show();
         }
 
         void App::prepareUI()
@@ -81,13 +84,13 @@ namespace di
             getMainWindow()->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_dataWidget );
 
             // The dock with all the parameters and stuff
-            QDockWidget* tbDock = new QDockWidget( "Algorithm Parameters", getMainWindow() );
-            m_algorithmStrategies = new di::gui::AlgorithmStrategies( tbDock );
-            tbDock->setWidget( m_algorithmStrategies );
-            tbDock->setObjectName( "AlgorithmParameters" );    // needed for persistent GUI states
+            m_tbDock = new QDockWidget( "Algorithm Parameters", getMainWindow() );
+            m_algorithmStrategies = new di::gui::AlgorithmStrategies( m_tbDock );
+            m_tbDock->setWidget( m_algorithmStrategies );
+            m_tbDock->setObjectName( "AlgorithmParameters" );    // needed for persistent GUI states
             // avoid closable docks.
-            tbDock->setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
-            getMainWindow()->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, tbDock );
+            m_tbDock->setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
+            getMainWindow()->addDockWidget( Qt::DockWidgetArea::RightDockWidgetArea, m_tbDock );
         }
 
         void App::prepareNetwork()

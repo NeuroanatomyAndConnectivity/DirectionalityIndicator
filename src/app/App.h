@@ -99,6 +99,11 @@ namespace di
              * Different use-cases are managed in this class.
              */
             di::gui::AlgorithmStrategies* m_algorithmStrategies = nullptr;
+
+            /**
+             * Algorithm property dock
+             */
+            QDockWidget* m_tbDock = nullptr;
         };
     }
 }

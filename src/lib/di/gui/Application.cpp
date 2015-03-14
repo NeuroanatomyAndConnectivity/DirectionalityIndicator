@@ -85,11 +85,11 @@ namespace di
             // Call network code
             prepareNetwork();
 
-            // Call show code
-            show();
-
             // restore stored states/sizes
             m_mainWindow->loadStates();
+
+            // Call show code
+            show();
 
             // Finally, show the UI
             m_mainWindow->show();
