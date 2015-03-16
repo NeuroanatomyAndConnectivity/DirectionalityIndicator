@@ -415,6 +415,7 @@ namespace di
             auto directionGraph = std::make_shared< DirectedRegionNeighbourhood >();
             propagateDirectionBroad( initialRegion, directionGraph, regionNeighbours );
 
+            /*
             // Debug to DOT file:
             std::ofstream ofs( "/home/seth/dotfilebroad.dot", std::ofstream::out );
 
@@ -440,6 +441,7 @@ namespace di
             }
             ofs << "}" << std::endl;
             ofs.close();
+            */
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //

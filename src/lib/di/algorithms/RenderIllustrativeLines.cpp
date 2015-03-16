@@ -473,8 +473,8 @@ namespace di
             // create regular grid of points
             m_points = std::make_shared< di::core::Points >();
 
-            const size_t xSize = 35;
-            const size_t ySize = 35;
+            const size_t xSize = 30;
+            const size_t ySize = 30;
             for( size_t y = 0; y <= ySize; ++y )
             {
                 for( size_t x = 0; x <= xSize; ++x )
