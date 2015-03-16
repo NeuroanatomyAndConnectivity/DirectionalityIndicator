@@ -28,6 +28,7 @@
 in vec3 position;
 in vec4 color;
 in vec3 normal;
+in vec3 vectors;
 
 // Uniforms
 uniform mat4 u_ProjectionMatrix;
@@ -40,10 +41,12 @@ uniform vec3 u_meshBBMin;
 out vec4 v_color;
 out vec3 v_normal;
 out vec3 v_noiseCoord;
+out vec3 v_vector;
 
 void main()
 {
     v_color = color;
+    v_vector = ( u_ViewMatrix * vec4( vectors, 0.0 ) ).xyz;
     v_normal = ( u_ViewMatrix * vec4( normal, 0.0 ) ).xyz;
     v_noiseCoord = 2 * ( position - u_meshBBMin ) / ( u_meshBBMax - u_meshBBMin );
     vec4 pos = u_ProjectionMatrix * u_ViewMatrix * vec4( position, 1.0 );

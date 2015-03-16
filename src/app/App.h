@@ -39,6 +39,7 @@ namespace di
         // Forward declarations
         class AlgorithmStrategies;
         class DataWidget;
+        class AlgorithmWidget;
     }
 
     namespace app
@@ -99,6 +100,11 @@ namespace di
              * Different use-cases are managed in this class.
              */
             di::gui::AlgorithmStrategies* m_algorithmStrategies = nullptr;
+
+            /**
+             * Different use-cases are managed in this class.
+             */
+            di::gui::AlgorithmWidget* m_extractRegions = nullptr;
 
             /**
              * Algorithm property dock

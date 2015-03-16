@@ -29,6 +29,7 @@
 
 #include <di/core/Algorithm.h>
 #include <di/core/Visualization.h>
+#include <di/core/data/DataSetTypes.h>
 
 namespace di
 {
@@ -122,9 +123,19 @@ namespace di
             SPtr< di::core::Connector< di::core::TriangleDataSet > > m_triangleDataInput;
 
             /**
+             * The vectors on the triangle data
+             */
+            SPtr< di::core::Connector< di::core::TriangleVectorField > > m_vectorInput;
+
+            /**
              * The triangle data to visualize. We keep the pointer separate since process() and update()/render() work in different threads.
              */
             ConstSPtr< di::core::TriangleDataSet > m_visTriangleData = nullptr;
+
+            /**
+             * Vector attributes
+             */
+            ConstSPtr< di::core::TriangleVectorField > m_visTriangleVectorData = nullptr;
 
             /**
              * The Vertex Attribute Array Object (VAO) used for the data.
@@ -155,6 +166,11 @@ namespace di
              * Normals data.
              */
             SPtr< di::core::Buffer > m_normalBuffer = nullptr;
+
+            /**
+             * Vector data
+             */
+            SPtr< di::core::Buffer > m_vectorsBuffer = nullptr;
 
             /**
              * Index array.

@@ -56,16 +56,11 @@ uniform int u_numIter =  50;
  *
  * \return the unscaled vector in [-1, 1]
  */
-vec2 getVec( in vec2 pos )
+vec2 getVec( in vec2 pos, out float len )
 {
     vec2 vec = texture( u_vecSampler, pos ).rg;
-    vec2 vecNorm = ( 2.0 * ( vec - vec2( 0.5, 0.5 ) ) );
-    float maxComp = max( vecNorm.x, vecNorm.y );
-    if( maxComp < 0.01 )
-    {
-        maxComp = 1.0;
-    }
-    return vecNorm / maxComp;
+    len = length( vec );
+    return vec / len;
 }
 
 /**
@@ -129,7 +124,12 @@ void main()
 
     // get some needed values
     float noise = getNoise( texel );
-    vec2 vec    = getVec( texel );
+    float vecLen = 0.0;
+    vec2 vec    = getVec( texel, vecLen );
+    if( vecLen < 0.0001 )
+    {
+        discard;
+    }
 
     // simply iterate along the line using the vector at each point
     vec2 lastVec1 = vec;
@@ -144,8 +144,19 @@ void main()
     {
         vec2 newPos1 = lastPos1 + vec2( lastVec1.x * offsetX, lastVec1.y * offsetY );
         vec2 newPos2 = lastPos2 - vec2( lastVec2.x * offsetX, lastVec2.y * offsetY );
-        vec2 newVec1 = getVec( newPos1 );
-        vec2 newVec2 = -getVec( newPos2 );
+        float vecLen1 = 0.0;
+        float vecLen2 = 0.0;
+        vec2 newVec1 = getVec( newPos1, vecLen1 );
+        vec2 newVec2 = -getVec( newPos2, vecLen2 );
+
+        if( vecLen1 < 0.0001 )
+        {
+            break;
+        }
+        if( vecLen2 < 0.0001 )
+        {
+            break;
+        }
 
         // it is also possible to scale using a Geometric progression: float( u_numIter - i ) / u_numIter * texture2D
         sum += scaler1 * getNoise( newPos1 );

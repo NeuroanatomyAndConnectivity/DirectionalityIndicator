@@ -304,10 +304,11 @@ namespace di
              * \param visits count the visits of each node to handle cycles
              * \param nodeCallback callback for each node
              * \param edgeCallback callback for each edge. If the callback returns false, the edge is not followed.
+             * \param noProcessNeeded if true, the algorithm is not executed but propagation directly continues along outputs.
              */
             template< typename NodeVisitorType, typename EdgeVisitorType >
             void visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits,    // NOLINT: non-const reference
-                                     NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback );
+                                     NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback, bool noProcessNeeded = false );
         private:
             /**
              * A list of all known readers.
@@ -403,7 +404,7 @@ namespace di
 
         template< typename NodeVisitorType, typename EdgeVisitorType >
         void ProcessingNetwork::visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits, // NOLINT: non-const reference
-                                                    NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback )
+                                                    NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback, bool noProcessNeeded )
         {
             // avoid loops by checking if we have been here at most n times, where n is the number of connected inputs. ( and at least 1 times )
             size_t numConnections = countInputConnections( start );
@@ -414,7 +415,10 @@ namespace di
 
             // apply visitor to current node:
             visits[ start ]++;
-            nodeCallback( start );
+            if( !noProcessNeeded )
+            {
+                nodeCallback( start );
+            }
 
             // get all outgoing connections
             for( auto c : m_connections )
@@ -423,10 +427,8 @@ namespace di
                 if( c.second.first == start )
                 {
                     // yes. Follow the connection if the callback allows us
-                    if( edgeCallback( c.first ) )
-                    {
-                        visitNetworkNoLock( c.second.second, visits, nodeCallback, edgeCallback );
-                    }
+                    bool somethingChanged = edgeCallback( c.first );
+                    visitNetworkNoLock( c.second.second, visits, nodeCallback, edgeCallback, !somethingChanged );
                 }
             }
         }

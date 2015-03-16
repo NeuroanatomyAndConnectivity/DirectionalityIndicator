@@ -53,6 +53,11 @@ namespace di
                     "Triangle Mesh",
                     "The triangle mesh on which the directionality information should be shown."
             );
+
+            m_vectorInput = addInput< di::core::TriangleVectorField >(
+                    "Directions",
+                    "Directional information on the triangle mesh"
+            );
         }
 
         SurfaceLIC::~SurfaceLIC()
@@ -64,16 +69,36 @@ namespace di
         {
             // Get input data
             auto data = m_triangleDataInput->getData();
+            auto vectors = m_vectorInput->getData();
+
+            // only valid if the grids match
+            if( data && vectors )
+            {
+                if( data->getGrid() != vectors->getGrid() )
+                {
+                    LogD << "Grids do not match. Ignoring new data." << LogEnd;
+                    data = nullptr;
+                    vectors = nullptr;
+                }
+            }
+            else
+            {
+                data = nullptr;
+                vectors = nullptr;
+            }
 
             // Provide the needed information to the visualizer itself.
-            bool changeVis = ( m_visTriangleData != data );
+            bool changeVis = ( m_visTriangleData != data ) || ( m_visTriangleVectorData != vectors );
             m_visTriangleData = data;
+            m_visTriangleVectorData = vectors;
 
             // As the rendering system does not render permanently, inform about the update.
             if( changeVis )
             {
+                LogD << "LIC got new data. Update Vis." << LogEnd;
                 renderRequest();
             }
+
         }
 
         core::BoundingBox SurfaceLIC::getBoundingBox() const
@@ -329,6 +354,7 @@ namespace di
             GLint vertexLoc = m_shaderProgram->getAttribLocation( "position" );
             GLint colorLoc = m_shaderProgram->getAttribLocation( "color" );
             GLint normalLoc = m_shaderProgram->getAttribLocation( "normal" );
+            GLint vectorsLoc = m_shaderProgram->getAttribLocation( "vectors" );
             logGLError();
 
             // Create the VAO
@@ -340,6 +366,7 @@ namespace di
             m_vertexBuffer = std::make_shared< core::Buffer >();
             m_normalBuffer = std::make_shared< core::Buffer >();
             m_colorBuffer = std::make_shared< core::Buffer >();
+            m_vectorsBuffer = std::make_shared< core::Buffer >();
             m_indexBuffer = std::make_shared< core::Buffer >( core::Buffer::BufferType::ElementArray );
             logGLError();
 
@@ -365,6 +392,13 @@ namespace di
             m_normalBuffer->data( m_visTriangleData->getGrid()->getNormals() );
             glEnableVertexAttribArray( normalLoc );
             glVertexAttribPointer( normalLoc, 3, GL_FLOAT, 0, 0, 0 );
+            logGLError();
+
+            m_vectorsBuffer->realize();
+            m_vectorsBuffer->bind();
+            m_vectorsBuffer->data( m_visTriangleVectorData->getAttributes() );
+            glEnableVertexAttribArray( vectorsLoc );
+            glVertexAttribPointer( vectorsLoc, 3, GL_FLOAT, 0, 0, 0 );
             logGLError();
 
             m_indexBuffer->realize();
@@ -435,7 +469,7 @@ namespace di
             m_step1VecTex->realize();
             m_step1VecTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1VecTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            m_step1VecTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
             logGLError();
 
             m_step1NoiseTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );

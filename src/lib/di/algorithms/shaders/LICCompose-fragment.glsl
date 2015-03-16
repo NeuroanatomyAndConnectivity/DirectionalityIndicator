@@ -66,7 +66,7 @@ void main()
 
     float depthHalo = smoothstep( 0.2, 1.0, depthHalo2) * smoothstep( 0.5, 1.0,  depthHalo2 );
 
-    float u_contrastingS = u_useHighContrast ? 8.0 : 2.5;
+    float u_contrastingS = u_useHighContrast ? 9.0 : 2.5;
     float u_contrastingP = u_useHighContrast ? 4 : 2.5;
     vec3 plainColor = mix( color.rgb, vec3( u_contrastingS * pow( advect, u_contrastingP ) ), 0.4 );
 

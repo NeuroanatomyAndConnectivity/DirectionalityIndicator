@@ -85,8 +85,20 @@ namespace di
 
             // The dock with all the parameters and stuff
             m_tbDock = new QDockWidget( "Algorithm Parameters", getMainWindow() );
-            m_algorithmStrategies = new di::gui::AlgorithmStrategies( m_tbDock );
-            m_tbDock->setWidget( m_algorithmStrategies );
+            auto layout = new QVBoxLayout();
+            auto algoWidget = new QWidget();
+            algoWidget->setLayout( layout );
+            m_tbDock->setWidget( algoWidget );
+
+            // Take the mesh data and extract the region information needed
+            m_extractRegions = new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::ExtractRegions ) );
+
+            // Handle different vis strategies here
+            m_algorithmStrategies = new di::gui::AlgorithmStrategies( algoWidget );
+
+            layout->addWidget( m_extractRegions );
+            layout->addWidget( m_algorithmStrategies );
+
             m_tbDock->setObjectName( "AlgorithmParameters" );    // needed for persistent GUI states
             // avoid closable docks.
             m_tbDock->setFeatures( QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable );
@@ -108,10 +120,6 @@ namespace di
             // Strategy 1:
             auto s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface with Region Boundaries" ) );
 
-            // Take the mesh data and extract the region information needed
-            auto extractRegions = s->addAlgorithm(
-                new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::ExtractRegions ) )
-            );
             auto renderArrows = s->addAlgorithm(
                 new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderIllustrativeLines ) )
             );
@@ -122,16 +130,19 @@ namespace di
 
             // Tell the data widget that the processing network is ready.
             m_dataWidget->prepareProcessingNetwork();
+            m_extractRegions->prepareProcessingNetwork();
             m_algorithmStrategies->prepareProcessingNetwork();
 
             // Connect everything in strategy 1
             // getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Neighbour Arrows", algo10->getAlgorithm(), "Lines" );
 
             // Connect all modules with a "Triangle Mesh" input.
-            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", extractRegions->getAlgorithm(), "Triangle Mesh" );
+            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", m_extractRegions->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", renderArrows->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", lic->getAlgorithm(), "Triangle Mesh" );
-            getProcessingNetwork()->connectAlgorithms( extractRegions->getAlgorithm(), "Directionality", renderArrows->getAlgorithm(), "Directions" );
+            getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Directionality",
+                                                       renderArrows->getAlgorithm(), "Directions" );
+            getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Directionality", lic->getAlgorithm(), "Directions" );
 
             // END:
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
