@@ -131,6 +131,7 @@ namespace di
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", extractRegions->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", renderArrows->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", lic->getAlgorithm(), "Triangle Mesh" );
+            getProcessingNetwork()->connectAlgorithms( extractRegions->getAlgorithm(), "Directionality", renderArrows->getAlgorithm(), "Directions" );
 
             // END:
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user

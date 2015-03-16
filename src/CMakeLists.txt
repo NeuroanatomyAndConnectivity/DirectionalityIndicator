@@ -67,7 +67,7 @@ ENDIF()
 LIST( APPEND CMAKE_STANDARD_LIBRARIES "stdc++" "m" )
 
 # Force latest standard and activate nearly all warnings
-SET( CMAKE_CXX_FLAGS "-frtti -pedantic -std=c++11 -Wall -Wno-long-long -Wextra -pthread" CACHE STRING "" FORCE )
+SET( CMAKE_CXX_FLAGS "-frtti -pedantic -std=c++14 -Wall -Wno-long-long -Wextra -pthread" CACHE STRING "" FORCE )
 
 # Darwin's ld isn't GNU and doesn't like the following
 IF( NOT CMAKE_SYSTEM_NAME MATCHES "Darwin" )

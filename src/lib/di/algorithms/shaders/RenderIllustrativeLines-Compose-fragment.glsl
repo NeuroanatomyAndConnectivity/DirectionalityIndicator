@@ -52,7 +52,7 @@ float getDepth( vec2 where, float lod )
 {
     //return textureLod( u_meshDepthSampler, where, lod ).r;
     return min( textureLod( u_meshDepthSampler, where, lod ).r,
-                textureLod( u_arrowDepthSampler, where, lod ).r - 0.005 );
+                textureLod( u_arrowDepthSampler, where, lod ).r );
 }
 
 vec3 getNoiseAsVector( vec2 where )
@@ -87,9 +87,9 @@ void main()
     vec4 meshColor = texture( u_meshColorSampler,  v_texCoord ).rgba;
     float meshDepth = texture( u_meshDepthSampler, v_texCoord ).r;
     vec4 arrowColor = texture( u_arrowColorSampler,  v_texCoord ).rgba;
-    float arrowDepth = texture( u_arrowDepthSampler, v_texCoord ).r;
+    float arrowDepth = texture( u_arrowDepthSampler, v_texCoord ).r - 0.01;
 
-    float ssao = getLineAO( v_texCoord, px2tx );
+    float ssao =  getLineAO( v_texCoord, px2tx );
 
     vec4 finalColor = mix( arrowColor, meshColor, 0.0 );//arrowColor;
     float finalDepth = arrowDepth;

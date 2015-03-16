@@ -29,7 +29,7 @@
 
 #include <di/core/Algorithm.h>
 #include <di/core/data/Lines.h>
-#include <di/core/data/DataSet.h>
+#include <di/core/data/DataSetTypes.h>
 #include <di/core/Visualization.h>
 
 namespace di
@@ -125,9 +125,19 @@ namespace di
             SPtr< di::core::Connector< di::core::TriangleDataSet > > m_triangleDataInput;
 
             /**
+             * The vectors on the triangle data
+             */
+            SPtr< di::core::Connector< di::core::TriangleVectorField > > m_vectorInput;
+
+            /**
              * The data to visualize. We keep the pointer separate since process() and update()/render() work in different threads.
              */
             ConstSPtr< di::core::TriangleDataSet > m_visTriangleData = nullptr;
+
+            /**
+             * Vector attributes
+             */
+            ConstSPtr< di::core::TriangleVectorField > m_visTriangleVectorData = nullptr;
 
             /**
              * The array storing the arrow points
@@ -178,6 +188,11 @@ namespace di
              * Color data.
              */
             SPtr< di::core::Buffer > m_colorBuffer = nullptr;
+
+            /**
+             * Vector data
+             */
+            SPtr< di::core::Buffer > m_vectorsBuffer = nullptr;
 
             /**
              * Normal data.

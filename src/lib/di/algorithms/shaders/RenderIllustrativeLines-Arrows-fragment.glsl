@@ -32,13 +32,13 @@ out vec4 fragColor;
 
 // NOTE the following is LIB code. Load Shading.glsl on host side
 float blinnPhongIlluminationIntensityFullDiffuse( in vec3 normal );
+float blinnPhongIlluminationIntensity( in vec3 normal );
 
 void main()
 {
     // arrow :-)
     float shade = 1.0;
     vec4 arrowColor = v_color;
-    arrowColor = vec4( 1.0 );
 
     // the head: above a threshold along y axis (longitudinal)
     if( v_surfaceUV.y >= 0.5 )
@@ -67,14 +67,14 @@ void main()
     }
 
     // Light
-    float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.xyz ) );
+    // float light = blinnPhongIlluminationIntensity( normalize( v_normal.xyz ) );
+    float light = clamp( 0.1 + pow( abs( dot( v_normal, vec3( 0.0, 0.0, 1.0 ) ) ), 2.0 ), 0.0, 1.0 );
+    vec4 finalColor = vec4( vec3( light ), arrowColor.a );
 
     // Write
-    vec4 finalColor = vec4( light * arrowColor.rgb * shade, v_color.a );
     fragColor = finalColor;
-    //fragColor = v_color.rgba;
 
-    // Small depth offset
+    // Small depth offset ?
     gl_FragDepth = gl_FragCoord.z;
 }
 

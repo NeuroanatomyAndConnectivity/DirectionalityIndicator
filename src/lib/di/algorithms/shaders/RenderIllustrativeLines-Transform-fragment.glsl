@@ -27,6 +27,8 @@
 in vec4 v_color;
 in vec3 v_normal;
 in vec4 v_posView;
+in vec3 v_vector;
+in float v_vectorLength;
 
 uniform mat4 u_ViewMatrix;
 
@@ -42,12 +44,9 @@ void main()
 {
     float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.rgb ) );
 
-    // Right now, we use the color as input vector. This changes to something else as soon as we have the data
-    vec3 vector = v_color.rgb;
-
     // Write
     fragColor = vec4( light * v_color.xyz, 1.0 );
-    fragVec = vec4( normalize( ( u_ViewMatrix * vec4( vector, 0.0 ) ).xyz ), 1.0 );
+    fragVec = vec4( v_vector.xyz, v_vectorLength );
     fragPos = v_posView;
     fragNormal = vec4( normalize( v_normal ), 1.0 );
 }

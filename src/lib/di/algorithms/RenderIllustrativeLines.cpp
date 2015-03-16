@@ -53,6 +53,11 @@ namespace di
                     "Triangle Mesh",
                     "The triangle mesh on which the directionality information should be shown."
             );
+
+            m_vectorInput = addInput< di::core::TriangleVectorField >(
+                    "Directions",
+                    "Directional information on the triangle mesh"
+            );
         }
 
         RenderIllustrativeLines::~RenderIllustrativeLines()
@@ -64,10 +69,28 @@ namespace di
         {
             // Get input data
             auto data = m_triangleDataInput->getData();
+            auto vectors = m_vectorInput->getData();
+
+            // only valid if the grids match
+            if( data && vectors )
+            {
+                if( data->getGrid() != vectors->getGrid() )
+                {
+                    LogD << "Grids do not match. Ignoring new data." << LogEnd;
+                    data = nullptr;
+                    vectors = nullptr;
+                }
+            }
+            else
+            {
+                data = nullptr;
+                vectors = nullptr;
+            }
 
             // Provide the needed information to the visualizer itself.
-            bool changeVis = ( m_visTriangleData != data );
+            bool changeVis = ( m_visTriangleData != data ) || ( m_visTriangleVectorData != vectors );
             m_visTriangleData = data;
+            m_visTriangleVectorData = vectors;
 
             // As the rendering system does not render permanently, inform about the update.
             if( changeVis )
@@ -189,7 +212,7 @@ namespace di
             // Bind it to be able to modify and configure:
             glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboTransform );
 
-            glDisable(  GL_BLEND );
+            glDisable( GL_BLEND );
             m_transformShaderProgram->bind();
             m_transformShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             m_transformShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
@@ -347,7 +370,7 @@ namespace di
             // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
             // and many code parts repeat again and again.
 
-            if( !m_visTriangleData )
+            if( !m_visTriangleData || !m_visTriangleVectorData )
             {
                 return;
             }
@@ -388,6 +411,7 @@ namespace di
             GLint vertexLoc = m_transformShaderProgram->getAttribLocation( "position" );
             GLint colorLoc = m_transformShaderProgram->getAttribLocation( "color" );
             GLint normalLoc = m_transformShaderProgram->getAttribLocation( "normal" );
+            GLint vectorsLoc = m_transformShaderProgram->getAttribLocation( "vectors" );
             logGLError();
 
             // Create the VAO
@@ -399,6 +423,7 @@ namespace di
             m_vertexBuffer = std::make_shared< core::Buffer >();
             m_normalBuffer = std::make_shared< core::Buffer >();
             m_colorBuffer = std::make_shared< core::Buffer >();
+            m_vectorsBuffer = std::make_shared< core::Buffer >();
             m_indexBuffer = std::make_shared< core::Buffer >( core::Buffer::BufferType::ElementArray );
             logGLError();
 
@@ -426,6 +451,13 @@ namespace di
             glVertexAttribPointer( normalLoc, 3, GL_FLOAT, 0, 0, 0 );
             logGLError();
 
+            m_vectorsBuffer->realize();
+            m_vectorsBuffer->bind();
+            m_vectorsBuffer->data( m_visTriangleVectorData->getAttributes() );
+            glEnableVertexAttribArray( vectorsLoc );
+            glVertexAttribPointer( vectorsLoc, 3, GL_FLOAT, 0, 0, 0 );
+            logGLError();
+
             m_indexBuffer->realize();
             m_indexBuffer->bind();
             m_indexBuffer->data( m_visTriangleData->getGrid()->getTriangles() );
@@ -441,8 +473,8 @@ namespace di
             // create regular grid of points
             m_points = std::make_shared< di::core::Points >();
 
-            const size_t xSize = 25;
-            const size_t ySize = 25;
+            const size_t xSize = 35;
+            const size_t ySize = 35;
             for( size_t y = 0; y <= ySize; ++y )
             {
                 for( size_t x = 0; x <= xSize; ++x )

@@ -63,6 +63,11 @@ namespace di
             typedef std::vector< std::set< size_t > > RegionNeighbourhood;
 
             /**
+             * Edge-list of the connections between regions.
+             */
+            typedef std::map< size_t, std::set< size_t > > DirectedRegionNeighbourhood;
+
+            /**
              * Associate each region with its connected region. The vector lists the source, the targets are in the set.
              */
             typedef std::vector< std::set< size_t > > RegionConnections;
@@ -103,6 +108,11 @@ namespace di
              * Region normals and colors.
              */
             SPtr< di::core::Connector< RegionDataSet > > m_regionOutput;
+
+            /**
+             * The vectors on the triangle data
+             */
+            SPtr< di::core::Connector< di::core::TriangleVectorField > > m_vectorOutput;
 
             /**
              * The triangle mesh input to use.

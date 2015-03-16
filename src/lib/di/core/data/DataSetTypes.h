@@ -35,6 +35,7 @@
 #include <di/core/data/LineDataSet.h>
 #include <di/core/data/PointDataSet.h>
 #include <di/core/data/TriangleDataSet.h>
+#include <di/core/data/TriangleMesh.h>
 
 // Now, define a bunch of default dataset types
 namespace di
@@ -55,6 +56,11 @@ namespace di
          * Dataset in a 3D regular grid as masks.
          */
         typedef DataSet< GridRegular3, std::vector< bool > > DataSetScalarRegular3b;
+
+        /**
+         * A vector field given on a triangle mesh
+         */
+        typedef di::core::DataSet< TriangleMesh, di::Vec3Array > TriangleVectorField;
     }
 }
 

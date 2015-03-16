@@ -50,19 +50,25 @@ void main()
     /////////////////////////////////////////////////////////////////////////////////////
     // Given:
 
-    const float width = 2.0;
-    const float length = 5.0;
+    const float width = 1.50;
+    const float height = 5.0;
     const float dist = 2.0;
 
-    float scale = 0.005;
-    float lscale = scale * width;
-    float wscale = scale * length;
+    float scale = clamp( 0.005 * 5.0 * smoothstep( 0.1, 0.9, 0.2 + v_pointVec[0].w ), 0.0025, 0.005 );
+    float lscale = scale * height;
+    float wscale = scale * width;
 
     vec3 p = v_pointPos[0].xyz;
     v_color = v_pointColor[0];
-    v_normal = v_pointNormal[0].xyz;
-    vec3 tangent = v_pointVec[0].xyz;
-    vec3 binormal = cross( tangent, v_normal );
+    v_normal = normalize( v_pointNormal[0].xyz );
+
+    vec3 tangent = normalize( v_pointVec[0].xyz );
+    vec3 binormal =  normalize( cross( tangent, v_normal ) );
+
+    if( length( v_pointVec[0].xyz ) < 0.00001 )
+    {
+        return;
+    }
 
     p += scale * v_normal * dist;
 
@@ -82,12 +88,12 @@ void main()
 
     // v2
     gl_Position = u_ProjectionMatrix * vec4( lv2, 1.0 );
-    v_surfaceUV = vec2( -1.0, 1.0 );
+    v_surfaceUV = vec2(  1.0, -1.0 );
     EmitVertex();
 
     // v3
     gl_Position = u_ProjectionMatrix * vec4( lv3, 1.0 );
-    v_surfaceUV = vec2( 1.0, -1.0 );
+    v_surfaceUV = vec2( -1.0, 1.0 );
     EmitVertex();
 
     // v4

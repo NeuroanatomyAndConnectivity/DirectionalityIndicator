@@ -29,6 +29,9 @@
 #include <list>
 #include <map>
 #include <deque>
+#include <queue>
+#include <fstream>
+#include <iomanip>
 
 #include <di/core/data/TriangleDataSet.h>
 #include <di/core/data/LineDataSet.h>
@@ -75,6 +78,11 @@ namespace di
                     "Extracted connections between regions."
             );
 
+            m_vectorOutput = addOutput< di::core::TriangleVectorField >(
+                    "Directionality",
+                    "Extracted continuous directions on the mesh."
+            );
+
             // 2: the input
             m_dataInput = addInput< di::core::TriangleDataSet >(
                     "Triangle Mesh",
@@ -107,19 +115,87 @@ namespace di
             }
         }
 
+        void propagateDirection( size_t startRegion, // always a source
+                                 SPtr< ExtractRegions::DirectedRegionNeighbourhood > directionGraph,
+                                 SPtr< ExtractRegions::RegionConnections > regionNeighbours )
+        {
+            /*
+            auto neighbours = regionNeighbours->operator[]( startRegion );
+            for( auto neighbour : neighbours )
+            {
+                // is this connection already known?
+                auto to = std::find( directionGraph->begin(), directionGraph->end(), std::make_pair( neighbour, startRegion ) );
+                auto from = std::find( directionGraph->begin(), directionGraph->end(), std::make_pair( startRegion, neighbour ) );
+                if( ( to != directionGraph->end() ) || ( from != directionGraph->end() ) )
+                {
+                    // Already a known connection. Skip and do not propagate:
+                    continue;
+                }
+
+                // Unknown connection. Add to graph and continue propagation
+                directionGraph->push_back( std::make_pair( startRegion, neighbour ) );
+                propagateDirection( neighbour, directionGraph, regionNeighbours );
+            }
+            */
+        }
+
+        void propagateDirectionBroad( size_t startRegion, // always a source
+                                      SPtr< ExtractRegions::DirectedRegionNeighbourhood > directionGraph,
+                                      SPtr< ExtractRegions::RegionConnections > regionNeighbours )
+        {
+            std::queue< size_t > visitQueue;
+            visitQueue.push( startRegion );
+            while( !visitQueue.empty() )
+            {
+                auto currentRegion = visitQueue.front();
+                visitQueue.pop();
+
+                // Get neighbours and visit them
+                auto neighbours = regionNeighbours->operator[]( currentRegion );
+                for( auto neighbour : neighbours )
+                {
+                    // is this connection already known? ( a connection FROM neighbour to this region
+                    if( directionGraph->operator[]( neighbour ).count( currentRegion ) )
+                    {
+                        // Already a known connection. Skip and do not propagate:
+                        continue;
+                    }
+
+                    // Unknown connection. Add to graph and continue propagation
+                    directionGraph->operator[]( currentRegion ).insert( neighbour );
+
+                    // Add to visit queue
+                    visitQueue.push( neighbour );
+                }
+            }
+        }
+
+        void mergeVectors( std::map< size_t, glm::vec3 >& vectors, size_t where, const glm::vec3& vec )
+        {
+            if( vectors.count( where ) )
+            {
+                auto n = vectors[ where ];
+                if( glm::dot( n, vec ) < 0.0 )
+                {
+                    vectors[ where ] += -vec;
+                }
+                else
+                {
+                    vectors[ where ] += vec;
+                }
+            }
+            else
+            {
+                vectors[ where ] = vec;
+            }
+        }
+
         void ExtractRegions::process()
         {
             // Get input data
             auto triangleDataSet = m_dataInput->getData();
             auto triangles = triangleDataSet->getGrid();
             auto attribute = triangleDataSet->getAttributes< 0 >(); // the color in our case
-
-            // Create the buffers we need to store lines and color information
-            auto lines = std::make_shared< di::core::Lines >();
-            auto colors = std::make_shared< di::RGBAArray >();
-            // Create the buffers we need to store lines and color information
-            auto linesMesh = std::make_shared< di::core::Lines >();
-            auto colorsMesh = std::make_shared< di::RGBAArray >();
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -130,11 +206,14 @@ namespace di
 
             // Create a list of regions, visit each vertex only once.
             std::vector< bool > visited( triangles->getNumVertices(), false );
-            std::vector< std::vector< size_t > > regionVertices; // collect all vertices of the regions found
-            std::vector< int > vertexRegion( triangles->getNumVertices(), -1 ); // associate the region to each vertex.
-                                                                                // This is the dual list to regionVertices
 
-            auto regionColors = std::make_shared< std::vector< glm::vec4 > >();       // create a palette of colors
+            // DATA: A list of regions, collecting each vertex belonging to it:
+            std::vector< std::vector< size_t > > regionVertices;
+            // DATA: Associate each vertex with its region
+            std::vector< int > vertexRegion( triangles->getNumVertices(), -1 );
+            // DATA: Color palette of the regions
+            auto regionColors = std::make_shared< std::vector< glm::vec4 > >();
+
             // Iterate all triangles and transform to lines
             size_t regionVertexCount = 0; // keep track of how many vertices where associated
             for( size_t vertID = 0; vertID < triangles->getNumVertices(); ++vertID )
@@ -142,7 +221,7 @@ namespace di
                 // already visited?
                 if( !visited[ vertID ] )
                 {
-                    // no. definitely a new region.
+                    // no. Definitely a new region.
 
                     // -> find all direct and indirect neighbours:
                     std::vector< size_t > connectedAndEqual;
@@ -164,69 +243,359 @@ namespace di
             LogD << "Associated " << regionVertexCount << " vertices of " << triangles->getNumVertices() << " with "  <<
                     regionVertices.size() << " non-connected regions." << LogEnd;
 
+            // DATA: the number of regions.
+            auto numRegions = regionVertices.size();
+
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
-            // Extract Region Information 2
-            //  - Find regions centers and their "front".
+            // Build an undirected neighbourhood between regions
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            // DATA: Use the following iteration for determining the neighbourhood of each region.
+            // NOTE: the vector stores a std::set of each neighbour, no duplicates
+            auto regionNeighbours = std::make_shared< RegionNeighbourhood >( numRegions ); // keep a set of direct neighbours of each reg
+            // DATA: the border vertices for each region
+            auto borderVertices = std::map< std::pair< size_t, size_t >, std::set< size_t > >();
+            // DATA: store the direction at each border vertex
+            auto borderDirection = std::map< size_t, glm::vec3 >();
 
-            // Use them to calculate the region centers
-            auto regionCenterPoints = std::make_shared< di::core::Points >();
-            auto regionFacingTo = std::make_shared< std::vector< glm::vec3 > >();
-            auto triBB = triangles->getBoundingBox();
-            for( auto reg : regionVertices )
+            // Iterate all triangles and transform to lines
+            for( auto t : triangles->getTriangles() )
             {
-                // for each region, iterate vertices
-                glm::vec3 center( 0.0f, 0.0f, 0.0f );
-                for( auto v : reg )
+                // get associated region
+                auto regID1 = vertexRegion[ t.x ];
+                auto regID2 = vertexRegion[ t.y ];
+                auto regID3 = vertexRegion[ t.z ];
+
+                if( regID1 < 0 )
                 {
-                     center += triangles->getVertex( v );
+                    LogE << "Could not find associated region?" << LogEnd;
                 }
-                center /= static_cast< float >( reg.size() );
-                regionCenterPoints->addVertex( center );
-
-                // now, also calculate the directions pointing to "front" of the region
-                auto facingTo = glm::vec3( 0.0 );
-                for( auto v : reg )
+                if( regID2 < 0 )
                 {
-                    // Version 1: from BB center to vertex?
-                    // auto bbCenter = triBB.getCenter();
-                    // facingTo += glm::normalize(  triangles->getVertex( v ) - glm::vec3( bbCenter ) );
-
-                    // Version 2: from each vertex to center
-                    //facingTo -= glm::normalize( center - triangles->getVertex( v ) );
-
-                    // Version 3: normals of the mesh
-                    facingTo += triangles->getNormal( v );
+                    LogE << "Could not find associated region?" << LogEnd;
+                }
+                if( regID3 < 0 )
+                {
+                    LogE << "Could not find associated region?" << LogEnd;
                 }
 
-                // We need to let the normal point towards the bounding box
-                facingTo /= static_cast< float >( reg.size() );
-                facingTo = glm::normalize( facingTo );
+                // only border triangles are interesting here
+                if( ( regID1 == regID2 ) && ( regID2 == regID3 ) )
+                {
+                    continue;
+                }
 
-                regionFacingTo->push_back( facingTo );
+                // store. Keep in mind that the element at each region is a set -> no duplicates automatically.
+                if( regID1 != regID2 )
+                {
+                    ( *regionNeighbours )[ regID1 ].insert( regID2 );
+                    ( *regionNeighbours )[ regID2 ].insert( regID1 );
+
+                    // NOTE: first of pair is the smaller region ID to ensure commutativity
+                    borderVertices[ std::make_pair( std::min( regID1, regID2 ),
+                                                    std::max( regID1, regID2 ) ) ].insert( t.x );
+                    borderVertices[ std::make_pair( std::min( regID1, regID2 ),
+                                                    std::max( regID1, regID2 ) ) ].insert( t.y );
+
+                }
+                if( regID1 != regID3 )
+                {
+                    ( *regionNeighbours )[ regID1 ].insert( regID3 );
+                    ( *regionNeighbours )[ regID3 ].insert( regID1 );
+
+                    // NOTE: first of pair is the smaller region ID to ensure commutativity
+                    borderVertices[ std::make_pair( std::min( regID1, regID3 ),
+                                                    std::max( regID1, regID3 ) ) ].insert( t.x );
+                    borderVertices[ std::make_pair( std::min( regID1, regID3 ),
+                                                    std::max( regID1, regID3 ) ) ].insert( t.z );
+
+                }
+                if( regID2 != regID3 )
+                {
+                    ( *regionNeighbours )[ regID2 ].insert( regID3 );
+                    ( *regionNeighbours )[ regID3 ].insert( regID2 );
+                    // NOTE: first of pair is the smaller region ID to ensure commutativity
+                    borderVertices[ std::make_pair( std::min( regID2, regID3 ),
+                                                    std::max( regID2, regID3 ) ) ].insert( t.y );
+                    borderVertices[ std::make_pair( std::min( regID2, regID3 ),
+                                                    std::max( regID2, regID3 ) ) ].insert( t.z );
+                }
+
+                // Calc a somewhat useful direction between the regions
+                // -> two cases:
+                // 1: each vertex belongs to a different region
+                if( ( regID1 != regID2 ) && ( regID1 != regID3 ) && ( regID2 != regID3 ) ) // every thing is different
+                {
+                    // let each direction point towards the center point
+
+                    // calc the center
+                    auto v1 = triangles->getVertex( t.x );
+                    auto v2 = triangles->getVertex( t.y );
+                    auto v3 = triangles->getVertex( t.z );
+                    auto c = ( v1 + v2 + v3 ) / 3.0f;
+
+                    // direction is the vector from the vertex to the center
+                    auto d1 = glm::normalize( c - v1 );
+                    auto d2 = glm::normalize( c - v2 );
+                    auto d3 = glm::normalize( c - v3 );
+
+                    // and merge with existing vectors
+                    mergeVectors( borderDirection, t.x, d1 );
+                    mergeVectors( borderDirection, t.y, d2 );
+                    mergeVectors( borderDirection, t.z, d3 );
+                }
+                else // 2: two vertices are in one region
+                {
+                    // search the index of the one different region.
+                    size_t differentI = 0;
+                    size_t otherI1 = 0;
+                    size_t otherI2 = 0;
+                    if( ( regID1 != regID2 ) && ( regID1 != regID3 ) )
+                    {
+                        differentI = t.x;
+                        otherI1 = t.y;
+                        otherI2 = t.z;
+                    }
+                    else if( ( regID2 != regID1 ) && ( regID2 != regID3 ) )
+                    {
+                        differentI = t.y;
+                        otherI1 = t.x;
+                        otherI2 = t.z;
+                    }
+                    else if( ( regID3 != regID1 ) && ( regID3 != regID2 ) )
+                    {
+                        differentI = t.z;
+                        otherI1 = t.x;
+                        otherI2 = t.y;
+                    }
+
+                    auto vd = triangles->getVertex( differentI );
+                    auto ve1 = triangles->getVertex( otherI1 );
+                    auto ve2 = triangles->getVertex( otherI2 );
+
+                    auto edge = glm::normalize( ve2 - ve1 );
+                    auto triNormal = glm::normalize( glm::cross( edge, glm::normalize( vd - ve1 ) ) );
+                    auto direction = glm::normalize( glm::cross( triNormal, edge ) );
+
+                    // assign this direction to the involved vertices
+                    mergeVectors( borderDirection, otherI1, direction );
+                    mergeVectors( borderDirection, otherI2, direction );
+                    mergeVectors( borderDirection, differentI, direction );
+                }
             }
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Build a directed neighbourhood graph
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // Get the region with the most neighbours
+            auto maxIter = std::max_element( regionNeighbours->begin(), regionNeighbours->end(),
+                []( auto a, auto b )
+                {
+                    return a.size() < b.size();
+                }
+            );
+            // the first region
+            size_t initialRegion = maxIter - regionNeighbours->begin();
+
+            // Debug output
+            LogD << "Region with the most neighbours used as initial source region: " << initialRegion <<
+                    ". Has " << maxIter->size() << " neighbours. Color is " <<
+                    static_cast< unsigned short >( 255 * ( *regionColors )[ initialRegion ].r ) << ", " <<
+                    static_cast< unsigned short >( 255 * ( *regionColors )[ initialRegion ].g ) << ", " <<
+                    static_cast< unsigned short >( 255 * ( *regionColors )[ initialRegion ].b ) << "." << LogEnd;
+
+
+            // DATA: Classical edge-list of the directed graph. Direction: from entry.first to entry.second
+            LogD << "Propagating directions through " << numRegions << " regions. This might take a while." << LogEnd;
+            auto directionGraph = std::make_shared< DirectedRegionNeighbourhood >();
+            propagateDirectionBroad( initialRegion, directionGraph, regionNeighbours );
+
+            // Debug to DOT file:
+            std::ofstream ofs( "/home/seth/dotfilebroad.dot", std::ofstream::out );
+
+            ofs << "digraph connections" << std::endl << "{" << std::endl;
+            for( size_t regID = 0; regID < regionColors->size(); ++regID )
+            {
+                ofs << "\"" << regID << "\"" << " [shape=circle, style=filled, fontcolor=\"white\", fontname=\"mono bold\", fillcolor = \"#" <<
+                    std::hex << std::setw( 2 ) <<  std::setfill( '0' ) <<
+                    static_cast< unsigned int >( 255 * ( *regionColors )[ regID ].r ) <<
+                    std::hex << std::setw( 2 ) <<  std::setfill( '0' ) <<
+                    static_cast< unsigned int >( 255 * ( *regionColors )[ regID ].g ) <<
+                    std::hex << std::setw( 2 ) <<  std::setfill( '0' ) <<
+                    static_cast< unsigned int >( 255 * ( *regionColors )[ regID ].b ) <<
+                    std::dec <<
+                    "\"]" << std::endl;
+            }
+            for( auto directions : *directionGraph )
+            {
+                for( auto direction : directions.second )
+                {
+                    ofs << "\"" << directions.first << "\" -> \"" << direction << "\"" << std::endl;
+                }
+            }
+            ofs << "}" << std::endl;
+            ofs.close();
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Build a continuous vector field
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // DATA: vector attribute for each vertex
+            auto vectorAttribute = std::make_shared< di::Vec3Array >( triangles->getNumVertices() );
+            float maxLength = 0.0;
+
+            LogD << "Creating continuous vector field." << LogEnd;
+
+            for( size_t vertexID = 0; vertexID < triangles->getNumVertices(); ++vertexID )
+            {
+                // For the vertex, get the region:
+                auto regID = vertexRegion[ vertexID ];
+                if( regID < 0 )
+                {
+                    LogE << "Could not find region for vertex." << LogEnd;
+                    continue;
+                }
+
+                auto currentVertex = triangles->getVertex( vertexID );
+                float maxDistance = 0.0f;
+
+                // As we want to weight by distance, we need a max distance
+                for( auto neighbourRegion : regionNeighbours->operator[]( regID ) )
+                {
+                    auto connection = std::make_pair( std::min( static_cast< size_t >( regID ), neighbourRegion ),
+                                                      std::max( static_cast< size_t >( regID ), neighbourRegion ) );
+                                   // iterate all common border vertices of this neighbour
+                    for( auto borderVertex : borderVertices[ connection ] )
+                    {
+                        auto vb = triangles->getVertex( borderVertex );
+                        maxDistance = std::max( glm::length( vb - currentVertex ), maxDistance );
+                    }
+                }
+
+                // Accumulate directions
+                auto mergedDirection = glm::vec3( 0.0f );
+                size_t numMerged = 0;
+
+                // iterate all neighbour regions
+                for( auto neighbourRegion : regionNeighbours->operator[]( regID ) )
+                {
+                    auto connection = std::make_pair( std::min( static_cast< size_t >( regID ), neighbourRegion ),
+                                                      std::max( static_cast< size_t >( regID ), neighbourRegion ) );
+
+                    // is this incoming or outgoing?
+                    bool outgoing = ( directionGraph->operator[]( regID ).count( neighbourRegion ) != 0 );
+                    bool incomoming = ( directionGraph->operator[]( neighbourRegion ).count( regID ) != 0 );
+                    // Consistency test
+                    if( !( outgoing || incomoming ) )
+                    {
+                        LogE << "No connection between regions: " << regID << "<->" << neighbourRegion << LogEnd;
+                        continue;
+                    }
+
+                    // iterate all common border vertices of this neighbour
+                    for( auto borderVertex : borderVertices[ connection ] )
+                    {
+                        // Consistency test
+                        if( !borderDirection.count( borderVertex ) )
+                        {
+                            LogE << "No border direction found for vertex " << borderVertex << LogEnd;
+                            continue;
+                        }
+                        /*if( vertexID == borderVertex )
+                        {
+                            mergedDirection = borderDirection[ borderVertex ];
+                        }
+                        else
+                        {
+                            continue;
+                        }*/
+
+                        // weight by distance -> calc distance
+                        auto vb = triangles->getVertex( borderVertex );
+                        auto distance = glm::length( vb - currentVertex );
+
+                        // normalize direction
+                        auto dot = glm::dot( glm::normalize( vb - currentVertex ), glm::normalize( borderDirection[ borderVertex ] ) );
+
+                        float invert = 1.0;
+
+                        // assume: dot < 0 -> the border vector points inwards -> for outgoing -> invert
+                        if( ( dot < 0.0 ) &&  outgoing )
+                        {
+                            invert = -1.0;
+                        }
+                        if( ( dot > 0.0 ) && !outgoing )
+                        {
+                            invert = -1.0;
+                        }
+
+                        // merge
+                        numMerged++;
+                        mergedDirection += invert * ( 1.0f - ( distance / maxDistance ) ) * glm::normalize( borderDirection[ borderVertex ] );
+                    }
+                }
+
+                // store the vector
+                // But first, ensure the vector is parallel to the triangle
+                auto onPlane = glm::normalize( glm::cross( glm::cross( triangles->getNormal( vertexID ),
+                                                           mergedDirection ),
+                                               triangles->getNormal( vertexID ) ) );
+                vectorAttribute->operator[]( vertexID ) = onPlane * glm::length( mergedDirection / static_cast< float >( numMerged ) );
+                maxLength = std::max( glm::length( mergedDirection ), maxLength );
+            }
+
+            // Normalize lengths against max-len?
+            /*
+            for( size_t vID = 0; vID < vectorAttribute->size(); ++vID )
+            {
+                vectorAttribute->operator[]( vID ) /= maxLength;
+            }
+            */
+
+            LogD << "Done. Updating output." << LogEnd;
+            m_vectorOutput->setData( std::make_shared< di::core::TriangleVectorField >( "Directionality", triangles, vectorAttribute ) );
+
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // NOTE: the remaining code is not used but might be usable later -> keep it for now.
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Build borders between regions
             //  - Find region borders and build index of lines splitting them
+            //  - Also build a non-directed neighbourhood graph between regions
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            // Use the following iteration for determining the neighbourhood of each region
-            auto regionNeighbours = std::make_shared< RegionNeighbourhood >( regionVertices.size() ); // keep a set of direct neighbours of each reg
+            /*
+            // DATA: the border lines
+            auto lines = std::make_shared< di::core::Lines >();
+            // DATA: the colors of the lines
+            auto colors = std::make_shared< di::RGBAArray >();
+            */
+
+            // DATA: the triangle mesh itself -> wireframe
+            /*auto linesMesh = std::make_shared< di::core::Lines >();
+            // DATA: the wireframe colors
+            auto colorsMesh = std::make_shared< di::RGBAArray >();*/
 
             // Keep track of the regions that each line splits - the pair are the indices of the regions splitted. The vector is the list of lines
             // splitting those regions.
-            std::map< std::pair< size_t, size_t >, std::vector< size_t > > regionSplitLines;
-
+            /*std::map< std::pair< size_t, size_t >, std::vector< size_t > > regionSplitLines;
             std::map< size_t, glm::vec3 > lineNormals;
-            std::map< size_t, glm::vec3 > lineBinormals;
-
+            std::map< size_t, glm::vec3 > lineBinormals;*/
+            /*
             // Iterate all triangles and transform to lines
             for( auto t : triangles->getTriangles() )
             {
@@ -241,7 +610,8 @@ namespace di
 
                 // Always add the triangle itself
                 // Get Vertices, add to line data, connect ... nothing fancy here.
-                auto v1I = linesMesh->addVertex( v1 );
+                */
+                /*auto v1I = linesMesh->addVertex( v1 );
                 auto v2I = linesMesh->addVertex( v2 );
                 auto v3I = linesMesh->addVertex( v3 );
                 linesMesh->addLine( v1I, v2I );
@@ -250,8 +620,8 @@ namespace di
                 float a = 0.25;
                 colorsMesh->push_back( glm::vec4( c1.r, c1.g, c1.b, a ) );
                 colorsMesh->push_back( glm::vec4( c2.r, c2.g, c2.b, a ) );
-                colorsMesh->push_back( glm::vec4( c3.r, c3.g, c3.b, a ) );
-
+                colorsMesh->push_back( glm::vec4( c3.r, c3.g, c3.b, a ) );*/
+                /*
                 // There are two cases now:
                 //  1: c1,c2,c3 are the same -> triangle is not a border triangle -> do not add a border line
                 if( ( c1 == c2 ) && ( c2 == c3 ) )
@@ -260,65 +630,6 @@ namespace di
                 }
                 else
                 {
-                    // get associated region
-                    auto regID1 = -1;
-                    auto regID2 = -1;
-                    auto regID3 = -1;
-                    for( size_t regID = 0; regID < regionVertices.size(); ++regID )
-                    {
-                        // are the current vertices in this region?
-                        if( std::find( regionVertices[ regID ].begin(), regionVertices[ regID ].end(), t.x ) != regionVertices[ regID ].end() )
-                        {
-                            regID1 = regID;
-                        }
-                        if( std::find( regionVertices[ regID ].begin(), regionVertices[ regID ].end(), t.y ) != regionVertices[ regID ].end() )
-                        {
-                            regID2 = regID;
-                        }
-                        if( std::find( regionVertices[ regID ].begin(), regionVertices[ regID ].end(), t.z ) != regionVertices[ regID ].end() )
-                        {
-                            regID3 = regID;
-                        }
-                    }
-                    if( regID1 < 0 )
-                    {
-                        LogE << "Could not find associated region?" << LogEnd;
-                    }
-                    if( regID2 < 0 )
-                    {
-                        LogE << "Could not find associated region?" << LogEnd;
-                    }
-                    if( regID3 < 0 )
-                    {
-                        LogE << "Could not find associated region?" << LogEnd;
-                    }
-
-                    // Avoid reverse connections
-                    if( regID1 < regID2 )
-                    {
-                        ( *regionNeighbours )[ regID1 ].insert( regID2 );
-                    }
-                    if( regID1 < regID3 )
-                    {
-                        ( *regionNeighbours )[ regID1 ].insert( regID3 );
-                    }
-                    if( regID2 < regID1 )
-                    {
-                        ( *regionNeighbours )[ regID2 ].insert( regID2 );
-                    }
-                    if( regID2 < regID3 )
-                    {
-                        ( *regionNeighbours )[ regID2 ].insert( regID3 );
-                    }
-                    if( regID3 < regID1 )
-                    {
-                        ( *regionNeighbours )[ regID3 ].insert( regID1 );
-                    }
-                    if( regID3 < regID2 )
-                    {
-                        ( *regionNeighbours )[ regID3 ].insert( regID2 );
-                    }
-
                     // 2: the more interesting case: each color is different to each other.
                     if( ( c1 != c2 ) && ( c1 != c3 ) && ( c2 != c3 ) )
                     {
@@ -383,10 +694,6 @@ namespace di
                         auto ve1 = triangles->getVertex( otherI1 );
                         auto ve2 = triangles->getVertex( otherI2 );
 
-                        auto nd = triangles->getNormal( differentI );
-                        auto ne1 = triangles->getNormal( otherI1 );
-                        auto ne2 = triangles->getNormal( otherI2 );
-
                         // find the new vertices of the border. It just is the middle of the edge
                         auto bv1 = vd + ( 0.5f * ( ve1 - vd ) );
                         auto bv2 = vd + ( 0.5f * ( ve2 - vd ) );
@@ -394,22 +701,28 @@ namespace di
                         // use this as border line segment -> add to lines
                         auto li1 = lines->addVertex( bv1, true );
                         auto li2 = lines->addVertex( bv2, true );
-                        auto lineIdx = lines->addLine( std::min( li1, li2 ), std::max( li1, li2 ) );
+                        //auto lineIdx =
+                        lines->addLine( std::min( li1, li2 ), std::max( li1, li2 ) );
                         colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 0.5 ) );
                         colors->push_back( glm::vec4( 1.0, 1.0, 1.0, 0.5 ) );
-
+                        */
                         // Build the pair of regions, use min/max to ensure commutativity
+                        /*auto nd = triangles->getNormal( differentI );
+                        auto ne1 = triangles->getNormal( otherI1 );
+                        auto ne2 = triangles->getNormal( otherI2 );
+
                         regionSplitLines[ std::make_pair( std::min( vertexRegion[ differentI ], vertexRegion[ otherI1 ] ),
                                                           std::max( vertexRegion[ differentI ], vertexRegion[ otherI1 ] )
                                                         )
                                         ].push_back( lineIdx ); // push the line index
                         lineNormals[ lineIdx ] = glm::normalize( nd + ne1 + ne2 );
-                        lineBinormals[ lineIdx ] = glm::cross( lineNormals[ lineIdx ], glm::normalize( bv1 - bv2 ) );
-                    }
+                        lineBinormals[ lineIdx ] = glm::cross( lineNormals[ lineIdx ], glm::normalize( bv1 - bv2 ) );*/
+                    /* }
                 }
             }
 
             LogD << "Border Line Info: " << lines->getNumVertices() << " vertices and " << lines->getNumLines() << " lines." << LogEnd;
+            */
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -418,6 +731,7 @@ namespace di
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+                /*
             auto neighbourLines = std::make_shared< di::core::Lines >();
             auto neighbourColors = std::make_shared< di::RGBAArray >();
             auto neighbourNormals = std::make_shared< di::NormalArray >();
@@ -497,6 +811,7 @@ namespace di
                 neighbourNormals->push_back( normal );
                 neighbourNormals->push_back( normal );
             }
+        */
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -505,6 +820,7 @@ namespace di
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            /*
             // Create the buffers we need to store lines and color information of the connection graph
             auto connectionLines = std::make_shared< di::core::Lines >();
             auto connectionColors = std::make_shared< di::RGBAArray >();
@@ -534,6 +850,7 @@ namespace di
             }
 
             auto regionConnections = regionNeighbours; // right now, we assume every region to be connected with each neighbour.
+            */
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -542,7 +859,7 @@ namespace di
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+            /*
             // Re-package the region list into a point dataset
             m_centerPointOutput->setData( std::make_shared< di::core::PointDataSet >( "Region Centers", regionCenterPoints,
                                                                                                         regionColors ) );
@@ -557,6 +874,7 @@ namespace di
             // Output connections
             m_connectionsOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Connections", connectionLines,
                                                                                                            connectionColors ) );
+                                                                                                           */
 
             /*
             m_neighbourArrowOutput->setData(
@@ -565,9 +883,11 @@ namespace di
                                                                                                                     neighbourNormals ) );
                                                                                                                     */
 
+            /*
             // Create line dataset and set output
             m_borderLinesOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Borders", lines, colors ) );
             m_regionMeshOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Mesh", linesMesh, colorsMesh ) );
+            */
         }
     }
 }
