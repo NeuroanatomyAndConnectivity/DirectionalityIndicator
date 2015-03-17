@@ -22,76 +22,60 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_ALGORITHMWIDGET_H
-#define DI_ALGORITHMWIDGET_H
+#ifndef DI_PARAMETERBOOLWIDGET_H
+#define DI_PARAMETERBOOLWIDGET_H
 
 #include <QWidget>
-#include <QGridLayout>
+#include <QCheckBox>
+
+#include <di/gui/ParameterWidget.h>
 
 #include <di/Types.h>
 
 namespace di
 {
-    namespace core
-    {
-        class Algorithm;
-    }
-
     namespace gui
     {
         /**
-         * A simple widget to show the algorithm parameters.
+         * A simple widget to provide the parameter to the user - Bool specialization.
          */
-        class AlgorithmWidget: public QWidget
+        class ParameterBoolWidget: public ParameterWidget
         {
             Q_OBJECT
         public:
             /**
              * Create the parameter widget.
              *
-             * \param parent the parent widget.
-             * \param algorithm the algo to handle.
+             * \param parent the parent widget
+             * \param parameter the parameter itself
              */
-            AlgorithmWidget( SPtr< di::core::Algorithm > algorithm, QWidget* parent = nullptr );
+            ParameterBoolWidget( SPtr< core::ParameterBase > parameter, QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
              */
-            virtual ~AlgorithmWidget();
-
-            /**
-             * Allows this widget to prepare everything in the network. This is only a temporary solution.
-             */
-            void prepareProcessingNetwork();
-
-            /**
-             * The algorithm handled by this widget.
-             *
-             * \return the algorithm
-             */
-            ConstSPtr< di::core::Algorithm > getAlgorithm() const;
-
-            /**
-             * Activate the algorithm and its visualizations.
-             *
-             * \param active true to activate.
-             */
-            virtual void setActive( bool active = true );
+            virtual ~ParameterBoolWidget() = default;
 
         protected:
-        private:
             /**
-             * The algorithm handled by this widget.
+             * Update the widget. The parameter has notified.
              */
-            SPtr< di::core::Algorithm > m_algorithm  = nullptr;
+            void update() override;
+
+        protected slots:
 
             /**
-             * The layout for parameter widgets.
+             * Called when the user changed something.
              */
-            QGridLayout* m_layout;
+            virtual void changed();
+        private:
+            /**
+             * The widget
+             */
+            QCheckBox* m_widget;
         };
     }
 }
 
-#endif  // DI_ALGORITHMWIDGET_H
+#endif  // DI_PARAMETERBOOLWIDGET_H
 

@@ -58,6 +58,13 @@ namespace di
                     "Directions",
                     "Directional information on the triangle mesh"
             );
+
+            m_enableSSAO = addParameter< bool >(
+                    "Enable SSAO",
+                    "SSAO is a modern rendering approach to get smooth shadows in a scene. This helps to improve spatial perception, at the cost of "
+                    "rendering performance",
+                    false
+            );
         }
 
         RenderIllustrativeLines::~RenderIllustrativeLines()
@@ -469,7 +476,6 @@ namespace di
 
             LogD << "Creating Point VAO" << LogEnd;
 
-
             // create regular grid of points
             m_points = std::make_shared< di::core::Points >();
 
@@ -704,6 +710,7 @@ namespace di
             m_composeShaderProgram->setUniform( "u_arrowDepthSampler", 3 );
             m_composeShaderProgram->setUniform( "u_meshNormalSampler",  4 );
             m_composeShaderProgram->setUniform( "u_noiseSampler",  5 );
+            // m_composeShaderProgram->setUniform( "u_enableSSAO", m_enableSSAO );
             logGLError();
 
             LogD << "Creating Compose Pass FBO" << LogEnd;

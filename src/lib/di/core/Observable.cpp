@@ -22,15 +22,39 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EVENTS_H
-#define DI_EVENTS_H
+#include <algorithm>
 
-#include <QEvent>
+#include <di/core/Observer.h>
 
-#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
-#define QT_OBSERVER_EVENT QEvent::User + 2
+#include "Observable.h"
 
-#include <di/gui/events/CommandObserverEvent.h>
+namespace di
+{
+    namespace core
+    {
+        void Observable::observe( SPtr< Observer > observer )
+        {
+            // Used to lock the command queue mutex
+            std::unique_lock< std::mutex > lock( m_observersMutex );
+            m_observers.push_back( observer );
+        }
 
-#endif  // DI_EVENTS_H
+        void Observable::notify()
+        {
+            std::unique_lock< std::mutex > lock( m_observersMutex );
+            for( auto o : m_observers )
+            {
+                o->notify();
+            }
+        }
+
+        void Observable::removeObserver( SPtr< Observer > observer )
+        {
+            std::unique_lock< std::mutex > lock( m_observersMutex );
+            m_observers.erase( std::remove( m_observers.begin(),
+                                            m_observers.end(),
+                                            observer ), m_observers.end() );
+        }
+    }
+}
 

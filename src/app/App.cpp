@@ -86,6 +86,10 @@ namespace di
             // The dock with all the parameters and stuff
             m_tbDock = new QDockWidget( "Algorithm Parameters", getMainWindow() );
             auto layout = new QVBoxLayout();
+            layout->setAlignment( Qt::AlignTop );
+            layout->setMargin( 0 );
+            layout->setContentsMargins( 0, 0, 0, 0 );
+
             auto algoWidget = new QWidget();
             algoWidget->setLayout( layout );
             m_tbDock->setWidget( algoWidget );

@@ -22,15 +22,29 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EVENTS_H
-#define DI_EVENTS_H
+#include <di/gui/events/Events.h>
 
-#include <QEvent>
+#include "ObserverEvent.h"
 
-#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
-#define QT_OBSERVER_EVENT QEvent::User + 2
+namespace di
+{
+    namespace gui
+    {
+        ObserverEvent::ObserverEvent( SPtr< ObserverQt > observer ):
+            QEvent( static_cast< QEvent::Type >( QT_OBSERVER_EVENT ) ),
+            m_observer( observer )
+        {
+        }
 
-#include <di/gui/events/CommandObserverEvent.h>
+        ObserverEvent::~ObserverEvent()
+        {
+            // do nothing
+        }
 
-#endif  // DI_EVENTS_H
+        SPtr< ObserverQt > ObserverEvent::getObserver() const
+        {
+            return m_observer;
+        }
+    }
+}
 

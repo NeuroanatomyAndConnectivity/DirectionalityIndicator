@@ -40,6 +40,9 @@ namespace di
         {
             // Init
             setWindowTitle( name );
+
+            m_layout = new QVBoxLayout();
+            setLayout( m_layout );
         }
 
         AlgorithmStrategy::~AlgorithmStrategy()
@@ -61,6 +64,7 @@ namespace di
 
         AlgorithmWidget* AlgorithmStrategy::addAlgorithm( AlgorithmWidget* algorithm )
         {
+            m_layout->addWidget( algorithm );
             m_algorithms.push_back( algorithm );
             setActive( m_active ); // force active state to new algo
             return algorithm;

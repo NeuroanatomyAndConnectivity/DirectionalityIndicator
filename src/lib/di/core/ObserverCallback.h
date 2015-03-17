@@ -22,15 +22,50 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EVENTS_H
-#define DI_EVENTS_H
+#ifndef DI_OBSERVERCALLBACK_H
+#define DI_OBSERVERCALLBACK_H
 
-#include <QEvent>
+#include <functional>
 
-#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
-#define QT_OBSERVER_EVENT QEvent::User + 2
+#include <di/core/Observer.h>
 
-#include <di/gui/events/CommandObserverEvent.h>
+namespace di
+{
+    namespace core
+    {
+        /**
+         * Implements a class to monitor changes. It implements the observer pattern and has no further functionality. Derive from this class to add a
+         * specific meaning.
+         */
+        class ObserverCallback: public Observer
+        {
+        public:
+            /**
+             * Constructor. Does nothing.
+             *
+             * \param callback the callback that will be called on notify.
+             */
+            explicit ObserverCallback( std::function< void() > callback );
 
-#endif  // DI_EVENTS_H
+            /**
+             * Destructor. Does nothing.
+             */
+            virtual ~ObserverCallback() = default;
+
+            /**
+             * Notification. The meaning depends on the caller.
+             */
+            void notify() override;
+
+        protected:
+        private:
+            /**
+             * Callback function
+             */
+            std::function< void() > m_callback;
+        };
+    }
+}
+
+#endif  // DI_OBSERVERCALLBACK_H
 

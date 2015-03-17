@@ -29,6 +29,7 @@
 #include <string>
 
 #include <QWidget>
+#include <QVBoxLayout>
 
 #include <di/Types.h>
 
@@ -102,6 +103,11 @@ namespace di
              * List of algorithms in this strategy
              */
             std::vector< AlgorithmWidget* > m_algorithms;
+
+            /**
+             * Layout for all algorithm widgets
+             */
+            QVBoxLayout* m_layout;
 
             /**
              * Active strategy?

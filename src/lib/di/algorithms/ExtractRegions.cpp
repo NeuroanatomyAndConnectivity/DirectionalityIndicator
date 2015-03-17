@@ -115,30 +115,6 @@ namespace di
             }
         }
 
-        void propagateDirection( size_t startRegion, // always a source
-                                 SPtr< ExtractRegions::DirectedRegionNeighbourhood > directionGraph,
-                                 SPtr< ExtractRegions::RegionConnections > regionNeighbours )
-        {
-            /*
-            auto neighbours = regionNeighbours->operator[]( startRegion );
-            for( auto neighbour : neighbours )
-            {
-                // is this connection already known?
-                auto to = std::find( directionGraph->begin(), directionGraph->end(), std::make_pair( neighbour, startRegion ) );
-                auto from = std::find( directionGraph->begin(), directionGraph->end(), std::make_pair( startRegion, neighbour ) );
-                if( ( to != directionGraph->end() ) || ( from != directionGraph->end() ) )
-                {
-                    // Already a known connection. Skip and do not propagate:
-                    continue;
-                }
-
-                // Unknown connection. Add to graph and continue propagation
-                directionGraph->push_back( std::make_pair( startRegion, neighbour ) );
-                propagateDirection( neighbour, directionGraph, regionNeighbours );
-            }
-            */
-        }
-
         void propagateDirectionBroad( size_t startRegion, // always a source
                                       SPtr< ExtractRegions::DirectedRegionNeighbourhood > directionGraph,
                                       SPtr< ExtractRegions::RegionConnections > regionNeighbours )
@@ -510,14 +486,14 @@ namespace di
                             LogE << "No border direction found for vertex " << borderVertex << LogEnd;
                             continue;
                         }
-                        /*if( vertexID == borderVertex )
+                        if( vertexID == borderVertex )
                         {
                             mergedDirection = borderDirection[ borderVertex ];
                         }
                         else
                         {
                             continue;
-                        }*/
+                        }
 
                         // weight by distance -> calc distance
                         auto vb = triangles->getVertex( borderVertex );

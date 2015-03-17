@@ -22,15 +22,35 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EVENTS_H
-#define DI_EVENTS_H
+#include <memory>
 
-#include <QEvent>
+#include <QHBoxLayout>
 
-#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
-#define QT_OBSERVER_EVENT QEvent::User + 2
+#include <di/core/Parameter.h>
 
-#include <di/gui/events/CommandObserverEvent.h>
+#include "ParameterBoolWidget.h"
 
-#endif  // DI_EVENTS_H
+namespace di
+{
+    namespace gui
+    {
+        ParameterBoolWidget::ParameterBoolWidget( SPtr< core::ParameterBase > parameter, QWidget* parent ):
+            ParameterWidget( parameter, parent )
+        {
+            m_widget = new QCheckBox( parent );
+            setWidget( m_widget );
+        }
+
+        void ParameterBoolWidget::update()
+        {
+            auto paramBool = getParameter< bool >();
+            m_widget->setChecked( paramBool->get() );
+        }
+
+        void ParameterBoolWidget::changed()
+        {
+            getParameter< bool >()->set( m_widget->isChecked() );
+        }
+    }
+}
 

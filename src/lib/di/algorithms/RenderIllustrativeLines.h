@@ -28,6 +28,7 @@
 #include <di/gfx/GL.h>
 
 #include <di/core/Algorithm.h>
+#include <di/core/ParameterTypes.h>
 #include <di/core/data/Lines.h>
 #include <di/core/data/DataSetTypes.h>
 #include <di/core/Visualization.h>
@@ -119,6 +120,11 @@ namespace di
 
         protected:
         private:
+            /**
+             * True to enable ambient occlusion
+             */
+            core::ParamBool m_enableSSAO;
+
             /**
              * The triangle mesh input to use.
              */

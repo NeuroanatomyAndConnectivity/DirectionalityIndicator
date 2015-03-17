@@ -22,76 +22,64 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_ALGORITHMWIDGET_H
-#define DI_ALGORITHMWIDGET_H
+#ifndef DI_PARAMETERBASE_H
+#define DI_PARAMETERBASE_H
 
-#include <QWidget>
-#include <QGridLayout>
+#include <string>
 
-#include <di/Types.h>
+#include <di/core/Observable.h>
 
 namespace di
 {
     namespace core
     {
-        class Algorithm;
-    }
+        class Observer;
 
-    namespace gui
-    {
         /**
-         * A simple widget to show the algorithm parameters.
+         * Implements a class to handle parameters conveniently. Created by algorithms, these instances can be shared among UI and others. Changing
+         * the value causes a notification to an observer.
          */
-        class AlgorithmWidget: public QWidget
+        class ParameterBase: public Observable
         {
-            Q_OBJECT
         public:
             /**
-             * Create the parameter widget.
+             * Constructor. Does nothing.
+             */
+            ParameterBase( std::string name, std::string description );
+
+            /**
+             * Destructor. Does nothing.
+             */
+            virtual ~ParameterBase() = default;
+
+            /**
+             * Get the name of this parameter
              *
-             * \param parent the parent widget.
-             * \param algorithm the algo to handle.
+             * \return name
              */
-            AlgorithmWidget( SPtr< di::core::Algorithm > algorithm, QWidget* parent = nullptr );
+            const std::string& getName() const;
 
             /**
-             * Destroy and clean up.
-             */
-            virtual ~AlgorithmWidget();
-
-            /**
-             * Allows this widget to prepare everything in the network. This is only a temporary solution.
-             */
-            void prepareProcessingNetwork();
-
-            /**
-             * The algorithm handled by this widget.
+             * Get the description of this parameter
              *
-             * \return the algorithm
+             * \return description
              */
-            ConstSPtr< di::core::Algorithm > getAlgorithm() const;
-
-            /**
-             * Activate the algorithm and its visualizations.
-             *
-             * \param active true to activate.
-             */
-            virtual void setActive( bool active = true );
+            const std::string& getDescription() const;
 
         protected:
         private:
             /**
-             * The algorithm handled by this widget.
+             * The name.
              */
-            SPtr< di::core::Algorithm > m_algorithm  = nullptr;
+            std::string m_name = "";
 
             /**
-             * The layout for parameter widgets.
+             * A description.
              */
-            QGridLayout* m_layout;
+            std::string m_description = "";
         };
     }
 }
 
-#endif  // DI_ALGORITHMWIDGET_H
+#endif  // DI_PARAMETERBASE_H
 

@@ -22,15 +22,5 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EVENTS_H
-#define DI_EVENTS_H
-
-#include <QEvent>
-
-#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
-#define QT_OBSERVER_EVENT QEvent::User + 2
-
-#include <di/gui/events/CommandObserverEvent.h>
-
-#endif  // DI_EVENTS_H
+#include "Parameter.h"
 

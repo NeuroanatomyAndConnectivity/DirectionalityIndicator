@@ -1,8 +1,3 @@
-//---------------------------------------------------------------------------------------
-//
-// Project: DirectionalityIndicator
-//
-// Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)
 //           2014-2015 Max Planck Research Group "Neuroanatomy and Connectivity"
 //
 // This file is part of DirectionalityIndicator.
@@ -22,15 +17,41 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EVENTS_H
-#define DI_EVENTS_H
+#ifndef DI_PARAMETERTYPES_H
+#define DI_PARAMETERTYPES_H
 
-#include <QEvent>
+#include <di/core/Parameter.h>
 
-#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
-#define QT_OBSERVER_EVENT QEvent::User + 2
+namespace di
+{
+    namespace core
+    {
+        /**
+         * Boolean parameter
+         */
+        typedef SPtr< Parameter< bool > > ParamBool;
 
-#include <di/gui/events/CommandObserverEvent.h>
+        /**
+         * Int parameter
+         */
+        typedef SPtr< Parameter< int > > ParamInt;
 
-#endif  // DI_EVENTS_H
+        /**
+         * Unsigned Int parameter
+         */
+        typedef SPtr< Parameter< unsigned int > > ParamUInt;
+
+        /**
+         * Unsigned float parameter
+         */
+        typedef SPtr< Parameter< float > > ParamFloat;
+
+        /**
+         * Unsigned double parameter
+         */
+        typedef SPtr< Parameter< double > > ParamDouble;
+    }
+}
+
+#endif  // DI_PARAMETERWIDGET_H
 

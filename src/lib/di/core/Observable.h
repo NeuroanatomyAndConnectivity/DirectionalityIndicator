@@ -22,11 +22,11 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_ALGORITHMWIDGET_H
-#define DI_ALGORITHMWIDGET_H
+#ifndef DI_OBSERVABLE_H
+#define DI_OBSERVABLE_H
 
-#include <QWidget>
-#include <QGridLayout>
+#include <vector>
+#include <mutex>
 
 #include <di/Types.h>
 
@@ -34,64 +34,55 @@ namespace di
 {
     namespace core
     {
-        class Algorithm;
-    }
+        class Observer;
 
-    namespace gui
-    {
         /**
-         * A simple widget to show the algorithm parameters.
+         * Implements a base class to handle observers conveniently. Allows deriving classes to notify anyone interested about changes.
          */
-        class AlgorithmWidget: public QWidget
+        class Observable
         {
-            Q_OBJECT
         public:
             /**
-             * Create the parameter widget.
+             * Observe changes on this parameter.
              *
-             * \param parent the parent widget.
-             * \param algorithm the algo to handle.
+             * \param observer the observer
              */
-            AlgorithmWidget( SPtr< di::core::Algorithm > algorithm, QWidget* parent = nullptr );
+            void observe( SPtr< Observer > observer );
 
             /**
-             * Destroy and clean up.
-             */
-            virtual ~AlgorithmWidget();
-
-            /**
-             * Allows this widget to prepare everything in the network. This is only a temporary solution.
-             */
-            void prepareProcessingNetwork();
-
-            /**
-             * The algorithm handled by this widget.
+             * Remove the observer from the list
              *
-             * \return the algorithm
+             * \param observer the observer to remove
              */
-            ConstSPtr< di::core::Algorithm > getAlgorithm() const;
-
-            /**
-             * Activate the algorithm and its visualizations.
-             *
-             * \param active true to activate.
-             */
-            virtual void setActive( bool active = true );
-
+            void removeObserver( SPtr< Observer > observer );
         protected:
+            /**
+             * Constructor. Does nothing.
+             */
+            Observable() = default;
+
+            /**
+             * Destructor. Does nothing.
+             */
+            virtual ~Observable() = default;
+
+            /**
+             * Notify all observers.
+             */
+            virtual void notify();
         private:
             /**
-             * The algorithm handled by this widget.
+             * Securing the observer list.
              */
-            SPtr< di::core::Algorithm > m_algorithm  = nullptr;
+            std::mutex m_observersMutex;
 
             /**
-             * The layout for parameter widgets.
+             * The observers
              */
-            QGridLayout* m_layout;
+            std::vector< SPtr< Observer > > m_observers;
         };
     }
 }
 
-#endif  // DI_ALGORITHMWIDGET_H
+#endif  // DI_OBSERVABLE_H
 

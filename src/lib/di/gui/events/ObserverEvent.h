@@ -22,76 +22,53 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_ALGORITHMWIDGET_H
-#define DI_ALGORITHMWIDGET_H
+#ifndef DI_OBSERVEREVENT_H
+#define DI_OBSERVEREVENT_H
 
-#include <QWidget>
-#include <QGridLayout>
+#include <QEvent>
 
-#include <di/Types.h>
+#include <di/gui/ObserverQt.h>
+#include <di/gui/events/Events.h>
+
+#include "Types.h"
 
 namespace di
 {
-    namespace core
-    {
-        class Algorithm;
-    }
-
     namespace gui
     {
         /**
-         * A simple widget to show the algorithm parameters.
+         * A QEvent to handle \ref ObserverQt updates.
          */
-        class AlgorithmWidget: public QWidget
+        class ObserverEvent: public QEvent
         {
-            Q_OBJECT
         public:
             /**
-             * Create the parameter widget.
+             * Constructor. Does nothing.
              *
-             * \param parent the parent widget.
-             * \param algorithm the algo to handle.
+             * \param observer the observer that has sent the event.
              */
-            AlgorithmWidget( SPtr< di::core::Algorithm > algorithm, QWidget* parent = nullptr );
+            explicit ObserverEvent( SPtr< ObserverQt > observer );
 
             /**
-             * Destroy and clean up.
+             * Destructor. Does nothing.
              */
-            virtual ~AlgorithmWidget();
+            virtual ~ObserverEvent();
 
             /**
-             * Allows this widget to prepare everything in the network. This is only a temporary solution.
-             */
-            void prepareProcessingNetwork();
-
-            /**
-             * The algorithm handled by this widget.
+             * Return the observer that has sent this event.
              *
-             * \return the algorithm
+             * \return the observer
              */
-            ConstSPtr< di::core::Algorithm > getAlgorithm() const;
-
-            /**
-             * Activate the algorithm and its visualizations.
-             *
-             * \param active true to activate.
-             */
-            virtual void setActive( bool active = true );
-
+            SPtr< ObserverQt > getObserver() const;
         protected:
         private:
             /**
-             * The algorithm handled by this widget.
+             * The observer that has sent the event.
              */
-            SPtr< di::core::Algorithm > m_algorithm  = nullptr;
-
-            /**
-             * The layout for parameter widgets.
-             */
-            QGridLayout* m_layout;
+            SPtr< ObserverQt > m_observer = nullptr;
         };
     }
 }
 
-#endif  // DI_ALGORITHMWIDGET_H
+#endif  // DI_OBSERVEREVENT_H
 

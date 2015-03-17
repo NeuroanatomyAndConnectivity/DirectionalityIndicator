@@ -31,6 +31,8 @@
 
 #include <di/core/ConnectorBase.h>
 #include <di/core/Connector.h>
+#include <di/core/ParameterBase.h>
+#include <di/core/Parameter.h>
 #include <di/core/ConnectorTransferable.h>
 
 #include <di/Types.h>
@@ -122,6 +124,13 @@ namespace di
             virtual bool hasConnector( ConstSPtr< ConnectorBase > connector ) const;
 
             /**
+             * Get the list of parameters of this algorithm.
+             *
+             * \return the list of parameters.
+             */
+            const SPtrSet< ParameterBase >& getParameters() const;
+
+            /**
              * Get the list of inputs of this algorithm.
              *
              * \return the list of inputs.
@@ -202,6 +211,31 @@ namespace di
              * Destructor.
              */
             virtual ~Algorithm();
+
+            /**
+             * Add the given parameter to the list of algorithm parameters.
+             *
+             * \param parameter the parameter
+             */
+            void addParameter( SPtr< ParameterBase > parameter );
+
+            /**
+             * Adds a parameter to the algorithm.
+             *
+             * \tparam ValueType the type of the value inside the parameter
+             * \param name the name. Should be unique.
+             * \param description a description
+             * \param initial the initial value
+             *
+             * \return the parameter added.
+             */
+            template< typename ValueType >
+            SPtr< Parameter< ValueType > > addParameter( const std::string& name, const std::string& description, const ValueType& initial )
+            {
+                auto param = std::make_shared< Parameter< ValueType > >( name, description, initial );
+                addParameter( param );
+                return param;
+            }
 
             /**
              * Add an input to this algorithm. This works only during construction.
@@ -325,6 +359,11 @@ namespace di
              * Algorithm outputs. Fill during construction.
              */
             ConstSPtrSet< ConnectorBase > m_outputs;
+
+            /**
+             * All parameters
+             */
+            SPtrSet< ParameterBase > m_parameters;
 
             /**
              * The name of the algorithm.

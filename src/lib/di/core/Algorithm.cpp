@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <string>
 
+#include <di/core/ObserverCallback.h>
 #include "Algorithm.h"
 
 #include <di/core/Logger.h>
@@ -57,6 +58,11 @@ namespace di
             return m_outputs;
         }
 
+        const SPtrSet< ParameterBase >& Algorithm::getParameters() const
+        {
+            return m_parameters;
+        }
+
         void Algorithm::addInput( SPtr< ConnectorBase > input )
         {
             m_inputs.insert( input );
@@ -75,6 +81,16 @@ namespace di
         const std::string& Algorithm::getDescription() const
         {
             return m_description;
+        }
+
+        void Algorithm::addParameter( SPtr< ParameterBase > parameter )
+        {
+            auto observer = std::make_shared< ObserverCallback >( [ this ]()
+                {
+                    this->requestUpdate();
+                }
+            );
+            m_parameters.insert( parameter );
         }
 
         bool Algorithm::isInput( ConstSPtr< ConnectorBase > connector ) const

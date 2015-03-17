@@ -25,6 +25,10 @@
 #include <di/core/Algorithm.h>
 #include <di/core/Visualization.h>
 #include <di/gui/Application.h>
+#include <di/gui/ScaleLabel.h>
+
+#include <di/core/ParameterBase.h>
+#include <di/gui/ParameterWidget.h>
 
 #include "AlgorithmWidget.h"
 
@@ -37,6 +41,26 @@ namespace di
             m_algorithm( algorithm )
         {
             // Init
+            m_layout = new QGridLayout();
+            m_layout->setAlignment( Qt::AlignTop );
+            m_layout->setMargin( 0 );
+            m_layout->setContentsMargins( 0, 0, 0, 0 );
+            setLayout( m_layout );
+
+            // get parameters
+            auto params = algorithm->getParameters();
+            size_t row = 0;
+            for( auto param : params )
+            {
+                auto label = new ScaleLabel( QString::fromStdString( param->getName() ), this );
+                label->setToolTip( QString::fromStdString( param->getDescription() ) );
+                m_layout->addWidget( label, row, 0 );
+
+                auto paramWidget = ParameterWidget::build( param, this );
+                m_layout->addWidget( paramWidget, row, 1 );
+
+                row++;
+            }
         }
 
         AlgorithmWidget::~AlgorithmWidget()

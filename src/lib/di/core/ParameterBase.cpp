@@ -22,15 +22,28 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EVENTS_H
-#define DI_EVENTS_H
+#include "ParameterBase.h"
 
-#include <QEvent>
+namespace di
+{
+    namespace core
+    {
+        ParameterBase::ParameterBase( std::string name, std::string description ):
+            Observable(),
+            m_name( name ),
+            m_description( description )
+        {
+        }
 
-#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
-#define QT_OBSERVER_EVENT QEvent::User + 2
+        const std::string& ParameterBase::getName() const
+        {
+            return m_name;
+        }
 
-#include <di/gui/events/CommandObserverEvent.h>
-
-#endif  // DI_EVENTS_H
+        const std::string& ParameterBase::getDescription() const
+        {
+            return m_description;
+        }
+    }
+}
 
