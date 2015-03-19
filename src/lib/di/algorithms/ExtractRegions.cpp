@@ -370,7 +370,7 @@ namespace di
 
             // Get the region with the most neighbours
             auto maxIter = std::max_element( regionNeighbours->begin(), regionNeighbours->end(),
-                []( auto a, auto b )
+                []( RegionNeighbourhood::value_type a, RegionNeighbourhood::value_type b )
                 {
                     return a.size() < b.size();
                 }
@@ -486,14 +486,16 @@ namespace di
                             LogE << "No border direction found for vertex " << borderVertex << LogEnd;
                             continue;
                         }
-                        if( vertexID == borderVertex )
+
+                        // Use this to place info only at the borders
+                        /*if( vertexID == borderVertex )
                         {
                             mergedDirection = borderDirection[ borderVertex ];
                         }
                         else
                         {
                             continue;
-                        }
+                        }*/
 
                         // weight by distance -> calc distance
                         auto vb = triangles->getVertex( borderVertex );
