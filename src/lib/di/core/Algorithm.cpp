@@ -130,7 +130,13 @@ namespace di
 
         void Algorithm::requestUpdate()
         {
-            // nothing yet
+            m_updateRequested = true;
+            notify();
+        }
+
+        bool Algorithm::isUpdateRequested() const
+        {
+            return m_updateRequested;
         }
 
         bool Algorithm::isSource() const

@@ -33,6 +33,7 @@
 #include <di/core/Connector.h>
 #include <di/core/ParameterBase.h>
 #include <di/core/Parameter.h>
+#include <di/core/Observable.h>
 #include <di/core/ConnectorTransferable.h>
 
 #include <di/Types.h>
@@ -44,7 +45,7 @@ namespace di
         /**
          * Interface to define the basic operations of all algorithms.
          */
-        class Algorithm
+        class Algorithm: public Observable
         {
         public:
             /**
@@ -196,6 +197,12 @@ namespace di
              */
             ConstSPtr< ConnectorBase > getOutput( size_t index ) const;
 
+            /**
+             * Check if an update is requested. Probably caused by a changed parameter.
+             *
+             * \return true if so.
+             */
+            bool isUpdateRequested() const;
         protected:
             /**
              * Constructor.
@@ -379,6 +386,11 @@ namespace di
              * Active-state
              */
             std::atomic< bool > m_active;
+
+            /**
+             * If true, an update was requested.
+             */
+            bool m_updateRequested = false;
         };
 
         /**

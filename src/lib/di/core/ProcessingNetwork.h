@@ -221,6 +221,13 @@ namespace di
              * \return the command instance. Not needed to keep this.
              */
             virtual SPtr< di::commands::RunNetwork > runNetwork( SPtr< CommandObserver > observer = nullptr );
+
+            /**
+             * Is an update requested? Convenience method to check all algorithms at once.
+             *
+             * \return true if at least one algorithm returns true for \ref Algorithm::isUpdateRequested.
+             */
+            virtual bool isUpdateRequested() const;
         protected:
             /**
              * Process the specified command. Use Command::handle to mark the command as being handled.

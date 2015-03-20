@@ -132,6 +132,20 @@ namespace di
             );
         }
 
+        bool ProcessingNetwork::isUpdateRequested() const
+        {
+            // Avoid concurrent access:
+            std::lock_guard< std::mutex > lock( m_algorithmsMutex );
+            for( auto algo : m_algorithms )
+            {
+                if( algo->isUpdateRequested() )
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         std::pair< SPtrVec< Algorithm >, SPtrVec< Algorithm > > ProcessingNetwork::findNodesOfEdge( SPtr< Connection > connection ) const
         {
             SPtrVec< Algorithm > targets;
