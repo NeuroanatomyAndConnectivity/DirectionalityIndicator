@@ -18,10 +18,8 @@ As such, you are allowed to use the software and its source according to the GPL
 To compile, you will need the following libraries and software installed on your system. The packages are available via your Linux distribution's
 repository, MacPorts, and MSYS2.
 
-* Qt5
-* Qt5 Webkit for embedded help
-* Qt5OpenGL for 3D graphics
-* CMake >= 3.0
+* Qt >= 4.8, including Qt5
+* CMake >= 2.8
 * CLang or GCC, supporting basic C++11 functionality.
 
 ### Runtime Dependencies
@@ -40,8 +38,10 @@ $ cd build
 # -> Use this command everytime you do a git pull.
 # -> CMake will complain about missing depenencies.
 $ cmake ../src
-# -> CMake does not find Qt5 on your system? Help Cmake to find it by defining the QTDIR variable:
+# -> CMake does not find Qt5 although you have it installed? Help Cmake to find it by defining the QTDIR variable:
 $ DI_QTDIR=/path/to/Qt cmake ../src
+# -> You want to force CMake to use Qt4?
+$ cmake -DDI_FORCE_QT4=ON ../src
 # Build using make
 $ make
 # Run the software

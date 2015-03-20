@@ -99,7 +99,7 @@ ENDIF()
 TARGET_LINK_LIBRARIES( ${BinName} ${CMAKE_STANDARD_LIBRARIES}
                                   ${OPENGL_LIBRARIES}
                                   ${GLEW_LIBRARIES}
-                                  Qt5::Widgets Qt5::OpenGL Qt5::WebKitWidgets 
+                                  ${QT_Link_Libs}
                                   ${ADDITIONAL_TARGET_LINK_LIBRARIES} )
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
