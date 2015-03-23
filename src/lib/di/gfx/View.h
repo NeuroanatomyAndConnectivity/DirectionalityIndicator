@@ -34,6 +34,8 @@ namespace di
 {
     namespace core
     {
+        class Camera;
+
         /**
          * Class represents the rendering view. This includes the Viewport and the Camera.
          */

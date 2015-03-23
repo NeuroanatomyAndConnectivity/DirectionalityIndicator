@@ -32,8 +32,6 @@
 // we need the math types
 #include <di/MathTypes.h>
 
-#include <di/gfx/PixelData.h>
-
 namespace di
 {
     typedef std::vector< glm::vec2 > Vec2Array;
