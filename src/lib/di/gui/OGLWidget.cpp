@@ -192,6 +192,8 @@ namespace di
             // Get scene BB
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            // NOTE: this tries to lock the network first. We are nice and only try to run. If not, we skip the frame.
+
             // Allow all visualizations to update:
             core::BoundingBox sceneBB;
             Application::getProcessingNetwork()->visitVisualizations(

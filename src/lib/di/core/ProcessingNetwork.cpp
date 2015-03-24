@@ -96,10 +96,28 @@ namespace di
             CommandQueue::stop( graceful );
         }
 
+        void ProcessingNetwork::addVisualization( SPtr< Visualization > visualization )
+        {
+            if( !visualization )
+            {
+                return;
+            }
+
+            // Avoid concurrent access:
+            std::lock_guard< std::mutex > lock( m_visualizationsMutex );
+            // if already inside ... nothing happens.
+            if( std::find( m_visualizations.begin(), m_visualizations.end(), visualization ) != m_visualizations.end() )
+            {
+                return;
+            }
+
+            m_visualizations.push_back( visualization );
+        }
+
         void ProcessingNetwork::addNetworkNode( SPtr< Algorithm > algorithm )
         {
             // Avoid concurrent access:
-            std::lock_guard< std::mutex > lock( m_algorithmsMutex );
+            std::unique_lock< std::mutex > lock( m_algorithmsMutex );
             // if already inside ... nothing happens.
             if( std::find( m_algorithms.begin(), m_algorithms.end(), algorithm ) != m_algorithms.end() )
             {
@@ -110,6 +128,11 @@ namespace di
             algorithm->observe( m_onDirtyObserver );
 
             m_algorithms.push_back( algorithm );
+
+            lock.unlock();
+
+            // Is a visualization?
+            addVisualization( std::dynamic_pointer_cast< Visualization >( algorithm ) );
         }
 
         void ProcessingNetwork::addNetworkNodeEdge( SPtr< Connection > connection )

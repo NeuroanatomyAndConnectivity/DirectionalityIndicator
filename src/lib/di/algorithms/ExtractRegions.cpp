@@ -32,6 +32,9 @@
 #include <queue>
 #include <fstream>
 #include <iomanip>
+#include <thread>
+#include <chrono>
+#include <iostream>
 
 #include <di/core/data/TriangleDataSet.h>
 #include <di/core/data/LineDataSet.h>

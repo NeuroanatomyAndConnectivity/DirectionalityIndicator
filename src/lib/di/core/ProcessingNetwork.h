@@ -254,6 +254,15 @@ namespace di
             virtual void process( SPtr< Command > command );
 
             /**
+             * Add the given visualization to the vis-queue. If it already is inside, it is ignored.
+             *
+             * \note this method is not thread-safe. Call only from within the processing thread of this queue (via commands).
+             *
+             * \param visualization the visualization to add.
+             */
+            virtual void addVisualization( SPtr< Visualization > visualization );
+
+            /**
              * Add the given algorithm to the network. If it already is inside, it is ignored. This method is extremely fault tolerant and does not
              * complain about its argument. The only thing to keep in mind is that after committing a node, it belongs to this graph. It is  managed
              * by this graph and you should not add it to another one again.
@@ -350,9 +359,19 @@ namespace di
             SPtrVec< Algorithm > m_algorithms;
 
             /**
+             * All the visualizations managed by this network instance.
+             */
+            SPtrVec< Visualization > m_visualizations;
+
+            /**
              * Mutex to secure access to m_algorithms
              */
             mutable std::mutex m_algorithmsMutex;
+
+            /**
+             * Mutex to secure access to m_visualizations
+             */
+            mutable std::mutex m_visualizationsMutex;
 
             /**
              * Mutex to secure access to m_connections
@@ -428,16 +447,20 @@ namespace di
         template< typename VisitorType >
         void ProcessingNetwork::visitVisualizations( VisitorType visitor )
         {
-            // Wrap
-            visitAlgorithms( [&]( SPtr< Algorithm > algorithm )
-                             {
-                                 auto vis = std::dynamic_pointer_cast< Visualization >( algorithm );
-                                 if( vis )
-                                 {
-                                     visitor( vis );
-                                 }
-                             }
-            );
+            // Avoid concurrent access:
+            std::unique_lock< std::mutex > lock( m_visualizationsMutex );
+
+            // Copy
+            SPtrVec< Visualization > visSnapshot( m_visualizations );
+
+            // Unlock to avoid long-running visitors to block the network
+            lock.unlock();
+
+            // Iterate and call visitor on each
+            for( auto vis : visSnapshot )
+            {
+                visitor( vis );
+            }
         }
 
         template< typename VisitorType >
