@@ -35,7 +35,7 @@ uniform mat4 u_ProjectionMatrix;
 uniform mat4 u_ViewMatrix;
 
 // Varying out
-out vec4 v_color;
+flat out vec4 v_color;
 out vec3 v_normal;
 out vec4 v_posView;
 out vec3 v_vector;
