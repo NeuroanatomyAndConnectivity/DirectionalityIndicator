@@ -39,6 +39,8 @@
 
 #include <di/gui/Application.h>
 #include <di/gui/ScaleLabel.h>
+#include <di/gui/ColorPicker.h>
+
 #include <di/ext/bitmap_image.hpp>
 
 #include "icons/folder.xpm"
@@ -127,6 +129,15 @@ namespace di
             m_location->setSizePolicy( QSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::Minimum ) );
             connect( m_location, SIGNAL( released() ), this, SLOT( queryImagePath() ) );
 
+            // Pick a color for BG
+            m_bgColor = new ColorPicker( QColor::fromRgb( 255, 255, 255, 255 ), this );
+            m_bgColorOverride = new QCheckBox( "Override standard background", this );
+            m_bgColorOverride->setChecked( true );
+            m_bgColorOverride->setToolTip(
+                "Enable this to use the below color for screenshots. If not checked, screenshots use the standard background."
+            );
+            m_bgColor->setToolTip( "Choose a background color for screenshots." );
+
             // Finish layout
             m_contentLayout->addWidget( new QLabel( "File Location", this ) );
             m_contentLayout->addWidget( m_location );
@@ -134,12 +145,20 @@ namespace di
             m_contentLayout->addWidget( m_resolutionCombo );
             m_contentLayout->addWidget( new QLabel( "Multi-Sampling", this ) );
             m_contentLayout->addWidget( m_sampleCombo );
+            m_contentLayout->addWidget( new QLabel( "Background Color", this ) );
+            m_contentLayout->addWidget( m_bgColorOverride );
+            m_contentLayout->addWidget( m_bgColor );
+
             m_contentLayout->setAlignment( Qt::AlignTop );
 
             // Restore values:
             m_resolutionCombo->setCurrentIndex( Application::getSettings()->value( "ScreenShotWidget_Resolution", 4 ).toInt() );
             m_sampleCombo->setCurrentIndex( Application::getSettings()->value( "ScreenShotWidget_Samples", 3 ).toInt() );
             m_location->setText( Application::getSettings()->value( "ScreenShotWidget_Location", QDir::homePath() ).toString() );
+
+            m_bgColorOverride->setChecked( Application::getSettings()->value( "ScreenShotWidget_OverrideBG", false ).toBool() );
+            QVariant col = Application::getSettings()->value( "ScreenShotWidget_BGColor", QColor::fromRgb( 255, 255, 255, 255 ) );
+            m_bgColor->setColor( col.value< QColor >() );
 
             // As we want to store values, register for shutdown. The Mainwindow notifies everyone.
             connect( Application::getInstance()->getMainWindow(), SIGNAL( shutdown() ), this, SLOT( shutdown() ) );
@@ -178,6 +197,17 @@ namespace di
         void ScreenShotWidget::setMaxResolution( int res )
         {
             m_maxRes = res;
+        }
+
+        bool ScreenShotWidget::getBackgroundOverride() const
+        {
+            return m_bgColorOverride->isChecked();
+        }
+
+        di::Color ScreenShotWidget::getBackgroundColor() const
+        {
+            auto qcol = m_bgColor->getColor();
+            return glm::vec4( qcol.redF(), qcol.greenF(), qcol.blueF(), qcol.alphaF() );
         }
 
         bool ScreenShotWidget::saveScreenShot( SPtr< core::RGBA8Image > pixels )
@@ -243,6 +273,8 @@ namespace di
             Application::getSettings()->setValue( "ScreenShotWidget_Resolution", m_resolutionCombo->currentIndex() );
             Application::getSettings()->setValue( "ScreenShotWidget_Samples", m_sampleCombo->currentIndex() );
             Application::getSettings()->setValue( "ScreenShotWidget_Location", m_location->text() );
+            Application::getSettings()->setValue( "ScreenShotWidget_OverrideBG", m_bgColorOverride->isChecked() );
+            Application::getSettings()->setValue( "ScreenShotWidget_BGColor", m_bgColor->getColor() );
         }
     }
 }

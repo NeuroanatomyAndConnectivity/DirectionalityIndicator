@@ -60,6 +60,16 @@ namespace di
              */
             virtual ~ViewWidget();
 
+            /**
+             * Sets the default views to be the medical view anterior, posterior, inferior, superior, left, right
+             */
+            void setMedicalDefaultViews();
+
+            /**
+             * Sets the default views to be the technical views +x,-x, ...
+             */
+            void setTechnicalDefaultViews();
+
         public slots:
             /**
              * Take screenshot.
@@ -100,6 +110,21 @@ namespace di
              * Button for screenshots
              */
             QToolButton* m_screenshotButton;
+
+            /**
+             * Button for the default views
+             */
+            QToolButton* m_defaultViewsButton;
+
+            /**
+             * The menu used for the view actions
+             */
+            QMenu* m_defaultViewsMenu;
+
+            /**
+             * The actions to add to the view menu
+             */
+            std::vector< QAction* > m_viewActions;
         };
     }
 }

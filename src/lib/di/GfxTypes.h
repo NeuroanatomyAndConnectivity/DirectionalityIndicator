@@ -32,10 +32,10 @@
 // we need the math types
 #include <di/MathTypes.h>
 
-#include <di/gfx/PixelData.h>
-
 namespace di
 {
+    typedef glm::vec4 Color;
+
     typedef std::vector< glm::vec2 > Vec2Array;
     typedef std::vector< glm::vec3 > Vec3Array;
     typedef std::vector< glm::vec4 > Vec4Array;

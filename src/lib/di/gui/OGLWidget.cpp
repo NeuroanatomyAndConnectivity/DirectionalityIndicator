@@ -292,31 +292,45 @@ namespace di
             glViewport( targetView->getViewport().first.x, targetView->getViewport().first.y,
                         targetView->getViewport().second.x, targetView->getViewport().second.y );
 
-            // Cleanup buffers
-            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Draw nice background
 
-            // Draw background first:
-            m_bgShaderProgram->bind();
+            // Black background by default
+            glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+            // Cleanup buffers
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-            glBindVertexArray( m_backgroundVAO );
-            glEnableVertexAttribArray( 0 );
-            glBindBuffer( GL_ARRAY_BUFFER, m_backgroundVBO );
+            // But only if not turned of for screenshots:
+            if( m_screenShotRequest && m_screenShotWidget && m_screenShotWidget->getBackgroundOverride() )
+            {
+                auto col = m_screenShotWidget->getBackgroundColor();
+                glClearColor( col.r, col.g, col.b, col.a );
+                // Cleanup buffers again to use new clean color
+                glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+            }
+            else
+            {
+                // Draw background first:
+                m_bgShaderProgram->bind();
 
-            glVertexAttribPointer(
-                0, // Attribute number.
-                3, // It is a vec3
-                GL_FLOAT, // floats
-                GL_FALSE, // not normalized
-                0,        // no stride
-                nullptr   // no buffer offset
-            );
+                glBindVertexArray( m_backgroundVAO );
+                glEnableVertexAttribArray( 0 );
+                glBindBuffer( GL_ARRAY_BUFFER, m_backgroundVBO );
 
-            // Draw the BG
-            glDepthMask( GL_FALSE );
-            glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
+                glVertexAttribPointer(
+                    0, // Attribute number.
+                    3, // It is a vec3
+                    GL_FLOAT, // floats
+                    GL_FALSE, // not normalized
+                    0,        // no stride
+                    nullptr   // no buffer offset
+                );
+
+                // Draw the BG
+                glDepthMask( GL_FALSE );
+                glDrawArrays( GL_TRIANGLES, 0, 6 ); // 3 indices starting at 0 -> 1 triangle
+            }
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Draw visualizations
@@ -446,10 +460,10 @@ namespace di
         {
             switch( event->key() )
             {
-                case Qt::Key_Space:
-                    m_arcballMatrix = glm::mat4();
-                    break;
-                case Qt::Key_X: // rotate along x
+/*                case Qt::Key_Space:
+                    resetView();
+                    break;*/
+                /*case Qt::Key_X: // rotate along x
                     if( event->modifiers() == Qt::ShiftModifier )
                     {
                         m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) ) * m_arcballMatrix;
@@ -479,6 +493,7 @@ namespace di
                         m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) * m_arcballMatrix;
                     }
                     break;
+*/
                 case Qt::Key_D:
                     // restore default for our current data. Just a convenient shortcut for now. Later this will not be needed as project
                     // files store the cam too.
@@ -495,6 +510,45 @@ namespace di
             }
 
             event->accept();
+        }
+
+        void OGLWidget::resetView()
+        {
+            m_arcballMatrix = glm::mat4();
+        }
+
+        void OGLWidget::setViewAlongPosX()
+        {
+            m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                              glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        }
+
+        void OGLWidget::setViewAlongNegX()
+        {
+            m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                              glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        }
+
+        void OGLWidget::setViewAlongPosY()
+        {
+            m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+        }
+
+        void OGLWidget::setViewAlongNegY()
+        {
+            m_arcballMatrix =  glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
+                               glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+        }
+
+        void OGLWidget::setViewAlongPosZ()
+        {
+            m_arcballMatrix = glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        }
+
+        void OGLWidget::setViewAlongNegZ()
+        {
+            // the default camera
+            m_arcballMatrix = glm::mat4();
         }
 
         glm::vec3 OGLWidget::toScreenCoord( double x, double y )

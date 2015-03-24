@@ -28,6 +28,7 @@
 #include <di/core/BoundingBox.h>
 #include <di/core/data/TriangleMesh.h>
 #include <di/MathTypes.h>
+#include <di/Types.h>
 
 #include <di/core/Logger.h>
 #define LogTag "core/DataBuilder"
