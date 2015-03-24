@@ -35,6 +35,7 @@
 
 #include "icons/screenshot.xpm"
 #include "icons/configure.xpm"
+#include "icons/view.xpm"
 
 #include "ViewWidget.h"
 
@@ -117,14 +118,82 @@ namespace di
             m_titleLayout->addWidget( configButton );
             */
 
+            // View Menu
+            m_defaultViewsButton = new QToolButton( titleWidget );
+            m_defaultViewsButton->setAutoRaise( true );
+            m_defaultViewsButton->setText( "Default Views" );
+            m_defaultViewsButton->setToolTip( "Switch between different default views." );
+            m_defaultViewsButton->setIcon( QIcon( QPixmap( xpm_view ) ) );
+            m_titleLayout->addWidget( m_defaultViewsButton );
+
+            m_defaultViewsMenu = new QMenu( "Default Views", m_defaultViewsButton );
+            m_defaultViewsButton->setMenu( m_defaultViewsMenu );
+            m_defaultViewsButton->setPopupMode( QToolButton::MenuButtonPopup );
+            m_defaultViewsMenu->addAction( "Reset", m_oglWidget, SLOT( resetView() ), QKeySequence( Qt::Key_Space ) );
+            setMedicalDefaultViews();
+
             // Wire them:
             connect( m_screenshotButton, SIGNAL( released() ), this, SLOT( screenshot() ) );
+            connect( m_defaultViewsButton, SIGNAL( released() ), m_oglWidget, SLOT( resetView() ) );
             connect( m_oglWidget, SIGNAL( screenshotDone( SPtr< core::RGBA8Image > ) ),
-                    this, SLOT( screenshotDone( SPtr< core::RGBA8Image > ) ) );
+                     this, SLOT( screenshotDone( SPtr< core::RGBA8Image > ) ) );
         }
 
         ViewWidget::~ViewWidget()
         {
+        }
+
+        void ViewWidget::setTechnicalDefaultViews()
+        {
+            // Remove old actions first
+            for( auto a : m_viewActions )
+            {
+                m_defaultViewsMenu->removeAction( a );
+                delete a;
+            }
+            m_viewActions.clear();
+
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along -X, YZ Plane", m_oglWidget, SLOT( setViewAlongNegX() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_R ) ) );
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along +X, YZ Plane", m_oglWidget, SLOT( setViewAlongPosX() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_L ) ) );
+
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along -Y, XZ Plane", m_oglWidget, SLOT( setViewAlongNegY() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_A ) ) );
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along +Y, XZ Plane", m_oglWidget, SLOT( setViewAlongPosY() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_P ) ) );
+
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along -Z, XY Plane", m_oglWidget, SLOT( setViewAlongNegZ() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_S ) ) );
+
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along +Z, XY Plane", m_oglWidget, SLOT( setViewAlongPosZ() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_I ) ) );
+        }
+
+        void ViewWidget::setMedicalDefaultViews()
+        {
+            // Remove old actions first
+            for( auto a : m_viewActions )
+            {
+                m_defaultViewsMenu->removeAction( a );
+                delete a;
+            }
+            m_viewActions.clear();
+
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Anterior", m_oglWidget, SLOT( setViewAlongNegY() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_A ) ) );
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Posterior", m_oglWidget, SLOT( setViewAlongPosY() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_P ) ) );
+
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Left", m_oglWidget, SLOT( setViewAlongPosX() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_L ) ) );
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Right", m_oglWidget, SLOT( setViewAlongNegX() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_R ) ) );
+
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Superior", m_oglWidget, SLOT( setViewAlongNegZ() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_S ) ) );
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Inferior", m_oglWidget, SLOT( setViewAlongPosZ() ),
+                                                                    QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_I ) ) );
         }
 
         void ViewWidget::screenshot()

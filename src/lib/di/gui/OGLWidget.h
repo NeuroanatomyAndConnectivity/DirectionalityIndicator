@@ -120,6 +120,40 @@ namespace di
              */
             void screenshot();
 
+            /**
+             * Reset the view to XY-Z
+             */
+            void resetView();
+
+            /**
+             * Set the camera transformation to view along positive x.
+             */
+            void setViewAlongPosX();
+
+            /**
+             * Set the camera transformation to view along negative x.
+             */
+            void setViewAlongNegX();
+
+            /**
+             * Set the camera transformation to view along positive y.
+             */
+            void setViewAlongPosY();
+
+            /**
+             * Set the camera transformation to view along negative y.
+             */
+            void setViewAlongNegY();
+
+            /**
+             * Set the camera transformation to view along positive z.
+             */
+            void setViewAlongPosZ();
+
+            /**
+             * Set the camera transformation to view along negative z.
+             */
+            void setViewAlongNegZ();
         protected:
             /**
              * Do the necessary setup.

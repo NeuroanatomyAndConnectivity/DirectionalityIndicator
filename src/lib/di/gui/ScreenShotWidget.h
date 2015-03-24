@@ -32,9 +32,11 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QToolButton>
+#include <QCheckBox>
 #include <QVBoxLayout>
 
 #include <di/gfx/PixelData.h>
+#include <di/GfxTypes.h>
 #include <di/Types.h>
 
 namespace di
@@ -42,6 +44,7 @@ namespace di
     namespace gui
     {
         class ScaleLabel;
+        class ColorPicker;
 
         /**
          * A simple widget to provide screenshot functionality.
@@ -106,6 +109,20 @@ namespace di
              */
             bool saveScreenShot( SPtr< core::RGBA8Image > pixels );
 
+            /**
+             * Check if the background should be different from the default
+             *
+             * \return true if the screenshot-color should be used
+             */
+            bool getBackgroundOverride() const;
+
+            /**
+             * Get the currently set default background color.
+             *
+             * \return the color
+             */
+            di::Color getBackgroundColor() const;
+
         protected slots:
             /**
              * Handle shutdown. Emited by the main windows
@@ -156,6 +173,16 @@ namespace di
              * Where to place the screenshots.
              */
             QToolButton* m_location = nullptr;
+
+            /**
+             * Choose a BG color for screenshots.
+             */
+            ColorPicker* m_bgColor = nullptr;
+
+            /**
+             * Override default background with this one.
+             */
+            QCheckBox* m_bgColorOverride = nullptr;
         };
     }
 }
