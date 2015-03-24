@@ -519,26 +519,36 @@ namespace di
 
         void OGLWidget::setViewAlongPosX()
         {
+            m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                              glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongNegX()
         {
+            m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                              glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongPosY()
         {
+            m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongNegY()
         {
+            m_arcballMatrix =  glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
+                               glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongPosZ()
         {
+            m_arcballMatrix = glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongNegZ()
         {
+            // the default camera
+            m_arcballMatrix = glm::mat4();
         }
 
         glm::vec3 OGLWidget::toScreenCoord( double x, double y )
