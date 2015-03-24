@@ -436,6 +436,13 @@ namespace di
 
             for( size_t vertexID = 0; vertexID < triangles->getNumVertices(); ++vertexID )
             {
+                auto regionColor = attribute->at( vertexID );
+                // Use region color as mask -> black is a "no-region"
+                if( ( regionColor.r == 0.0f ) && ( regionColor.g == 0.0f ) && ( regionColor.b == 0.0f ) )
+                {
+                    continue;
+                }
+
                 // For the vertex, get the region:
                 auto regID = vertexRegion[ vertexID ];
                 if( regID < 0 )
