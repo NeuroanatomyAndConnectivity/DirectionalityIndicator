@@ -28,6 +28,9 @@
 
 #include <di/core/Parameter.h>
 
+#include <di/core/Logger.h>
+#define LogTag "gui/ParameterBoolWidget"
+
 #include "ParameterBoolWidget.h"
 
 namespace di
@@ -39,6 +42,8 @@ namespace di
         {
             m_widget = new QCheckBox( parent );
             setWidget( m_widget );
+
+            connect( m_widget, SIGNAL( stateChanged( int ) ), this, SLOT( changed() ) );
         }
 
         void ParameterBoolWidget::update()

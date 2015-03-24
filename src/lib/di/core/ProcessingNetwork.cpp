@@ -27,6 +27,7 @@
 #include <string>
 
 #include <di/core/Reader.h>
+#include <di/core/ObserverCallback.h>
 
 #include <di/commands/ReadFile.h>
 
@@ -50,8 +51,40 @@ namespace di
         {
         }
 
+        void ProcessingNetwork::onDirtyNetwork()
+        {
+            std::unique_lock< std::mutex > lock( m_onDirtyObserversMutex );
+            for( auto observer : m_onDirtyObservers )
+            {
+                observer->notify();
+            }
+        }
+
+        void ProcessingNetwork::observeOnDirty( SPtr< Observer > observer )
+        {
+            std::unique_lock< std::mutex > lock( m_onDirtyObserversMutex );
+
+            // if already inside ... nothing happens.
+            if( std::find( m_onDirtyObservers.begin(), m_onDirtyObservers.end(), observer ) != m_onDirtyObservers.end() )
+            {
+                return;
+            }
+
+            m_onDirtyObservers.push_back( observer );
+        }
+
+        void ProcessingNetwork::removeObserverOnDirty( SPtr< Observer > observer )
+        {
+            std::unique_lock< std::mutex > lock( m_onDirtyObserversMutex );
+            m_onDirtyObservers.erase( std::remove( m_onDirtyObservers.begin(),
+                                                   m_onDirtyObservers.end(),
+                                                   observer ), m_onDirtyObservers.end() );
+        }
+
         void ProcessingNetwork::start()
         {
+            m_onDirtyObserver = std::make_shared< ObserverCallback >( [ this ](){ onDirtyNetwork(); } );
+
             // Fill the list of readers. IMPORTANT: in the future, readers will be added dynamically (loaded from DLLs/SOs/DyLibs)
             m_reader.push_back( SPtr< di::io::PlyReader >( new di::io::PlyReader() ) );
 
@@ -72,6 +105,9 @@ namespace di
             {
                 return;
             }
+
+            // Register own observer
+            algorithm->observe( m_onDirtyObserver );
 
             m_algorithms.push_back( algorithm );
         }

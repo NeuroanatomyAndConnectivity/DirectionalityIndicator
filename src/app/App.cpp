@@ -74,6 +74,11 @@ namespace di
             m_tbDock->show();
         }
 
+        void App::onDirtyNetwork()
+        {
+            LogD << "Network marked dirty. Requesting update." << LogEnd;
+        }
+
         void App::prepareUI()
         {
             // Create the GL output:

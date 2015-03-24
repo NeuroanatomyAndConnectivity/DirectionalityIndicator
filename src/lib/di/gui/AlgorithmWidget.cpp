@@ -30,6 +30,9 @@
 #include <di/core/ParameterBase.h>
 #include <di/gui/ParameterWidget.h>
 
+#include <di/core/Logger.h>
+#define LogTag "gui/AlgorithmWidget"
+
 #include "AlgorithmWidget.h"
 
 namespace di

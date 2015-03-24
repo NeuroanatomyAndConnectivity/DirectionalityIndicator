@@ -134,6 +134,10 @@ namespace di
              */
             void onShutdown();
 
+            /**
+             * Called when the processing network is marked as dirty. Use this to re-run the network or delay or ...
+             */
+            virtual void onDirtyNetwork() = 0;
         private:
             /**
              * The application main window.

@@ -29,6 +29,9 @@
 
 #include <di/core/ParameterBase.h>
 
+#include <di/core/Logger.h>
+#define LogTag "core/Parameter"
+
 #include <di/Types.h>
 
 namespace di

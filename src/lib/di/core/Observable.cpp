@@ -39,6 +39,13 @@ namespace di
             m_observers.push_back( observer );
         }
 
+        void Observable::observe( Observer* observer )
+        {
+            // Used to lock the command queue mutex
+            std::unique_lock< std::mutex > lock( m_observersMutex );
+            m_observersPtr.push_back( observer );
+        }
+
         void Observable::notify()
         {
             std::unique_lock< std::mutex > lock( m_observersMutex );
@@ -54,6 +61,14 @@ namespace di
             m_observers.erase( std::remove( m_observers.begin(),
                                             m_observers.end(),
                                             observer ), m_observers.end() );
+        }
+
+        void Observable::removeObserver( Observer* observer )
+        {
+            std::unique_lock< std::mutex > lock( m_observersMutex );
+            m_observersPtr.erase( std::remove( m_observersPtr.begin(),
+                                               m_observersPtr.end(),
+                                               observer ), m_observersPtr.end() );
         }
     }
 }

@@ -30,6 +30,7 @@
 #include <di/core/ProcessingNetwork.h>
 #include <di/core/Connection.h>
 #include <di/core/Filesystem.h>
+#include <di/core/ObserverCallback.h>
 
 #include "Application.h"
 
@@ -81,6 +82,13 @@ namespace di
             // start the processing container
             m_processingNetwork = SPtr< core::ProcessingNetwork >( new core::ProcessingNetwork() );
             m_processingNetwork->start();
+            m_processingNetwork->observeOnDirty(
+                std::make_shared< core::ObserverCallback >( [ this ]()
+                    {
+                        onDirtyNetwork();
+                    }
+                )
+            );
 
             // Call network code
             prepareNetwork();

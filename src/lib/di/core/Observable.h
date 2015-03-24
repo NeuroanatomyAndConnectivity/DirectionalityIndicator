@@ -43,11 +43,19 @@ namespace di
         {
         public:
             /**
-             * Observe changes on this parameter.
+             * Observe changes on this object.
              *
              * \param observer the observer
              */
             void observe( SPtr< Observer > observer );
+
+            /**
+             * Observe changes on this object. Note that you have to take care of removal when deleting the observer
+             * yourself as this is not shared pointer.
+             *
+             * \param observer the observer
+             */
+            void observe( Observer* observer );
 
             /**
              * Remove the observer from the list
@@ -55,6 +63,14 @@ namespace di
              * \param observer the observer to remove
              */
             void removeObserver( SPtr< Observer > observer );
+
+            /**
+             * Remove the observer from the list
+             *
+             * \param observer the observer to remove
+             */
+            void removeObserver( Observer* observer );
+
         protected:
             /**
              * Constructor. Does nothing.
@@ -80,6 +96,11 @@ namespace di
              * The observers
              */
             std::vector< SPtr< Observer > > m_observers;
+
+            /**
+             * The observers as plain pointers.
+             */
+            std::vector< Observer* > m_observersPtr;
         };
     }
 }

@@ -354,8 +354,10 @@ namespace di
             /**
              * This method should be called by an algorithm that somehow thinks it needs to be run again. This is the case when algorithm parameters
              * have been changed for example.
+             *
+             * \param request if true (default), an update will be requested. Set to false to mark everything done, no update needed anymore.
              */
-            void requestUpdate();
+            void requestUpdate( bool request = true );
         private:
             /**
              * Algorithm inputs. Fill during construction.

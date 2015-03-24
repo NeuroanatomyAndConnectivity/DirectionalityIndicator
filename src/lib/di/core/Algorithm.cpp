@@ -85,10 +85,11 @@ namespace di
 
         void Algorithm::addParameter( SPtr< ParameterBase > parameter )
         {
-            auto observer = std::make_shared< ObserverCallback >( [ this ]()
-                {
-                    this->requestUpdate();
-                }
+            parameter->observe( std::make_shared< ObserverCallback >( [ this ]()
+                    {
+                        this->requestUpdate();
+                    }
+                )
             );
             m_parameters.insert( parameter );
         }
@@ -128,9 +129,13 @@ namespace di
             return searchConnector( getOutputs(), index );
         }
 
-        void Algorithm::requestUpdate()
+        void Algorithm::requestUpdate( bool request )
         {
-            m_updateRequested = true;
+            if( m_updateRequested == request )
+            {
+                return;
+            }
+            m_updateRequested = request;
             notify();
         }
 

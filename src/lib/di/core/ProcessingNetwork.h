@@ -53,6 +53,7 @@ namespace di
     namespace core
     {
         class Reader;
+        class ObserverCallback;
 
         /**
          * Container class to control a data-flow network.
@@ -228,6 +229,22 @@ namespace di
              * \return true if at least one algorithm returns true for \ref Algorithm::isUpdateRequested.
              */
             virtual bool isUpdateRequested() const;
+
+            /**
+             * Register functor to call whenever the processing network is marked dirty. Be aware that the callback needs to point to an existing
+             * class instance/function at all times. Use removeOnDirty to unregister before deleting.
+             *
+             * \param observer the callback
+             */
+            void observeOnDirty( SPtr< Observer > observer );
+
+            /**
+             * De-register the callback from on-dirty events.
+             *
+             * \param observer the callback to remove.
+             */
+            void removeObserverOnDirty( SPtr< Observer > observer );
+
         protected:
             /**
              * Process the specified command. Use Command::handle to mark the command as being handled.
@@ -316,6 +333,11 @@ namespace di
             template< typename NodeVisitorType, typename EdgeVisitorType >
             void visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits,    // NOLINT: non-const reference
                                      NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback, bool noProcessNeeded = false );
+
+            /**
+             * Called by the m_onDirtyObserver whenever an algorithm gets dirty.
+             */
+            virtual void onDirtyNetwork();
         private:
             /**
              * A list of all known readers.
@@ -345,6 +367,21 @@ namespace di
                                    SPtr< Algorithm >
                                  >
                     > m_connections;
+
+            /**
+             * Observe the dirty state of algorithms.
+             */
+            SPtr< ObserverCallback > m_onDirtyObserver = nullptr;
+
+            /**
+             * Securing the onDirty callback list.
+             */
+            std::mutex m_onDirtyObserversMutex;
+
+            /**
+             * The list of callbacks to call on dirty events.
+             */
+            std::vector< SPtr< Observer > > m_onDirtyObservers;
         };
 
         template< typename VisitorType >

@@ -36,6 +36,9 @@
 
 #include <di/algorithms/DataInject.h>
 
+#include <di/core/Logger.h>
+#define LogTag "gui/FileWidget"
+
 #include "FileWidget.h"
 
 namespace di
@@ -167,7 +170,6 @@ namespace di
                     label->setText( "Failed: " + QString::fromStdString( coe->getIssuer()->getFailureReason() ) );
                 }
             }
-
             return QWidget::event( event );
         }
 
