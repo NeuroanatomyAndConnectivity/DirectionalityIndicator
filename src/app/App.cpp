@@ -77,6 +77,7 @@ namespace di
         void App::onDirtyNetwork()
         {
             LogD << "Network marked dirty. Requesting update." << LogEnd;
+            // getProcessingNetwork()->runNetwork();
         }
 
         void App::prepareUI()

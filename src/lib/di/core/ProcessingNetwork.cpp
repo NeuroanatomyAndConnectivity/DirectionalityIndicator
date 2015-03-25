@@ -230,6 +230,12 @@ namespace di
 
         size_t ProcessingNetwork::countInputConnections( ConstSPtr< Algorithm > algorithm ) const
         {
+            // Source are not connected
+            if( algorithm->isSource() )
+            {
+                return 0;
+            }
+
             size_t result = 0;
             for( auto c : m_connections )
             {
@@ -358,52 +364,162 @@ namespace di
             }
         }
 
+        std::vector<
+            std::pair<
+                std::vector< SPtr< Algorithm > >,
+                std::vector< SPtr< Connection > >
+            >
+        > ProcessingNetwork::buildRunOrder()
+        {
+            typedef std::vector< SPtr< Algorithm > > AlgoVec;
+
+            // Associate each algorithm with a layer
+            std::map< SPtr< Algorithm >, int > algoLayer;
+            // Associate each algorithm with its incoming connected algorithms
+            std::map< SPtr< Algorithm >, AlgoVec > incomingAlgos;
+
+            // Find sources ( algorithms without input connectors ) and non-connected algorithms.
+            for( auto algo : m_algorithms )
+            {
+                // use this iteration to init the algorithm - layer map:
+                algoLayer[ algo ] = -1;
+
+                // get all incoming connections
+                for( auto c : m_connections )
+                {
+                    // is the target algorithm of this connection our current algorithm?
+                    if( c.second.second == algo )
+                    {
+                        incomingAlgos[ algo ].push_back( c.second.first );
+                    }
+                }
+
+                // source or not connected? Always first layer.
+                if( countInputConnections( algo ) == 0 )
+                {
+                    algoLayer[ algo ] = 0;
+                }
+            }
+
+            // Do nice stuff to assign each algorithm
+            bool stop = false;
+            int globalMaxLayer = 0;
+            while( !stop )
+            {
+                bool allAssigned = true;
+                for( auto algo : m_algorithms )
+                {
+                    // Skip algorithms that have been assigned earlier.
+                    if( algoLayer[ algo ] >= 0 )
+                    {
+                        continue;
+                    }
+
+                    // get all incoming connections
+                    int maxLayer = -1;
+                    bool valid = true;
+                    for( auto source : incomingAlgos[ algo ] )
+                    {
+                        // The max layer is valid until we find a source that was not yet assigned.
+                        valid = valid && ( algoLayer[ source ] >= 0 );
+                        maxLayer = std::max( maxLayer, algoLayer[ source ] );
+                    }
+
+                    // All sources assigned?
+                    if( valid )
+                    {
+                        // Yes. We can 	unambiguously assign this algo too:
+                        algoLayer[ algo ] = maxLayer + 1;
+                        // the largest ever layer:
+                        globalMaxLayer = std::max( globalMaxLayer, maxLayer + 1 );
+                    }
+                    else
+                    {
+                        allAssigned = false;
+                    }
+                }
+                stop = allAssigned;
+            }
+
+            // The caller asked for the inverse list -> layer to algorithm
+            std::vector<
+                std::pair<
+                    std::vector< SPtr< Algorithm > >,
+                    std::vector< SPtr< Connection > >
+                >
+            > result( globalMaxLayer + 1 );
+
+            // Fill
+            for( auto elem : algoLayer )
+            {
+                auto algo = elem.first;
+
+                // Store the algorithms
+                result[ elem.second ].first.push_back( algo );
+                // And all outgoing connections starting at this layer
+                for( auto con : m_connections )
+                {
+                    // If the connection source is the current algo
+                    if( con.second.first == algo )
+                    {
+                        result[ elem.second ].second.push_back( con.first );
+                    }
+                }
+            }
+
+            return result;
+        }
+
         void ProcessingNetwork::runNetworkImpl()
         {
             // Avoid concurrent access:
             std::lock_guard< std::mutex > lockAlgo( m_algorithmsMutex );
             std::lock_guard< std::mutex > lockCon( m_connectionsMutex );
 
+            // Get the execution order:
+            auto executionLayers = buildRunOrder();
+
+            // Some nice output
+            size_t l = 0;
+            for( auto layer : executionLayers )
+            {
+                LogD << "Layer " << l << LogEnd;
+                for( auto algo : layer.first )
+                {
+                    LogD << "    - " << algo->getName() << " ( Dirty: " << algo->isUpdateRequested() << ", Active: " << algo->isActive() << " )"
+                         << LogEnd;
+                }
+                l++;
+            }
+
             LogD << "Running processing network. Propagating changes." << LogEnd;
 
-            // Find sources ( algorithms without input connectors ) and non-connected algorithms. They are the start of the recursive propagation.
-            for( auto algo : m_algorithms )
+            // Iterate each layer:
+            std::map< SPtr< Algorithm >, bool > dataPropagated;
+            for( auto layer : executionLayers )
             {
-                // source?
-                if( algo->isSource() || ( countInputConnections( algo ) == 0 ) )
+                // NOTE: as all algorithms in one layer are not dependent on each other, it is possible to use std::async and similar facilities here
+                // to parallelize execution. Not yet done.
+                for( auto algo : layer.first )
                 {
-                    // recurse along connection
-                    std::map< SPtr< Algorithm >, size_t > visits; // count visits to handle cycles.
-                    visitNetworkNoLock( algo, visits,
-                        [ & ]( SPtr< Algorithm > algo )
-                        {
-                            if( algo->isActive() )
-                            {
-                                LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
-                                algo->process();
-                            }
-                            else
-                            {
-                                LogI << "Ignoring inactive algorithm \"" << algo->getName() << "\"." << LogEnd;
-                            }
-                        },
-                        [ & ]( SPtr< Connection > con )
-                        {
-                            // Propagate only if target is active:
-                            SPtr< Algorithm > target = m_connections[ con ].second;
-                            if( target->isActive() )
-                            {
-                                bool result = con->propagate();
-                                LogD << "Propagation: " << *m_connections[ con ].first << ":" << *con << ":" << *m_connections[ con ].second <<
-                                                           " - Result: " << result << LogEnd;
-                                return result;
-                            }
+                    if( algo->isActive() && ( algo->isUpdateRequested() || dataPropagated[ algo ] ) )
+                    {
+                        LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
+                        algo->process();
+                    }
+                    else
+                    {
+                        LogI << "Ignoring inactive algorithm \"" << algo->getName() << "\"." << LogEnd;
+                    }
+                }
 
-                            LogD << "Propagation skipped (inactive target): "
-                                 << *m_connections[ con ].first << ":" << *con << ":" << *m_connections[ con ].second << LogEnd;
-                            return false;
-                        }
-                    );
+                for( auto con : layer.second )
+                {
+                    bool result = con->propagate();
+                    LogD << "Propagation: " << *m_connections[ con ].first << ":" << *con << ":" << *m_connections[ con ].second <<
+                                               " - Result: " << result << LogEnd;
+
+                    dataPropagated[ m_connections[ con ].second ] = result;
                 }
             }
         }

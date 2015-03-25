@@ -329,24 +329,24 @@ namespace di
             void visitAlgorithmsNoLock( VisitorType visitor );
 
             /**
-             * Follow the network along the connections, starting at the given algorithm.
-             *
-             * \tparam NodeVisitorType The node visitor type
-             * \tparam EdgeVisitorType The edge visitor type
-             * \param start the current node
-             * \param visits count the visits of each node to handle cycles
-             * \param nodeCallback callback for each node
-             * \param edgeCallback callback for each edge. If the callback returns false, the edge is not followed.
-             * \param noProcessNeeded if true, the algorithm is not executed but propagation directly continues along outputs.
-             */
-            template< typename NodeVisitorType, typename EdgeVisitorType >
-            void visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits,    // NOLINT: non-const reference
-                                     NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback, bool noProcessNeeded = false );
-
-            /**
              * Called by the m_onDirtyObserver whenever an algorithm gets dirty.
              */
             virtual void onDirtyNetwork();
+
+            /**
+             * Order algorithms to solve dependencies during execution. REQUIRES that the caller already obtained the m_algorithmsMutex and the
+             * m_connectionsMutex.
+             *
+             * \return a map between a layer and the algorithms on it. All algorithms of one layer only depend on algorithms of one of the above
+             * layers.
+             */
+            std::vector<
+                std::pair<
+                    std::vector< SPtr< Algorithm > >,
+                    std::vector< SPtr< Connection > >
+                >
+            > buildRunOrder();
+
         private:
             /**
              * A list of all known readers.
@@ -467,37 +467,6 @@ namespace di
         void ProcessingNetwork::visitVisualizations( VisitorType visitor ) const
         {
             const_cast< ProcessingNetwork* >( this )->visitVisualizations( visitor );
-        }
-
-        template< typename NodeVisitorType, typename EdgeVisitorType >
-        void ProcessingNetwork::visitNetworkNoLock( SPtr< Algorithm > start, std::map< SPtr< Algorithm >, size_t >& visits, // NOLINT: non-const reference
-                                                    NodeVisitorType nodeCallback, EdgeVisitorType edgeCallback, bool noProcessNeeded )
-        {
-            // avoid loops by checking if we have been here at most n times, where n is the number of connected inputs. ( and at least 1 times )
-            size_t numConnections = countInputConnections( start );
-            if( ( visits[ start ] >= 1 ) && ( visits[ start ] >= numConnections ) )
-            {
-                return;
-            }
-
-            // apply visitor to current node:
-            visits[ start ]++;
-            if( !noProcessNeeded )
-            {
-                nodeCallback( start );
-            }
-
-            // get all outgoing connections
-            for( auto c : m_connections )
-            {
-                // is the source algorithm of this connection our current algorithm?
-                if( c.second.first == start )
-                {
-                    // yes. Follow the connection if the callback allows us
-                    bool somethingChanged = edgeCallback( c.first );
-                    visitNetworkNoLock( c.second.second, visits, nodeCallback, edgeCallback, !somethingChanged );
-                }
-            }
         }
     }
 }

@@ -79,13 +79,16 @@ namespace di
             SPtr< CommandType > commit( SPtr< CommandType > command )
             {
                 // grab lock
-                std::lock_guard< std::mutex > theLock( m_commandQueueMutex );
+                std::unique_lock< std::mutex > theLock( m_commandQueueMutex );
 
                 // add and notify processing thread ...
                 m_commandQueue.push_back( command );
 
                 // Change command state.
                 command->waiting();
+
+                // Done.
+                theLock.unlock();
 
                 // Notify thread
                 notifyThread();
