@@ -119,6 +119,14 @@ namespace di
             virtual core::BoundingBox getBoundingBox() const;
 
         protected:
+            /**
+             * Get notified about changes in a parameter. By default, this method calls \ref requestUpdate, if you override this method, it is your
+             * task to decide whether to update the whole algorithm or not.
+             *
+             * \param parameter the parameter that notified this
+             */
+            virtual void onParameterChange( SPtr< core::ParameterBase > parameter ) override;
+
         private:
             /**
              * True to enable ambient occlusion

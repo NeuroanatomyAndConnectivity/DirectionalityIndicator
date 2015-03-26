@@ -32,7 +32,7 @@ uniform sampler2D u_arrowDepthSampler;
 uniform sampler2D u_meshNormalSampler;
 uniform sampler2D u_noiseSampler;
 
-
+uniform int u_enableSSAO = 0;
 uniform vec2 u_viewportScale = vec2( 1.0 );
 
 // Varyings
@@ -89,7 +89,11 @@ void main()
     vec4 arrowColor = texture( u_arrowColorSampler,  v_texCoord ).rgba;
     float arrowDepth = texture( u_arrowDepthSampler, v_texCoord ).r - 0.01;
 
-    float ssao =  getLineAO( v_texCoord, px2tx );
+    float ssao = 1.0;
+    if( u_enableSSAO > 0 )
+    {
+        ssao = getLineAO( v_texCoord, px2tx );
+    }
 
     vec4 finalColor = mix( arrowColor, meshColor, 0.0 );//arrowColor;
     float finalDepth = arrowDepth;

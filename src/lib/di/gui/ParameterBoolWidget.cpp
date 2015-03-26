@@ -42,6 +42,7 @@ namespace di
         {
             m_widget = new QCheckBox( parent );
             setWidget( m_widget );
+            update();
 
             connect( m_widget, SIGNAL( stateChanged( int ) ), this, SLOT( changed() ) );
         }

@@ -146,7 +146,7 @@ namespace di
         template< typename ValueType >
         Parameter< ValueType >::Parameter( std::string name, std::string description, const ValueType& initial ):
             ParameterBase( name, description ),
-            m_value( std::make_shared< ValueType >( initial ) )
+            m_value( initial )
         {
         }
 

@@ -63,13 +63,26 @@ namespace di
                     "Enable SSAO",
                     "SSAO is a modern rendering approach to get smooth shadows in a scene. This helps to improve spatial perception, at the cost of "
                     "rendering performance",
-                    false
+                    true
             );
         }
 
         RenderIllustrativeLines::~RenderIllustrativeLines()
         {
             // nothing to clean up so far
+        }
+
+        void RenderIllustrativeLines::onParameterChange( SPtr< core::ParameterBase > parameter )
+        {
+            if( parameter == m_enableSSAO )
+            {
+                // This is only a visualization parameter. We do not need an complete update.
+                renderRequest();
+                return;
+            }
+
+            // Use default handling for all other parameters -> calls process() sooner or later.
+            Algorithm::onParameterChange( parameter );
         }
 
         void RenderIllustrativeLines::process()
@@ -710,7 +723,7 @@ namespace di
             m_composeShaderProgram->setUniform( "u_arrowDepthSampler", 3 );
             m_composeShaderProgram->setUniform( "u_meshNormalSampler",  4 );
             m_composeShaderProgram->setUniform( "u_noiseSampler",  5 );
-            // m_composeShaderProgram->setUniform( "u_enableSSAO", m_enableSSAO );
+            m_composeShaderProgram->setUniform( "u_enableSSAO", m_enableSSAO->get() );
             logGLError();
 
             LogD << "Creating Compose Pass FBO" << LogEnd;
