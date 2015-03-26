@@ -86,6 +86,13 @@ namespace di
                     5.0
             );
             m_lengthArrows->setRangeHint( 0.0, 10.0 );
+
+            m_distArrows = addParameter< double >(
+                    "Arrows: Distance",
+                    "Define the distance between the arrows and the surface.",
+                    2.0
+            );
+            m_distArrows->setRangeHint( 0.0, 10.0 );
         }
 
         RenderIllustrativeLines::~RenderIllustrativeLines()
@@ -305,6 +312,7 @@ namespace di
             m_arrowShaderProgram->setUniform( "u_viewportScale", ( view.getViewportSize() - glm::vec2( 1.0 ) ) / glm::vec2( 2048, 2048 ) );
             m_arrowShaderProgram->setUniform( "u_width", m_widthArrows->get() );
             m_arrowShaderProgram->setUniform( "u_height", m_lengthArrows->get() );
+            m_arrowShaderProgram->setUniform( "u_dist", m_distArrows->get() );
             logGLError();
 
             glActiveTexture( GL_TEXTURE0 );

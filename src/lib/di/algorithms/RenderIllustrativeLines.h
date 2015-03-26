@@ -139,6 +139,11 @@ namespace di
             core::ParamInt m_numArrows;
 
             /**
+             * Dist of arrows.
+             */
+            core::ParamDouble m_distArrows;
+
+            /**
              * Width of arrows.
              */
             core::ParamDouble m_widthArrows;
