@@ -136,7 +136,17 @@ namespace di
             /**
              * Number of arrows.
              */
-            core::ParamUInt m_numArrows;
+            core::ParamInt m_numArrows;
+
+            /**
+             * Width of arrows.
+             */
+            core::ParamDouble m_widthArrows;
+
+            /**
+             * Length of arrows.
+             */
+            core::ParamDouble m_lengthArrows;
 
             /**
              * The triangle mesh input to use.

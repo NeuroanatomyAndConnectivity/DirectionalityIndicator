@@ -22,8 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_PARAMETERUINTWIDGET_H
-#define DI_PARAMETERUINTWIDGET_H
+#ifndef DI_PARAMETERINTWIDGET_H
+#define DI_PARAMETERINTWIDGET_H
 
 #include <QWidget>
 #include <QSlider>
@@ -38,9 +38,9 @@ namespace di
     namespace gui
     {
         /**
-         * A simple widget to provide the parameter to the user - unsigned int specialization.
+         * A simple widget to provide the parameter to the user - int specialization.
          */
-        class ParameterUIntWidget: public ParameterWidget
+        class ParameterIntWidget: public ParameterWidget
         {
             Q_OBJECT
         public:
@@ -50,12 +50,12 @@ namespace di
              * \param parent the parent widget
              * \param parameter the parameter itself
              */
-            ParameterUIntWidget( SPtr< core::ParameterBase > parameter, QWidget* parent = nullptr );
+            ParameterIntWidget( SPtr< core::ParameterBase > parameter, QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
              */
-            virtual ~ParameterUIntWidget() = default;
+            virtual ~ParameterIntWidget() = default;
 
         protected:
             /**
@@ -89,5 +89,5 @@ namespace di
     }
 }
 
-#endif  // DI_PARAMETERUINTWIDGET_H
+#endif  // DI_PARAMETERINTWIDGET_H
 

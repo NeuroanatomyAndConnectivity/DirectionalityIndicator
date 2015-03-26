@@ -134,7 +134,7 @@ namespace di
              *
              * \return the list of parameters.
              */
-            const SPtrSet< ParameterBase >& getParameters() const;
+            const SPtrVec< ParameterBase >& getParameters() const;
 
             /**
              * Get the list of inputs of this algorithm.
@@ -385,7 +385,7 @@ namespace di
             /**
              * All parameters
              */
-            SPtrSet< ParameterBase > m_parameters;
+            SPtrVec< ParameterBase > m_parameters;
 
             /**
              * The name of the algorithm.

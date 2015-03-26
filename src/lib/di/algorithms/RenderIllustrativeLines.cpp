@@ -66,12 +66,26 @@ namespace di
                     true
             );
 
-            m_numArrows = addParameter< unsigned int >(
-                    "Amount of Arrows",
+            m_numArrows = addParameter< int >(
+                    "Arrows: Amount",
                     "Define the amount of arrows.",
                     30
             );
             m_numArrows->setRangeHint( 0, 150 );
+
+            m_widthArrows = addParameter< double >(
+                    "Arrows: Width",
+                    "Define the width of the arrows.",
+                    1.5
+            );
+            m_widthArrows->setRangeHint( 0.0, 10.0 );
+
+            m_lengthArrows = addParameter< double >(
+                    "Arrows: Length",
+                    "Define the length of the arrows.",
+                    5.0
+            );
+            m_lengthArrows->setRangeHint( 0.0, 10.0 );
         }
 
         RenderIllustrativeLines::~RenderIllustrativeLines()
@@ -81,18 +95,8 @@ namespace di
 
         void RenderIllustrativeLines::onParameterChange( SPtr< core::ParameterBase > parameter )
         {
-            // The VIS parameters do not need a complete update
-            if( ( parameter == m_enableSSAO ) ||
-                ( parameter == m_numArrows )
-              )
-            {
-                // This is only a visualization parameter. We do not need an complete update.
-                // renderRequest();
-                return;
-            }
-
-            // Use default handling for all other parameters -> calls process() sooner or later.
-            Algorithm::onParameterChange( parameter );
+            // The VIS parameters do not need a complete update.
+            return;
         }
 
         void RenderIllustrativeLines::process()
@@ -299,6 +303,8 @@ namespace di
             // m_arrowShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
             // m_arrowShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
             m_arrowShaderProgram->setUniform( "u_viewportScale", ( view.getViewportSize() - glm::vec2( 1.0 ) ) / glm::vec2( 2048, 2048 ) );
+            m_arrowShaderProgram->setUniform( "u_width", m_widthArrows->get() );
+            m_arrowShaderProgram->setUniform( "u_height", m_lengthArrows->get() );
             logGLError();
 
             glActiveTexture( GL_TEXTURE0 );

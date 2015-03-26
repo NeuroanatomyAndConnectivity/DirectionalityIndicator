@@ -49,16 +49,6 @@ namespace di
         typedef SPtr< Parameter< int > > ParamInt;
 
         /**
-         * Unsigned Int parameter
-         */
-        typedef SPtr< Parameter< unsigned int > > ParamUInt;
-
-        /**
-         * Unsigned float parameter
-         */
-        typedef SPtr< Parameter< float > > ParamFloat;
-
-        /**
          * Unsigned double parameter
          */
         typedef SPtr< Parameter< double > > ParamDouble;

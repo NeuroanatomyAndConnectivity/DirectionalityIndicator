@@ -60,7 +60,7 @@ namespace di
             return m_outputs;
         }
 
-        const SPtrSet< ParameterBase >& Algorithm::getParameters() const
+        const SPtrVec< ParameterBase >& Algorithm::getParameters() const
         {
             return m_parameters;
         }
@@ -95,7 +95,7 @@ namespace di
                     parameter
                 )
             );
-            m_parameters.insert( parameter );
+            m_parameters.push_back( parameter );
         }
 
         void Algorithm::onParameterChange( SPtr< ParameterBase > parameter )

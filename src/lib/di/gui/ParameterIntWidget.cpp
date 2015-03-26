@@ -30,15 +30,15 @@
 #include <di/core/Parameter.h>
 
 #include <di/core/Logger.h>
-#define LogTag "gui/ParameterUIntWidget"
+#define LogTag "gui/ParameterIntWidget"
 
-#include "ParameterUIntWidget.h"
+#include "ParameterIntWidget.h"
 
 namespace di
 {
     namespace gui
     {
-        ParameterUIntWidget::ParameterUIntWidget( SPtr< core::ParameterBase > parameter, QWidget* parent ):
+        ParameterIntWidget::ParameterIntWidget( SPtr< core::ParameterBase > parameter, QWidget* parent ):
             ParameterWidget( parameter, parent )
         {
             // The capsule:
@@ -48,7 +48,7 @@ namespace di
             layout->setContentsMargins( 0, 0, 0, 0 );
             widget->setLayout( layout );
 
-            auto param = getParameter< core::ParamUInt >();
+            auto param = getParameter< core::ParamInt >();
             if( param->hasRangeHint() )
             {
                 m_slider = new QSlider( Qt::Horizontal, widget );
@@ -75,21 +75,24 @@ namespace di
             connect( m_edit, SIGNAL( editingFinished() ), this, SLOT( changedEdit() ) );
         }
 
-        void ParameterUIntWidget::update()
+        void ParameterIntWidget::update()
         {
-            auto param = getParameter< core::ParamUInt >();
-            m_slider->setValue( param->get() );
+            auto param = getParameter< core::ParamInt >();
+            if( m_slider )
+            {
+                m_slider->setValue( param->get() );
+            }
             m_edit->setText( QString::fromStdString( std::to_string( param->get() ) ) );
         }
 
-        void ParameterUIntWidget::changedSlider()
+        void ParameterIntWidget::changedSlider()
         {
-            getParameter< core::ParamUInt >()->set( m_slider->value() );
+            getParameter< core::ParamInt >()->set( m_slider->value() );
         }
 
-        void ParameterUIntWidget::changedEdit()
+        void ParameterIntWidget::changedEdit()
         {
-            getParameter< core::ParamUInt >()->set( m_edit->text().toInt() );
+            getParameter< core::ParamInt >()->set( m_edit->text().toInt() );
         }
     }
 }

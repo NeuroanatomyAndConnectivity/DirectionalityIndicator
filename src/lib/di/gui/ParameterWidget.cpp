@@ -37,7 +37,8 @@
 #include <di/gui/events/CommandObserverEvent.h>
 
 #include <di/gui/ParameterBoolWidget.h>
-#include <di/gui/ParameterUIntWidget.h>
+#include <di/gui/ParameterIntWidget.h>
+#include <di/gui/ParameterDoubleWidget.h>
 
 #include "ParameterWidget.h"
 
@@ -69,10 +70,15 @@ namespace di
             {
                 return new ParameterBoolWidget( parameter, parent );
             }
-            auto paramUInt = core::ParameterBase::as< core::ParamUInt >( parameter );
-            if( paramUInt )
+            auto paramInt = core::ParameterBase::as< core::ParamInt >( parameter );
+            if( paramInt )
             {
-                return new ParameterUIntWidget( parameter, parent );
+                return new ParameterIntWidget( parameter, parent );
+            }
+            auto paramDouble = core::ParameterBase::as< core::ParamDouble >( parameter );
+            if( paramDouble )
+            {
+                return new ParameterDoubleWidget( parameter, parent );
             }
 
             return nullptr;
