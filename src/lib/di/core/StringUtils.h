@@ -26,6 +26,7 @@
 #define DI_STRINGUTILS_H
 
 #include <string>
+#include <vector>
 
 // This file implements some utils we all love from boost::filesystem
 
@@ -41,6 +42,15 @@ namespace di
          * \return the lower case string.
          */
         std::string toLower( const std::string& str );
+
+        /**
+         * Split a string into lines. Very useful for parsing text files.
+         *
+         * \param theString the string to split
+         *
+         * \return the lines as vector.
+         */
+        std::vector< std::string > splitLines( const std::string& theString );
     }
 }
 

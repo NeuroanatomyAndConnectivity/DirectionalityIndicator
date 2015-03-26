@@ -28,6 +28,7 @@
 #include <QHBoxLayout>
 
 #include <di/core/Parameter.h>
+#include <di/core/ParameterTypes.h>
 
 #include <di/gui/Application.h>
 #include <di/gui/ScaleLabel.h>
@@ -36,6 +37,7 @@
 #include <di/gui/events/CommandObserverEvent.h>
 
 #include <di/gui/ParameterBoolWidget.h>
+#include <di/gui/ParameterUIntWidget.h>
 
 #include "ParameterWidget.h"
 
@@ -62,10 +64,15 @@ namespace di
 
         ParameterWidget* ParameterWidget::build( SPtr< core::ParameterBase > parameter, QWidget* parent )
         {
-            auto paramBool = std::dynamic_pointer_cast< core::Parameter< bool > >( parameter );
+            auto paramBool = core::ParameterBase::as< core::ParamBool >( parameter );
             if( paramBool )
             {
                 return new ParameterBoolWidget( parameter, parent );
+            }
+            auto paramUInt = core::ParameterBase::as< core::ParamUInt >( parameter );
+            if( paramUInt )
+            {
+                return new ParameterUIntWidget( parameter, parent );
             }
 
             return nullptr;

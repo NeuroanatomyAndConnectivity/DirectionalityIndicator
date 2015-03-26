@@ -134,6 +134,11 @@ namespace di
             core::ParamBool m_enableSSAO;
 
             /**
+             * Number of arrows.
+             */
+            core::ParamUInt m_numArrows;
+
+            /**
              * The triangle mesh input to use.
              */
             SPtr< di::core::Connector< di::core::TriangleDataSet > > m_triangleDataInput;

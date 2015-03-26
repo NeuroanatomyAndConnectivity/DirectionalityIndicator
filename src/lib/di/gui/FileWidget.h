@@ -53,8 +53,9 @@ namespace di
              * \param icon the icon to use for the buttons
              * \param parent the parent widget
              * \param fileFilter the file filter to use
+             * \param title the title of the file widget
              */
-            FileWidget( const QIcon& icon, const QString& fileFilter, QWidget* parent = nullptr );
+            FileWidget( const QString& title, const QIcon& icon, const QString& fileFilter, QWidget* parent = nullptr );
 
             /**
              * Create the data widget.
@@ -63,8 +64,9 @@ namespace di
              * \param icon the icon to use for the buttons
              * \param parent the parent widget
              * \param fileFilter the file filter to use
+             * \param title the title of the file widget
              */
-            FileWidget( SPtr< core::Reader > reader, const QIcon& icon, const QString& fileFilter, QWidget* parent = nullptr );
+            FileWidget( SPtr< core::Reader > reader, const QString& title, const QIcon& icon, const QString& fileFilter, QWidget* parent = nullptr );
 
             /**
              * Destroy and clean up.
@@ -119,6 +121,10 @@ namespace di
              */
             SPtr< di::algorithms::DataInject > m_dataInject = nullptr;
 
+            /**
+             * Title of the file widget.
+             */
+            QString m_title = "File";
         private slots:
             /**
              * Load the file data.

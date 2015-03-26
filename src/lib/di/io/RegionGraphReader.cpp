@@ -22,37 +22,53 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <string> // std::string
-#include <algorithm> // std::transform
-#include <cctype>
-#include <sstream>
+#include <iostream>
+#include <string>
+#include <stdexcept>
 
-#include "StringUtils.h"
+#include <di/core/Filesystem.h>
+#include <di/core/StringUtils.h>
+
+#include "RegionGraphReader.h"
+
+#include <di/core/Logger.h>
+#define LogTag "di/io/RegionGraphReader"
 
 namespace di
 {
-    namespace core
+    namespace io
     {
-        std::string toLower( const std::string& str )
+        RegionGraphReader::RegionGraphReader():
+            Reader()
         {
-            std::string result = str;
-            std::transform( result.begin(), result.end(), result.begin(), tolower );
-            return result;
         }
 
-        std::vector< std::string > splitLines( const std::string& theString )
+        RegionGraphReader::~RegionGraphReader()
         {
-            // NOTE: this can be done nicely with std::sregex_token_iterator but crashes on GCC 4.9
+        }
 
-            // So use a string stream
-            std::stringstream ss( theString );
-            std::string item;
-            std::vector< std::string > elems;
-            while( std::getline( ss, item, '\n' ) )
+        bool RegionGraphReader::canLoad( const std::string& filename ) const
+        {
+            std::string ext = di::core::getFileExtension( filename );
+            return ( di::core::toLower( ext ) == "regiongraph" );
+        }
+
+        di::SPtr< di::core::DataSetBase > RegionGraphReader::load( const std::string& filename ) const
+        {
+            LogD << "Loading \"" << filename << "\"." << LogEnd;
+            auto file = core::readTextFile( filename );
+
+            // each line
+            auto lines = core::splitLines( file );
+            for( auto line : lines )
             {
-                elems.push_back( item );
+                // A line contains region-region relations
+
             }
-            return elems;
+
+            return nullptr;
         }
     }
 }
+
+

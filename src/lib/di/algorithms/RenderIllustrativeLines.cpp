@@ -65,6 +65,13 @@ namespace di
                     "rendering performance",
                     true
             );
+
+            m_numArrows = addParameter< unsigned int >(
+                    "Amount of Arrows",
+                    "Define the amount of arrows.",
+                    30
+            );
+            m_numArrows->setRangeHint( 0, 150 );
         }
 
         RenderIllustrativeLines::~RenderIllustrativeLines()
@@ -74,10 +81,13 @@ namespace di
 
         void RenderIllustrativeLines::onParameterChange( SPtr< core::ParameterBase > parameter )
         {
-            if( parameter == m_enableSSAO )
+            // The VIS parameters do not need a complete update
+            if( ( parameter == m_enableSSAO ) ||
+                ( parameter == m_numArrows )
+              )
             {
                 // This is only a visualization parameter. We do not need an complete update.
-                renderRequest();
+                // renderRequest();
                 return;
             }
 
@@ -249,6 +259,31 @@ namespace di
             glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
             glBindVertexArray( m_VAO );
+
+            // Need to update points?
+            unsigned int desiredArrows = m_numArrows->get() * m_numArrows->get();
+            if( !m_points || ( desiredArrows != m_points->getNumVertices() ) )
+            {
+                // create regular grid of points
+                m_points = std::make_shared< di::core::Points >();
+
+                const size_t xSize = m_numArrows->get();
+                const size_t ySize = m_numArrows->get();
+                for( size_t y = 0; y <= ySize; ++y )
+                {
+                    for( size_t x = 0; x <= xSize; ++x )
+                    {
+                        m_points->addVertex( static_cast< float >( x ) / static_cast< float >( xSize ),
+                                             static_cast< float >( y ) / static_cast< float >( ySize ),
+                                             0.0
+                                           );
+                    }
+                }
+                m_vertexBuffer->bind();
+                m_vertexBuffer->data( m_points->getVertices() );
+                logGLError();
+            }
+
             glDrawElements( GL_TRIANGLES, m_visTriangleData->getGrid()->getTriangles().size() * 3, GL_UNSIGNED_INT, NULL );
             logGLError();
 
@@ -307,6 +342,8 @@ namespace di
             // m_composeShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
             m_composeShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
             m_composeShaderProgram->setUniform( "u_bbSize", getBoundingBox().getSize() );
+            m_composeShaderProgram->setUniform( "u_enableSSAO", m_enableSSAO->get() );
+
             if( view.isHQMode() )
             {
                 m_composeShaderProgram->setUniform( "u_samples", 128 );
@@ -489,22 +526,6 @@ namespace di
 
             LogD << "Creating Point VAO" << LogEnd;
 
-            // create regular grid of points
-            m_points = std::make_shared< di::core::Points >();
-
-            const size_t xSize = 30;
-            const size_t ySize = 30;
-            for( size_t y = 0; y <= ySize; ++y )
-            {
-                for( size_t x = 0; x <= xSize; ++x )
-                {
-                    m_points->addVertex( static_cast< float >( x ) / static_cast< float >( xSize ),
-                                         static_cast< float >( y ) / static_cast< float >( ySize ),
-                                         0.0
-                                       );
-                }
-            }
-
             m_arrowShaderProgram->bind();
             logGLError();
 
@@ -524,8 +545,8 @@ namespace di
             // Set the data using the triangle mesh. Also set the location mapping of the shader using the VAO
             m_vertexBuffer->realize();
             m_vertexBuffer->bind();
-            m_vertexBuffer->data( m_points->getVertices() );
-            logGLError();
+
+            // NOTE: filled during rendering
 
             glEnableVertexAttribArray( vertexLoc );
             glVertexAttribPointer( vertexPointLoc, 3, GL_FLOAT, 0, 0, 0 );
@@ -723,7 +744,6 @@ namespace di
             m_composeShaderProgram->setUniform( "u_arrowDepthSampler", 3 );
             m_composeShaderProgram->setUniform( "u_meshNormalSampler",  4 );
             m_composeShaderProgram->setUniform( "u_noiseSampler",  5 );
-            m_composeShaderProgram->setUniform( "u_enableSSAO", m_enableSSAO->get() );
             logGLError();
 
             LogD << "Creating Compose Pass FBO" << LogEnd;

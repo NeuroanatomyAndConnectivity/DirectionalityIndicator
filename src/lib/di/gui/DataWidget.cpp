@@ -61,7 +61,8 @@ namespace di
             setWidget( contentWidget );
             m_contentLayout = new QVBoxLayout;
             contentWidget->setLayout( m_contentLayout );
-
+            m_contentLayout->setMargin( 0 );
+            m_contentLayout->setContentsMargins( 0, 0, 0, 0 );
             m_contentLayout->setAlignment( Qt::AlignTop );
         }
 

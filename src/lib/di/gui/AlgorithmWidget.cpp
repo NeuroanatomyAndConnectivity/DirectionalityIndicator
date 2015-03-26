@@ -57,6 +57,7 @@ namespace di
             {
                 auto label = new ScaleLabel( QString::fromStdString( param->getName() ), this );
                 label->setToolTip( QString::fromStdString( param->getDescription() ) );
+                label->setSizePolicy( QSizePolicy::Minimum, QSizePolicy::Minimum );
                 m_layout->addWidget( label, row, 0 );
 
                 auto paramWidget = ParameterWidget::build( param, this );

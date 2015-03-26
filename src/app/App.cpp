@@ -40,6 +40,8 @@
 #include <di/algorithms/Dilatate.h>
 #include <di/algorithms/GaussSmooth.h>
 
+#include <di/io/RegionGraphReader.h>
+
 #include <di/gui/ViewWidget.h>
 #include <di/gui/AlgorithmStrategies.h>
 #include <di/gui/AlgorithmStrategy.h>
@@ -50,7 +52,7 @@
 
 // include some icons as XPM. This will be replaced by a proper file loading.
 #include "icons/iconMesh.xpm"
-// #include "icons/iconLabels.xpm"
+#include "icons/iconLabels.xpm"
 
 #include "App.h"
 
@@ -122,9 +124,15 @@ namespace di
             // BEGIN:
 
             // Load mesh
-            auto fileWidget = new di::gui::FileWidget( QIcon( QPixmap( iconMesh_xpm ) ),
+            auto fileWidget = new di::gui::FileWidget( "Mesh", QIcon( QPixmap( iconMesh_xpm ) ),
                                                        QString( "Stanford Poly Format (*.ply)" ) );
             m_dataWidget->addFileWidget( fileWidget );
+
+            auto fileWidgetGraph = new di::gui::FileWidget( std::make_shared< di::io::RegionGraphReader >(),
+                                                            "Region Graph",
+                                                            QIcon( QPixmap( iconLabels_xpm ) ),
+                                                            QString( "Region Graph File (*.regiongraph)" ) );
+            m_dataWidget->addFileWidget( fileWidgetGraph );
 
             // Create the strategies:
             // Strategy 1:

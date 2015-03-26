@@ -29,6 +29,7 @@
 #include <QVBoxLayout>
 
 #include <di/core/Parameter.h>
+#include <di/core/ParameterTypes.h>
 
 #include <di/gui/ObserverQt.h>
 
@@ -95,9 +96,9 @@ namespace di
              * \return the parameter
              */
             template< typename ValueType >
-            SPtr< core::Parameter< ValueType > > getParameter() const
+            ValueType getParameter() const
             {
-                return std::dynamic_pointer_cast< core::Parameter< ValueType > >( m_param );
+                return std::dynamic_pointer_cast< typename ValueType::element_type >( m_param );
             }
 
         protected:

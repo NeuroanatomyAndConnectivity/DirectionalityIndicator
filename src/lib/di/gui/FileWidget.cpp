@@ -45,27 +45,39 @@ namespace di
 {
     namespace gui
     {
-        FileWidget::FileWidget( const QIcon& icon, const QString& fileFilter, QWidget* parent ):
+        FileWidget::FileWidget( const QString& title, const QIcon& icon, const QString& fileFilter, QWidget* parent ):
             QWidget( parent ),
-            m_fileFilter( fileFilter )
+            m_fileFilter( fileFilter ),
+            m_title( title )
         {
             // Add the load-button thingy
             QHBoxLayout* fileLoadLayout( new QHBoxLayout );
             setLayout( fileLoadLayout );
             m_fileLoadBtn = new QToolButton;
             m_fileLoadBtn->setIcon( icon );
-            m_fileLoadBtn->setIconSize( QSize( 64, 64 ) );
+            m_fileLoadBtn->setIconSize( QSize( 48, 48 ) );
             m_fileLoadLabel = new ScaleLabel;
             fileLoadLayout->addWidget( m_fileLoadBtn );
-            fileLoadLayout->addWidget( m_fileLoadLabel );
+            fileLoadLayout->setMargin( 5 );
+
+            // different layout for title and text
+            QVBoxLayout* fileInfoLayout( new QVBoxLayout );
+            fileLoadLayout->addLayout( fileInfoLayout );
+
+            auto titleLabel = new ScaleLabel;
+            titleLabel->setText( title );
+            titleLabel->setStyleSheet( "font-weight:bold;" );
+
+            fileInfoLayout->addWidget( titleLabel );
+            fileInfoLayout->addWidget( m_fileLoadLabel );
             m_fileLoadLabel->setText( tr( "No Data Loaded" ) );
 
             // Connect the tool buttons to an actual file dialog
             connect( m_fileLoadBtn, SIGNAL( clicked( bool ) ), this, SLOT( loadFile() ) );
         }
 
-        FileWidget::FileWidget( SPtr< core::Reader > reader, const QIcon& icon, const QString& fileFilter, QWidget* parent ):
-            FileWidget( icon, fileFilter, parent )
+        FileWidget::FileWidget( SPtr< core::Reader > reader, const QString& title, const QIcon& icon, const QString& fileFilter, QWidget* parent ):
+            FileWidget( title, icon, fileFilter, parent )
         {
             m_reader = reader;
         }

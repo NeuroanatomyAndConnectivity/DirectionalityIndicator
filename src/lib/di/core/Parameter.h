@@ -127,12 +127,50 @@ namespace di
              * \param validator the validator
              */
             void setValidator( std::function< bool( const ValueType& ) > validator );
+
+            /**
+             * Define a range hint. This is not connected to the validator. Specify a proper validator too!
+             *
+             * \param min minimum value
+             * \param maxIncluding maximum value, including the value
+             */
+            void setRangeHint( const ValueType& min, const ValueType& maxIncluding );
+
+            /**
+             * Query the range hint. Will return a pair of ValueType() if not set.
+             *
+             * \return the range hint.
+             */
+            std::pair< ValueType, ValueType > getRangeHint() const;
+
+            /**
+             * Check if there is a range hint defined.
+             *
+             * \return true if a range hint was set
+             */
+            bool hasRangeHint() const;
+
         protected:
         private:
             /**
-             * The value itself. Stored as SPtr to ease handling
+             * The value itself. Stored as SPtr to ease handling.
              */
             ValueType m_value;
+
+            /**
+             * Minimum range if set
+             */
+            ValueType m_rangeHintMin;
+
+            /**
+             * Max value for range hint if set
+             */
+            ValueType m_rangeHintMax;
+
+            /**
+             * Defines if there is a range hint
+             */
+            bool m_rangeHint = false;
 
             /**
              * Validator function
@@ -194,6 +232,27 @@ namespace di
         void Parameter< ValueType >::setValidator( std::function< bool( const ValueType& ) > validator )
         {
             m_validator = validator;
+        }
+
+        template< typename ValueType >
+        void Parameter< ValueType >::setRangeHint( const ValueType& min, const ValueType& maxIncluding )
+        {
+            // This indirectly tests if there is a < operator defined for valueType
+            m_rangeHintMin = std::min( min, maxIncluding );
+            m_rangeHintMax = std::max( min, maxIncluding );
+            m_rangeHint = true;
+        }
+
+        template< typename ValueType >
+        std::pair< ValueType, ValueType > Parameter< ValueType >::getRangeHint() const
+        {
+            return { m_rangeHintMin, m_rangeHintMax };
+        }
+
+        template< typename ValueType >
+        bool Parameter< ValueType >::hasRangeHint() const
+        {
+            return m_rangeHint;
         }
     }
 }

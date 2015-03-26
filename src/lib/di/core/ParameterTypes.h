@@ -27,6 +27,18 @@ namespace di
     namespace core
     {
         /**
+         * Value type for Param*
+         */
+        template< typename ParamType >
+        struct ParamValueType
+        {
+            /**
+             * The type of the parameter
+             */
+            typedef typename ParamType::element_type::value_type value_type;
+        };
+
+        /**
          * Boolean parameter
          */
         typedef SPtr< Parameter< bool > > ParamBool;

@@ -66,6 +66,18 @@ namespace di
              */
             const std::string& getDescription() const;
 
+          /**
+             * Get the parameter itself
+             *
+             * \param param the param to convert.
+             * \return the parameter. Nullptr if not valid (not cast-able).
+             */
+            template< typename ValueType >
+            static ValueType as( SPtr< ParameterBase > param )
+            {
+                return std::dynamic_pointer_cast< typename ValueType::element_type >( param );
+            }
+
         protected:
         private:
             /**

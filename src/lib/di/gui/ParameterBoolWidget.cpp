@@ -49,13 +49,13 @@ namespace di
 
         void ParameterBoolWidget::update()
         {
-            auto paramBool = getParameter< bool >();
+            auto paramBool = getParameter< core::ParamBool >();
             m_widget->setChecked( paramBool->get() );
         }
 
         void ParameterBoolWidget::changed()
         {
-            getParameter< bool >()->set( m_widget->isChecked() );
+            getParameter< core::ParamBool >()->set( m_widget->isChecked() );
         }
     }
 }
