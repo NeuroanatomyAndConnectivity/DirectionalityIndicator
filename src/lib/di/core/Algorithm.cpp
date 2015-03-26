@@ -26,6 +26,8 @@
 #include <string>
 
 #include <di/core/ObserverCallback.h>
+#include <di/core/ObserverParameter.h>
+
 #include "Algorithm.h"
 
 #include <di/core/Logger.h>
@@ -85,13 +87,21 @@ namespace di
 
         void Algorithm::addParameter( SPtr< ParameterBase > parameter )
         {
-            parameter->observe( std::make_shared< ObserverCallback >( [ this ]()
+            parameter->observe(
+                    std::make_shared< ObserverParameter >( [ & ]( SPtr< ParameterBase > param )
                     {
-                        this->requestUpdate();
-                    }
+                        this->onParameterChange( param );
+                    },
+                    parameter
                 )
             );
             m_parameters.insert( parameter );
+        }
+
+        void Algorithm::onParameterChange( SPtr< ParameterBase > parameter )
+        {
+            LogD << "Change in parameter: " << parameter->getName() << ". Requesting update." << LogEnd;
+            requestUpdate();
         }
 
         bool Algorithm::isInput( ConstSPtr< ConnectorBase > connector ) const
@@ -131,8 +141,9 @@ namespace di
 
         void Algorithm::requestUpdate( bool request )
         {
-            if( m_updateRequested == request )
+            if( ( m_updateRequested == request ) || ( !request ) )
             {
+                m_updateRequested = request;
                 return;
             }
             m_updateRequested = request;
@@ -176,6 +187,12 @@ namespace di
         {
             os << obj.getName() << std::string( " (" ) << static_cast< const void* >( &obj ) << std::string( ")" );
             return os;
+        }
+
+        void Algorithm::run()
+        {
+            process();
+            requestUpdate( false );
         }
     }
 }

@@ -58,7 +58,6 @@ namespace di
             }
             LogD << "Injecting data instance " << static_cast< const void* >( m_injectionData.get() ) << "." << LogEnd;
             m_dataOutput->setData( m_injectionData );
-            requestUpdate( false );
         }
 
         void DataInject::inject( ConstSPtr< di::core::ConnectorTransferable > data )

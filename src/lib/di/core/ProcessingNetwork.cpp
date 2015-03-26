@@ -505,7 +505,7 @@ namespace di
                     if( algo->isActive() && ( algo->isUpdateRequested() || dataPropagated[ algo ] ) )
                     {
                         LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
-                        algo->process();
+                        algo->run();
                     }
                     else
                     {

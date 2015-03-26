@@ -54,6 +54,20 @@ namespace di
     template< typename T > using ConstSPtr = std::shared_ptr< const T >;
 
     /**
+     * Alias for abbreviating the often used std::weak_ptr< Type >.
+     *
+     * \tparam T the type to embed into the weak_ptr.
+     */
+    template< typename T > using WPtr = std::weak_ptr< T >;
+
+    /**
+     * Alias for abbreviating the often used std::weak_ptr< Type >.
+     *
+     * \tparam T the type to embed into the weak_ptr.
+     */
+    template< typename T > using ConstWPtr = std::weak_ptr< const T >;
+
+    /**
      * Alias for abbreviating often used shared pointer vector containers
      *
      * \tparam T the type in the shared_ptr vector.

@@ -150,7 +150,7 @@ namespace di
                     // Inject to network
                     m_dataInject->inject( coe->getIssuer< di::commands::ReadFile >()->getResult() );
                     // NOTE: done using the dirty callback
-                    Application::getProcessingNetwork()->runNetwork();
+                    // Application::getProcessingNetwork()->runNetwork();
                 }
 
                 if( coe->getObserverStatus() == CommandObserverEvent::ABORT )

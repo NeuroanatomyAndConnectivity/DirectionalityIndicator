@@ -108,6 +108,8 @@ namespace di
                         continue;
                     }
 
+                    // unlock as this would (otherwise) block the queue itself when "processCommand" is blocking
+                    m_commandQueueMutex.unlock();
                     // process
                     processCommand( command );
                 }

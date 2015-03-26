@@ -70,6 +70,11 @@ namespace di
             virtual void process() = 0;
 
             /**
+             * Run the algorithm in the calling thread. It also resets the updateRequest.
+             */
+            void run();
+
+            /**
              * Method checks whether this algorithm is a source. This means, whether it only has outputs and no inputs.
              *
              * \return true if it only has outputs.
@@ -358,6 +363,14 @@ namespace di
              * \param request if true (default), an update will be requested. Set to false to mark everything done, no update needed anymore.
              */
             void requestUpdate( bool request = true );
+
+            /**
+             * Get notified about changes in a parameter. By default, this method calls \ref requestUpdate, if you override this method, it is your
+             * task to decide whether to update the whole algorithm or not.
+             *
+             * \param parameter the parameter that notified this
+             */
+            virtual void onParameterChange( SPtr< ParameterBase > parameter );
         private:
             /**
              * Algorithm inputs. Fill during construction.
