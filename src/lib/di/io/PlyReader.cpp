@@ -230,6 +230,16 @@ namespace di
 
             LogD << "Loading \"" << filename << "\" done." << LogEnd;
 
+            std::vector< glm::vec4 > diffColors;
+            for( auto c : *colors )
+            {
+                if( std::find( diffColors.begin(), diffColors.end(), c ) == diffColors.end() )
+                {
+                    diffColors.push_back( c );
+                }
+            }
+            LogD << "From " << numColors << " specified colors, " << diffColors.size() << " different where found." << LogEnd;
+
             // Restore locale.
             setlocale( LC_ALL, oldLocale );
 

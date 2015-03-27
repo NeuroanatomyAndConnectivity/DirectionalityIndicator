@@ -31,6 +31,7 @@
 
 #include <di/core/Algorithm.h>
 #include <di/core/data/DataSetTypes.h>
+#include <di/io/RegionLabelReader.h>
 
 namespace di
 {
@@ -118,6 +119,13 @@ namespace di
              * The triangle mesh input to use.
              */
             SPtr< di::core::Connector< di::core::TriangleDataSet > > m_dataInput;
+
+
+            /**
+             * The triangle label input to use.
+             */
+            SPtr< di::core::Connector< di::io::RegionLabelReader::DataSetType > > m_dataLabelInput;
+
         };
     }
 }

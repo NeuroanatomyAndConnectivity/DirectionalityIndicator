@@ -22,53 +22,5 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <iostream>
-#include <string>
-#include <stdexcept>
-
-#include <di/core/Filesystem.h>
-#include <di/core/StringUtils.h>
-
-#include "RegionGraphReader.h"
-
-#include <di/core/Logger.h>
-#define LogTag "di/io/RegionGraphReader"
-
-namespace di
-{
-    namespace io
-    {
-        RegionGraphReader::RegionGraphReader():
-            Reader()
-        {
-        }
-
-        RegionGraphReader::~RegionGraphReader()
-        {
-        }
-
-        bool RegionGraphReader::canLoad( const std::string& filename ) const
-        {
-            std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "regiongraph" );
-        }
-
-        di::SPtr< di::core::DataSetBase > RegionGraphReader::load( const std::string& filename ) const
-        {
-            LogD << "Loading \"" << filename << "\"." << LogEnd;
-            auto file = core::readTextFile( filename );
-
-            // each line
-            auto lines = core::splitLines( file );
-            for( auto line : lines )
-            {
-                // A line contains region-region relations
-
-            }
-
-            return nullptr;
-        }
-    }
-}
-
+#include "DataSetCollection.h"
 

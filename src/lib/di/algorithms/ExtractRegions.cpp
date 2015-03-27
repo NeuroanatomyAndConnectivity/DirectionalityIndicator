@@ -91,6 +91,11 @@ namespace di
                     "Triangle Mesh",
                     "The triangle data to process."
             );
+
+            m_dataLabelInput = addInput< di::io::RegionLabelReader::DataSetType >(
+                    "Triangle Labels",
+                    "Labels to assign a region to each mesh vertex."
+            );
         }
 
         ExtractRegions::~ExtractRegions()
@@ -173,8 +178,20 @@ namespace di
         {
             // Get input data
             auto triangleDataSet = m_dataInput->getData();
+            auto triangleLabelDataSet = m_dataLabelInput->getData();
+            if( !triangleDataSet || !triangleLabelDataSet )
+            {
+                return;
+            }
+
             auto triangles = triangleDataSet->getGrid();
             auto attribute = triangleDataSet->getAttributes< 0 >(); // the color in our case
+            auto labels = triangleLabelDataSet->getAttributes< 0 >();
+
+            if( labels->size() != triangles->getNumVertices() )
+            {
+                LogE << "Number of labels needs to match the number of vertices in the triangle mesh." << LogEnd;
+            }
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //

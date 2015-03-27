@@ -78,14 +78,14 @@ namespace di
                     "Define the width of the arrows.",
                     1.5
             );
-            m_widthArrows->setRangeHint( 0.0, 10.0 );
+            m_widthArrows->setRangeHint( 0.0, 5.0 );
 
             m_lengthArrows = addParameter< double >(
                     "Arrows: Length",
                     "Define the length of the arrows.",
                     5.0
             );
-            m_lengthArrows->setRangeHint( 0.0, 10.0 );
+            m_lengthArrows->setRangeHint( 0.0, 15.0 );
 
             m_distArrows = addParameter< double >(
                     "Arrows: Distance",

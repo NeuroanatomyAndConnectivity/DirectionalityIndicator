@@ -40,7 +40,7 @@
 #include <di/algorithms/Dilatate.h>
 #include <di/algorithms/GaussSmooth.h>
 
-#include <di/io/RegionGraphReader.h>
+#include <di/io/RegionLabelReader.h>
 
 #include <di/gui/ViewWidget.h>
 #include <di/gui/AlgorithmStrategies.h>
@@ -128,11 +128,11 @@ namespace di
                                                        QString( "Stanford Poly Format (*.ply)" ) );
             m_dataWidget->addFileWidget( fileWidget );
 
-            auto fileWidgetGraph = new di::gui::FileWidget( std::make_shared< di::io::RegionGraphReader >(),
-                                                            "Region Graph",
-                                                            QIcon( QPixmap( iconLabels_xpm ) ),
-                                                            QString( "Region Graph File (*.regiongraph)" ) );
-            m_dataWidget->addFileWidget( fileWidgetGraph );
+            auto fileWidgetLabels = new di::gui::FileWidget( std::make_shared< di::io::RegionLabelReader >(),
+                                                             "Region Labels",
+                                                             QIcon( QPixmap( iconLabels_xpm ) ),
+                                                             QString( "Region Labels File (*.labels)" ) );
+            m_dataWidget->addFileWidget( fileWidgetLabels );
 
             // Create the strategies:
             // Strategy 1:
@@ -155,7 +155,11 @@ namespace di
             // getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Neighbour Arrows", algo10->getAlgorithm(), "Lines" );
 
             // Connect all modules with a "Triangle Mesh" input.
-            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", m_extractRegions->getAlgorithm(), "Triangle Mesh" );
+            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data",
+                                                       m_extractRegions->getAlgorithm(), "Triangle Mesh" );
+            getProcessingNetwork()->connectAlgorithms( fileWidgetLabels->getDataInject(), "Data",
+                                                       m_extractRegions->getAlgorithm(), "Triangle Labels" );
+
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", renderArrows->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", lic->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Directionality",

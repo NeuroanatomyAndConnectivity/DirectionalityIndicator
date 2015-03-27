@@ -22,35 +22,42 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_REGIONGRAPHREADER_H
-#define DI_REGIONGRAPHREADER_H
+#ifndef DI_REGIONLABELREADER_H
+#define DI_REGIONLABELREADER_H
 
 #include <string>
+#include <vector>
 
 #include <di/Types.h>
 
 #include <di/core/Reader.h>
 #include <di/core/data/DataSetBase.h>
+#include <di/core/data/DataSetCollection.h>
 
 namespace di
 {
     namespace io
     {
         /**
-         * Implements a loader for the region graph data format. It implements the \ref di::core::Reader interface.
+         * Implements a loader for the region label data format. It implements the \ref di::core::Reader interface.
          */
-        class RegionGraphReader: public di::core::Reader
+        class RegionLabelReader: public di::core::Reader
         {
         public:
             /**
+             * The resulting data set type after loading.
+             */
+            typedef core::DataSetCollection< std::vector< size_t > > DataSetType;
+
+            /**
              * Constructor;
              */
-            RegionGraphReader();
+            RegionLabelReader();
 
             /**
              * Destructor.
              */
-            virtual ~RegionGraphReader();
+            virtual ~RegionLabelReader();
 
             /**
              * Check whether the specified file can be loaded.
@@ -75,5 +82,5 @@ namespace di
     }
 }
 
-#endif  // DI_REGIONGRAPHREADER_H
+#endif  // DI_REGIONLABELREADER_H
 
