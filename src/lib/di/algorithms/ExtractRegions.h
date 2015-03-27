@@ -120,12 +120,10 @@ namespace di
              */
             SPtr< di::core::Connector< di::core::TriangleDataSet > > m_dataInput;
 
-
             /**
              * The triangle label input to use.
              */
             SPtr< di::core::Connector< di::io::RegionLabelReader::DataSetType > > m_dataLabelInput;
-
         };
     }
 }

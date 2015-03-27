@@ -59,6 +59,12 @@ namespace di
                     "Directional information on the triangle mesh"
             );
 
+            m_dataLabelInput = addInput< di::io::RegionLabelReader::DataSetType >(
+                    "Labels",
+                    "Mesh Labels"
+            );
+
+
             m_enableSSAO = addParameter< bool >(
                     "Enable SSAO",
                     "SSAO is a modern rendering approach to get smooth shadows in a scene. This helps to improve spatial perception, at the cost of "
@@ -93,6 +99,8 @@ namespace di
                     2.0
             );
             m_distArrows->setRangeHint( 0.0, 10.0 );
+
+
         }
 
         RenderIllustrativeLines::~RenderIllustrativeLines()
@@ -111,6 +119,7 @@ namespace di
             // Get input data
             auto data = m_triangleDataInput->getData();
             auto vectors = m_vectorInput->getData();
+            auto labels = m_dataLabelInput->getData();
 
             // only valid if the grids match
             if( data && vectors )
@@ -126,12 +135,14 @@ namespace di
             {
                 data = nullptr;
                 vectors = nullptr;
+                labels = nullptr;
             }
 
             // Provide the needed information to the visualizer itself.
             bool changeVis = ( m_visTriangleData != data ) || ( m_visTriangleVectorData != vectors );
             m_visTriangleData = data;
             m_visTriangleVectorData = vectors;
+            m_visTriangleLabelData = labels;
 
             // As the rendering system does not render permanently, inform about the update.
             if( changeVis )

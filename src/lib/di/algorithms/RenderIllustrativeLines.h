@@ -32,6 +32,7 @@
 #include <di/core/data/Lines.h>
 #include <di/core/data/DataSetTypes.h>
 #include <di/core/Visualization.h>
+#include <di/io/RegionLabelReader.h>
 
 namespace di
 {
@@ -164,6 +165,11 @@ namespace di
             SPtr< di::core::Connector< di::core::TriangleVectorField > > m_vectorInput;
 
             /**
+             * The triangle label input to use.
+             */
+            SPtr< di::core::Connector< di::io::RegionLabelReader::DataSetType > > m_dataLabelInput;
+
+            /**
              * The data to visualize. We keep the pointer separate since process() and update()/render() work in different threads.
              */
             ConstSPtr< di::core::TriangleDataSet > m_visTriangleData = nullptr;
@@ -172,6 +178,11 @@ namespace di
              * Vector attributes
              */
             ConstSPtr< di::core::TriangleVectorField > m_visTriangleVectorData = nullptr;
+
+            /**
+             * Labels
+             */
+            ConstSPtr< di::io::RegionLabelReader::DataSetType > m_visTriangleLabelData = nullptr;
 
             /**
              * The array storing the arrow points

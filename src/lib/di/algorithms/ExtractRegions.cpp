@@ -125,7 +125,8 @@ namespace di
 
         void propagateDirectionBroad( size_t startRegion, // always a source
                                       SPtr< ExtractRegions::DirectedRegionNeighbourhood > directionGraph,
-                                      SPtr< ExtractRegions::RegionConnections > regionNeighbours )
+                                      SPtr< ExtractRegions::RegionConnections > regionNeighbours,
+                                      SPtr< std::vector< size_t > > regionLabels )
         {
             std::queue< size_t > visitQueue;
             visitQueue.push( startRegion );
@@ -138,15 +139,27 @@ namespace di
                 auto neighbours = regionNeighbours->operator[]( currentRegion );
                 for( auto neighbour : neighbours )
                 {
+                    // direction is defined by region labels:
+                    auto myLabel = regionLabels->at( currentRegion );
+                    auto neighbourLabel = regionLabels->at( currentRegion );
+
                     // is this connection already known? ( a connection FROM neighbour to this region
-                    if( directionGraph->operator[]( neighbour ).count( currentRegion ) )
+                    if( ( directionGraph->operator[]( neighbour ).count( currentRegion ) ) ||
+                        ( directionGraph->operator[]( currentRegion ).count( neighbour ) ) )
                     {
                         // Already a known connection. Skip and do not propagate:
                         continue;
                     }
 
                     // Unknown connection. Add to graph and continue propagation
-                    directionGraph->operator[]( currentRegion ).insert( neighbour );
+                    if( myLabel < neighbourLabel )
+                    {
+                        directionGraph->operator[]( currentRegion ).insert( neighbour );
+                    }
+                    else
+                    {
+                        directionGraph->operator[]( neighbour ).insert( currentRegion );
+                    }
 
                     // Add to visit queue
                     visitQueue.push( neighbour );
@@ -209,6 +222,8 @@ namespace di
             std::vector< int > vertexRegion( triangles->getNumVertices(), -1 );
             // DATA: Color palette of the regions
             auto regionColors = std::make_shared< std::vector< glm::vec4 > >();
+            // DATA: Mapping of internal regions to labels
+            auto regionLabels = std::make_shared< std::vector< size_t > >();
 
             // Iterate all triangles and transform to lines
             size_t regionVertexCount = 0; // keep track of how many vertices where associated
@@ -226,6 +241,7 @@ namespace di
                     // add new region to map and store the associated vertices.
                     regionVertices.push_back( connectedAndEqual );
                     regionColors->push_back( attribute->at( vertID ) ); // take source color as palette here
+                    regionLabels->push_back( labels->at( vertID ) );
                     regionVertexCount += connectedAndEqual.size();
 
                     // also build the inverse list
@@ -238,6 +254,24 @@ namespace di
 
             LogD << "Associated " << regionVertexCount << " vertices of " << triangles->getNumVertices() << " with "  <<
                     regionVertices.size() << " non-connected regions." << LogEnd;
+
+            size_t internalID = 0;
+            for( auto r : regionVertices )
+            {
+                size_t rmin = r.front();
+                size_t rmax = r.front();
+
+                for( auto v : r )
+                {
+                    rmin = std::min( rmin, v );
+                    rmax = std::max( rmax, v );
+                }
+
+                LogD << "Region " << internalID << " Vertex ID range: [ " << rmin << ", " << rmax << " ]" << " Label: " << regionLabels->at(
+                        internalID ) << "." << LogEnd;
+                internalID++;
+            }
+
 
             // DATA: the number of regions.
             auto numRegions = regionVertices.size();
@@ -409,7 +443,7 @@ namespace di
             // DATA: Classical edge-list of the directed graph. Direction: from entry.first to entry.second
             LogD << "Propagating directions through " << numRegions << " regions. This might take a while." << LogEnd;
             auto directionGraph = std::make_shared< DirectedRegionNeighbourhood >();
-            propagateDirectionBroad( initialRegion, directionGraph, regionNeighbours );
+            propagateDirectionBroad( initialRegion, directionGraph, regionNeighbours, regionLabels );
 
             /*
             // Debug to DOT file:

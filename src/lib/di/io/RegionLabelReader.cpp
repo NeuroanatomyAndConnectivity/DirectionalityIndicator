@@ -60,15 +60,15 @@ namespace di
             LogD << "Loading \"" << filename << "\"." << LogEnd;
             auto file = core::readTextFile( filename );
 
-            auto labels = std::make_shared< std::vector< size_t > >();
-            size_t min = std::numeric_limits< size_t >::max();
-            size_t max = 0;
+            auto labels = std::make_shared< std::vector< uint16_t > >();
+            uint16_t min = std::numeric_limits< uint16_t >::max();
+            uint16_t max = 0;
 
             // each line
             auto lines = core::splitLines( file );
             for( auto line : lines )
             {
-                size_t l = std::atol( line.c_str() );
+                uint16_t l = std::atoi( line.c_str() );
                 // A line contains a region label - line number corresponds to the mesh vertex IDs
                 labels->push_back( l );
 
