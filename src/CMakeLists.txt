@@ -88,6 +88,13 @@ SET( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 SET( ResourceName ${PROJECT_NAME} )
 ADD_DEFINITIONS( "-DResourceName=\"${ResourceName}\"" )
 
+# In some cases, you want to use a custom compiler toolchain
+IF( DEFINED ENV{DI_FORCE_LIBDIR} )
+  MESSAGE( "Using custom library directory: $ENV{DI_FORCE_LIBDIR}" )
+  SET( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath -Wl,$ENV{DI_FORCE_LIBDIR}" )
+  SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,$ENV{DI_FORCE_LIBDIR}" )
+ENDIF()
+
 # ---------------------------------------------------------------------------------------------------------------------------------------------------
 #
 # GLSL Setup
