@@ -73,12 +73,6 @@ namespace di
                 s->setActive( index == idx );
                 idx++;
             }
-
-            // Change the activate state -> rerun network. Note that during construction , the network might not yet exist.
-            if( Application::getProcessingNetwork() )
-            {
-                Application::getProcessingNetwork()->runNetwork();
-            }
         }
 
         void AlgorithmStrategies::connectToAll( ConstSPtr< di::core::Algorithm > from, std::string outputName,

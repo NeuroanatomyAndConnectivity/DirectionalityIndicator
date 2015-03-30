@@ -186,7 +186,12 @@ namespace di
             {
                 LogD << "De-activating \"" << m_name << "\"." << LogEnd;
             }
-            m_active.store( active );
+            auto previouslyActive = m_active.exchange( active );
+
+            if( active && !previouslyActive )
+            {
+                requestUpdate();
+            }
         }
 
         std::ostream& operator<<( std::ostream& os, const Algorithm& obj )
