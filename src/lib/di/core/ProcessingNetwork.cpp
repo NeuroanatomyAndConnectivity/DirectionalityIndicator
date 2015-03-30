@@ -486,7 +486,7 @@ namespace di
                 LogD << "Layer " << l << LogEnd;
                 for( auto algo : layer.first )
                 {
-                    LogD << "    - " << algo->getName() << " ( Dirty: " << algo->isUpdateRequested() << ", Active: " << algo->isActive() << " )"
+                    LogD << "    - " << *algo << " { Dirty: " << algo->isUpdateRequested() << ", Active: " << algo->isActive() << " }"
                          << LogEnd;
                 }
                 l++;
@@ -504,12 +504,18 @@ namespace di
                 {
                     if( algo->isActive() && ( algo->isUpdateRequested() || dataPropagated[ algo ] ) )
                     {
-                        LogI << "Running algorithm \"" << algo->getName() << "\"." << LogEnd;
+                        LogI << "Running algorithm"
+                             << " - " << *algo << " { Dirty: " << algo->isUpdateRequested() << ", Active: " << algo->isActive()
+                             << ", Data: " << dataPropagated[ algo ] << " }"
+                             << LogEnd;
                         algo->run();
                     }
                     else
                     {
-                        LogI << "Ignoring inactive algorithm \"" << algo->getName() << "\"." << LogEnd;
+                        LogI << "Ignoring algorithm"
+                             << " - " << *algo << " { Dirty: " << algo->isUpdateRequested() << ", Active: " << algo->isActive()
+                             << ", Data: " << dataPropagated[ algo ] << " }"
+                             << LogEnd;
                     }
                 }
 
@@ -519,7 +525,7 @@ namespace di
                     LogD << "Propagation: " << *m_connections[ con ].first << ":" << *con << ":" << *m_connections[ con ].second <<
                                                " - Result: " << result << LogEnd;
 
-                    dataPropagated[ m_connections[ con ].second ] = result;
+                    dataPropagated[ m_connections[ con ].second ] = dataPropagated[ m_connections[ con ].second ] || result;
                 }
             }
         }

@@ -38,6 +38,7 @@ namespace di
     namespace core
     {
         Algorithm::Algorithm( const std::string& name, const std::string& description ):
+            Observable(),
             m_name( name ),
             m_description( description )
         {
@@ -48,6 +49,11 @@ namespace di
         Algorithm::~Algorithm()
         {
             // cleanup
+        }
+
+        std::string Algorithm::getInstanceInfo() const
+        {
+            return getName() + " (" + Observable::getInstanceInfo() + ")";
         }
 
         const SPtrSet< ConnectorBase >& Algorithm::getInputs() const
@@ -185,7 +191,7 @@ namespace di
 
         std::ostream& operator<<( std::ostream& os, const Algorithm& obj )
         {
-            os << obj.getName() << std::string( " (" ) << static_cast< const void* >( &obj ) << std::string( ")" );
+            os << obj.getInstanceInfo();
             return os;
         }
 

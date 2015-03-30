@@ -65,6 +65,13 @@ namespace di
             virtual const std::string& getDescription() const;
 
             /**
+             * Provide some instance information on this observable. The purpose is mostly for logging and debug output.
+             *
+             * \return the instance info string.
+             */
+            virtual std::string getInstanceInfo() const override;
+
+            /**
              * Process the inputs and update the outputs here. This method might be called in its own thread.
              */
             virtual void process() = 0;

@@ -27,6 +27,7 @@
 
 #include <vector>
 #include <mutex>
+#include <string>
 
 #include <di/Types.h>
 
@@ -70,6 +71,13 @@ namespace di
              * \param observer the observer to remove
              */
             void removeObserver( Observer* observer );
+
+            /**
+             * Provide some instance information on this observable. The purpose is mostly for logging and debug output.
+             *
+             * \return the instance info string.
+             */
+            virtual std::string getInstanceInfo() const;
 
         protected:
             /**

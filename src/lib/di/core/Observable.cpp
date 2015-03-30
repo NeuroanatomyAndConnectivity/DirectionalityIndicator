@@ -22,6 +22,9 @@
 //
 //---------------------------------------------------------------------------------------
 
+
+#include <string>
+#include <sstream>
 #include <algorithm>
 
 #include <di/core/Observer.h>
@@ -69,6 +72,13 @@ namespace di
             m_observersPtr.erase( std::remove( m_observersPtr.begin(),
                                                m_observersPtr.end(),
                                                observer ), m_observersPtr.end() );
+        }
+
+        std::string Observable::getInstanceInfo() const
+        {
+            std::stringstream ss;
+            ss << static_cast< const void* >( this );
+            return ss.str();
         }
     }
 }
