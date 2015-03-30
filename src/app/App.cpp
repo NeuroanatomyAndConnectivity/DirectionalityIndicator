@@ -142,6 +142,10 @@ namespace di
                 new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderIllustrativeLines ) )
             );
 
+            // auto renderMeshAsLines = s->addAlgorithm(
+            //    new di::gui::AlgorithmWidget( SPtr< di::core::Algorithm >( new di::algorithms::RenderLines ) )
+            // );
+
             // Strategy 2:
             s = m_algorithmStrategies->addStrategy( new di::gui::AlgorithmStrategy( "Surface LIC" ) );
             auto lic = s->addAlgorithm( new di::gui::AlgorithmWidget( SPtr< di::algorithms::SurfaceLIC >( new di::algorithms::SurfaceLIC ) ) );
@@ -164,6 +168,9 @@ namespace di
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", lic->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Directionality",
                                                        renderArrows->getAlgorithm(), "Directions" );
+            // getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Region Meshes",
+            //                                            renderMeshAsLines->getAlgorithm(), "Lines" );
+
             getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Directionality", lic->getAlgorithm(), "Directions" );
 
             // END:

@@ -255,6 +255,7 @@ namespace di
             LogD << "Associated " << regionVertexCount << " vertices of " << triangles->getNumVertices() << " with "  <<
                     regionVertices.size() << " non-connected regions." << LogEnd;
 
+            // Some output for verification.
             size_t internalID = 0;
             for( auto r : regionVertices )
             {
@@ -278,10 +279,228 @@ namespace di
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
+            // Build a line mesh of the data. Useful for algorithm debugging.
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // DATA: the triangle mesh itself -> wireframe
+            auto linesMesh = std::make_shared< di::core::Lines >();
+            // DATA: the wireframe colors
+            auto colorsMesh = std::make_shared< di::RGBAArray >();
+
+            // Iterate all triangles and transform to lines
+            for( auto t : triangles->getTriangles() )
+            {
+                // t is an ivec3 -> 3 indices to color, vertex, normal
+                auto c1 = attribute->operator[]( t.x );
+                auto c2 = attribute->operator[]( t.y );
+                auto c3 = attribute->operator[]( t.z );
+
+                auto v1 = triangles->getVertex( t.x );
+                auto v2 = triangles->getVertex( t.y );
+                auto v3 = triangles->getVertex( t.z );
+
+                // Always add the triangle itself
+                // Get Vertices, add to line data, connect ... nothing fancy here.
+
+                auto v1I = linesMesh->addVertex( v1 );
+                auto v2I = linesMesh->addVertex( v2 );
+                auto v3I = linesMesh->addVertex( v3 );
+                linesMesh->addLine( v1I, v2I );
+                linesMesh->addLine( v1I, v3I );
+                linesMesh->addLine( v2I, v3I );
+                float a = 1.0;
+                colorsMesh->push_back( glm::vec4( c1.r, c1.g, c1.b, a ) );
+                colorsMesh->push_back( glm::vec4( c2.r, c2.g, c2.b, a ) );
+                colorsMesh->push_back( glm::vec4( c3.r, c3.g, c3.b, a ) );
+            }
+
+            // Create a wireframe mesh for debug
+            m_regionMeshOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Mesh", linesMesh, colorsMesh ) );
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Build an directed neighbourhood between regions at the border vertices
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // DATA: Used to store the direction at each vertex
+            auto vectorAttribute = std::make_shared< di::Vec3Array >( triangles->getNumVertices() );
+
+            // DATA: Store if value is set for vertex ID
+            auto vectorAttributeSet = std::vector< bool >( triangles->getNumVertices(), false );
+
+            // DATA: Count the number of attributes per region
+            auto regionAttributeCount = std::vector< size_t >( numRegions, 0 );
+
+            // Iterate all triangles, find the border triangles
+            for( size_t vertexID = 0; vertexID < triangles->getNumVertices(); ++vertexID )
+            {
+                // Get vertex region and ignore unknown or "null" regions
+                auto vertexRegionID = vertexRegion[ vertexID ];
+                if( regionLabels->at( vertexRegionID ) == 0 )
+                {
+                    vectorAttribute->at( vertexID ) = glm::vec3( 0.0f );
+                    vectorAttributeSet.at( vertexID ) = true;
+                    continue;
+                }
+
+                // Get all triangles sharing this vertex
+                auto neighbourVertices = triangles->getNeighbourVertices( vertexID );
+
+                // Collect directions of all borders
+                std::vector< glm::vec3 > vertexBorderVectors;
+
+                // Check each neighbour-region (if any different)
+                for( auto neighbourID : neighbourVertices )
+                {
+                    // Get neighbour vertex region and ignore unknown or "null" regions
+                    auto neighbourRegionID = vertexRegion[ neighbourID ];
+                    if( regionLabels->at( neighbourRegionID ) == 0 )
+                    {
+                        continue;
+                    }
+
+                    // If the regions are different, build a direction vector as the weighted sum of all directions to all affected border vertices.
+                    if( neighbourRegionID != vertexRegionID ) // << there is a border between vertex and neighbour
+                    {
+                        // point from this vertex towards the neighbour.
+                        auto vertexSource = triangles->getVertex( vertexID );
+                        auto vertexDest  = triangles->getVertex( neighbourID );
+
+                        // TODO: not yet really correct!?!?
+                        float invert = ( vertexRegionID < neighbourRegionID ) ? -1.0f : 1.0f;
+                        // float invert = ( vertexID < neighbourID ) ? -1.0f : 1.0f;
+
+                        // Finally, a direction. Add and go on to the next neighbour
+                        auto direction = invert * glm::normalize( vertexDest - vertexSource );
+                        vertexBorderVectors.push_back( direction );
+                    }
+                }
+
+                // Is this vertex somehow participating in a border? If so, build a mean-direction:
+                if( vertexBorderVectors.size() )
+                {
+                    glm::vec3 meanDirection;
+                    for( auto dir : vertexBorderVectors )
+                    {
+                        meanDirection += dir;
+                    }
+                    meanDirection /= static_cast< float >( vertexBorderVectors.size() );
+
+                    // Store
+                    vectorAttribute->at( vertexID ) = meanDirection;
+                    vectorAttributeSet.at( vertexID ) = true;
+
+                    // Later, we need to know how much attributes have been set for this region
+                    regionAttributeCount[ vertexRegionID ]++;
+                }
+            }
+
+            LogD << "Done marching borders." << LogEnd;
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Spread the field to have a direction for all vertices
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            bool keepRunning = true;
+            while( keepRunning )
+            {
+                auto nowSet = vectorAttributeSet;
+
+                // Iterate all triangles, find the border triangles
+                for( size_t vertexID = 0; vertexID < triangles->getNumVertices(); ++vertexID )
+                {
+                    // already set?
+                    if( vectorAttributeSet.at( vertexID ) )
+                    {
+                        continue;
+                    }
+
+                    // Get neighbours
+                    auto neighbours = triangles->getNeighbourVertices( vertexID );
+                    size_t includedNeighbours = 0;
+                    float longestDistance = 0.0f;
+                    for( auto neighbourID : neighbours )
+                    {
+                        if( vectorAttributeSet.at( neighbourID ) )
+                        {
+                            // for scaling the interpolation
+                            longestDistance = std::max( longestDistance,
+                                                        glm::distance( triangles->getVertex( vertexID ), triangles->getVertex( neighbourID ) )
+                            );
+                        }
+                    }
+
+                    glm::vec3 meanVec = glm::vec3( 0.0f );
+                    float factor = 0.0;
+                    for( auto neighbourID : neighbours )
+                    {
+                        if( vertexID == neighbourID )
+                        {
+                            continue;
+                        }
+
+                        if( vectorAttributeSet.at( neighbourID ) )
+                        {
+                            includedNeighbours++;
+                            auto dist = glm::distance( triangles->getVertex( vertexID ), triangles->getVertex( neighbourID ) );
+
+                            auto srcVec = vectorAttribute->at( neighbourID );
+                            auto normal = glm::normalize( triangles->getNormal( vertexID ) );
+                            auto biNormal = glm::normalize( glm::cross( normal, glm::normalize( srcVec ) ) );
+                            auto vec = glm::normalize( glm::cross( biNormal, normal ) );
+
+                            // ensure length again
+                            vec *= glm::length( srcVec );
+                            factor += ( dist / longestDistance );
+                            meanVec += ( dist / longestDistance ) * vec;
+                        }
+                    }
+
+                    if( includedNeighbours >= 2 )
+                    {
+                        vectorAttribute->at( vertexID ) = meanVec / factor;
+                        nowSet.at( vertexID ) = true;
+                    }
+                }
+
+                vectorAttributeSet = nowSet;
+                keepRunning = false;
+                for( auto vSet : vectorAttributeSet )
+                {
+                    if( !vSet )
+                    {
+                        keepRunning = true;
+                        break;
+                    }
+                }
+            }
+
+            LogD << "Done propagating directions." << LogEnd;
+
+            LogD << "Done. Updating output." << LogEnd;
+            m_vectorOutput->setData( std::make_shared< di::core::TriangleVectorField >( "Directionality", triangles, vectorAttribute ) );
+
+
+
+
+
+
+
+
+
+
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
             // Build an undirected neighbourhood between regions
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            /*
             // DATA: Use the following iteration for determining the neighbourhood of each region.
             // NOTE: the vector stores a std::set of each neighbour, no duplicates
             auto regionNeighbours = std::make_shared< RegionNeighbourhood >( numRegions ); // keep a set of direct neighbours of each reg
@@ -415,13 +634,14 @@ namespace di
                     mergeVectors( borderDirection, differentI, direction );
                 }
             }
-
+            */
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Build a directed neighbourhood graph
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            /*
             // Get the region with the most neighbours
             auto maxIter = std::max_element( regionNeighbours->begin(), regionNeighbours->end(),
                 []( RegionNeighbourhood::value_type a, RegionNeighbourhood::value_type b )
@@ -444,7 +664,7 @@ namespace di
             LogD << "Propagating directions through " << numRegions << " regions. This might take a while." << LogEnd;
             auto directionGraph = std::make_shared< DirectedRegionNeighbourhood >();
             propagateDirectionBroad( initialRegion, directionGraph, regionNeighbours, regionLabels );
-
+            */
             /*
             // Debug to DOT file:
             std::ofstream ofs( "/home/seth/dotfilebroad.dot", std::ofstream::out );
@@ -479,6 +699,7 @@ namespace di
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            /*
             // DATA: vector attribute for each vertex
             auto vectorAttribute = std::make_shared< di::Vec3Array >( triangles->getNumVertices() );
             float maxLength = 0.0;
@@ -548,16 +769,6 @@ namespace di
                             continue;
                         }
 
-                        // Use this to place info only at the borders
-                        /*if( vertexID == borderVertex )
-                        {
-                            mergedDirection = borderDirection[ borderVertex ];
-                        }
-                        else
-                        {
-                            continue;
-                        }*/
-
                         // weight by distance -> calc distance
                         auto vb = triangles->getVertex( borderVertex );
                         auto distance = glm::length( vb - currentVertex );
@@ -593,16 +804,14 @@ namespace di
             }
 
             // Normalize lengths against max-len?
-            /*
-            for( size_t vID = 0; vID < vectorAttribute->size(); ++vID )
-            {
-                vectorAttribute->operator[]( vID ) /= maxLength;
-            }
-            */
+            // for( size_t vID = 0; vID < vectorAttribute->size(); ++vID )
+            // {
+            //    vectorAttribute->operator[]( vID ) /= maxLength;
+            // }
 
             LogD << "Done. Updating output." << LogEnd;
             m_vectorOutput->setData( std::make_shared< di::core::TriangleVectorField >( "Directionality", triangles, vectorAttribute ) );
-
+            */
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //

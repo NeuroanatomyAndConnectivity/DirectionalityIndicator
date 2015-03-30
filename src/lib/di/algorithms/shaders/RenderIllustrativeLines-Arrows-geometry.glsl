@@ -58,7 +58,9 @@ void main()
     float height = u_height;
     float dist = u_dist;
 
-    float scale = clamp( 0.005 * 5.0 * smoothstep( 0.1, 0.9, 0.2 + v_pointVec[0].w ), 0.0025, 0.005 );
+    // float scale = 0.005;
+    // float scale = clamp( 0.005 * 5.0 * smoothstep( 0.1, 0.9, 0.2 + v_pointVec[0].w ), 0.0025, 0.005 );
+    float scale = clamp( 0.005 * v_pointVec[0].w, 0.0001, 0.005 );
     float lscale = scale * height;
     float wscale = scale * width;
 
