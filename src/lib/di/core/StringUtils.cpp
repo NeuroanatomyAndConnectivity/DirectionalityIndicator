@@ -40,7 +40,7 @@ namespace di
             return result;
         }
 
-        std::vector< std::string > splitLines( const std::string& theString )
+        std::vector< std::string > split( const std::string& theString, const char& delim )
         {
             // NOTE: this can be done nicely with std::sregex_token_iterator but crashes on GCC 4.9
 
@@ -48,7 +48,7 @@ namespace di
             std::stringstream ss( theString );
             std::string item;
             std::vector< std::string > elems;
-            while( std::getline( ss, item, '\n' ) )
+            while( std::getline( ss, item, delim ) )
             {
                 elems.push_back( item );
             }

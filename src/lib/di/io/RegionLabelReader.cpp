@@ -65,8 +65,12 @@ namespace di
             uint16_t max = 0;
 
             // each line
-            auto lines = core::splitLines( file );
-            for( auto line : lines )
+            auto items = core::split( file, ',' );
+            if( items.size() <= 1 )
+            {
+                items = core::split( file );
+            }
+            for( auto line : items )
             {
                 uint16_t l = std::atoi( line.c_str() );
                 // A line contains a region label - line number corresponds to the mesh vertex IDs

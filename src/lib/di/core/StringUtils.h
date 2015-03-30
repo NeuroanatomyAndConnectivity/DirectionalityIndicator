@@ -44,13 +44,14 @@ namespace di
         std::string toLower( const std::string& str );
 
         /**
-         * Split a string into lines. Very useful for parsing text files.
+         * Split a string into tokens. Very useful for parsing text files.
          *
          * \param theString the string to split
+         * \param delim the delimiter to use
          *
-         * \return the lines as vector.
+         * \return the tokens as vector.
          */
-        std::vector< std::string > splitLines( const std::string& theString );
+        std::vector< std::string > split( const std::string& theString, const char& delim = '\n' );
     }
 }
 
