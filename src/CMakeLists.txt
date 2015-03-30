@@ -319,14 +319,14 @@ ENDIF()
 
 IF( REQUIRE_QT4 )
     # Searching Qt4
-    FIND_PACKAGE( Qt4 REQUIRED QtGui QtOpenGL QtWebKit )
+    FIND_PACKAGE( Qt4 4.8.0 REQUIRED QtCore QtGui QtOpenGL QtWebKit )
     
-    IF( NOT Qt4_FOUND )
+    IF( NOT QT4_FOUND )
         MESSAGE( FATAL_ERROR "Neither Qt5 nor Qt4 were found. Abort. Try using DI_QTDIR or QTDIR environment variables to point to your Qt installation." )
     ENDIF()
 
-    INCLUDE_DIRECTORIES( SYSTEM ${QT_INCLUDE_DIR} )
-    SET( QT_Link_Libs Qt4::QtGui Qt4::QtOpenGL Qt4::QtWebKit )
+    INCLUDE_DIRECTORIES( SYSTEM ${QT_INCLUDES} )
+    SET( QT_Link_Libs Qt4::QtCore Qt4::QtGui Qt4::QtOpenGL Qt4::QtWebKit )
 endif()
 
 # This is needed since the mocs will be generated there

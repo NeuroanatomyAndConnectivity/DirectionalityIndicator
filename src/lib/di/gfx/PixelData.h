@@ -27,6 +27,7 @@
 
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 #include <di/Types.h>
 #include <di/MathTypes.h>
