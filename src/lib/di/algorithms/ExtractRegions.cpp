@@ -369,8 +369,8 @@ namespace di
                         auto vertexDest  = triangles->getVertex( neighbourID );
 
                         // TODO: not yet really correct!?!?
-                        float invert = ( vertexRegionID < neighbourRegionID ) ? -1.0f : 1.0f;
-                        // float invert = ( vertexID < neighbourID ) ? -1.0f : 1.0f;
+                        // float invert = ( vertexRegionID < neighbourRegionID ) ? -1.0f : 1.0f;
+                        float invert = ( vertexID < neighbourID ) ? -1.0f : 1.0f;
 
                         // Finally, a direction. Add and go on to the next neighbour
                         auto direction = invert * glm::normalize( vertexDest - vertexSource );
@@ -483,15 +483,6 @@ namespace di
 
             LogD << "Done. Updating output." << LogEnd;
             m_vectorOutput->setData( std::make_shared< di::core::TriangleVectorField >( "Directionality", triangles, vectorAttribute ) );
-
-
-
-
-
-
-
-
-
 
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
