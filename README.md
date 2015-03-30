@@ -20,7 +20,7 @@ repository, MacPorts, and MSYS2.
 
 * Qt >= 4.8, including Qt5
 * CMake >= 2.8
-* CLang or GCC, supporting basic C++11 functionality.
+* CLang or GCC <= 4.7, supporting basic C++11 functionality.
 
 ### Runtime Dependencies
 
@@ -57,4 +57,40 @@ $ DirectionalityIndicator
 ```
 
 It is planned to allow specification of data files on the command line. Right now, this is not supported. More options will follow.
+
+## Support
+
+### Build GCC 4.9
+
+This is needed if your system does not provide a modern GCC, or you are not allowed to install one from a repository. There are some prerequisites
+that need to be available on the build system:
+
+* _some_ GCC
+
+
+```shell
+$ cd ~
+$ mkdir -p .local/toolchains
+$ cd .local/toolchains
+# Now, download GCC source:
+$ wget ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-4.9.2/gcc-4.9.2.tar.bz2
+# Extract archive
+$ tar xjf gcc-4.9.2.tar.bz2
+$ cd gcc-4.9.2
+# Building GCC requires some dependencies. GCC provides a script to download them for us:
+$ ./contrib/download_prerequisites
+# Now configure the build. The environment variables CC and CXX should be set to ensure they point to GCC (and not clang for example):
+$ CC=/usr/bin/gcc CXX=/usr/bin/g++ ./configure --prefix=$HOME/.local/toolchains/gcc/ --disable-multilib --enable-languages=c,c++ --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
+# Start building. You can build in parallel by specifying the number of cores to use with the -j parameter:
+$ make -j4
+# After this is done, install to the prefiously defined set prefix (.local/toolchains/gcc in this case)
+$ make install
+```
+
+Now, you need to tell CMake to use the alternative toolchain to build DirectionalityIndicator. Follow the above instructions but replace the CMake
+call by this one:
+
+```shell
+DI_FORCE_LIBDIR=~/.local/toolchains/gcc/lib64 CC=~/.local/toolchains/gcc/bin/ CXX=~/.local/toolchains/gcc/bin/g++ cmake ../src
+```
 
