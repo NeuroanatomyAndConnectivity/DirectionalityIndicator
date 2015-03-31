@@ -29,10 +29,13 @@ in vec3 position;
 in vec4 color;
 in vec3 normal;
 in vec3 vectors;
+in uint label;
 
 // Uniforms
 uniform mat4 u_ProjectionMatrix;
 uniform mat4 u_ViewMatrix;
+uniform int u_maskLabel;
+uniform bool u_maskLabelEnable;
 
 // Varying out
 flat out vec4 v_color;
@@ -40,11 +43,21 @@ out vec3 v_normal;
 out vec4 v_posView;
 out vec3 v_vector;
 out float v_vectorLength;
+flat out float v_emphasizeScale;
 
 void main()
 {
     // v_color = vec4( abs(vectors.rgb), 1.0 );
     v_color = color;
+
+    v_emphasizeScale = 1.0;
+    if( u_maskLabelEnable )
+    {
+        if( int( label ) != u_maskLabel )
+        {
+            v_emphasizeScale = 0.125;
+        }
+    }
 
     v_vector = ( u_ViewMatrix * vec4( vectors, 0.0 ) ).xyz;
     v_vectorLength = length( vectors );

@@ -119,7 +119,17 @@ namespace di
             );
             m_distArrows->setRangeHint( 0.0, 10.0 );
 
+            m_maskLabelEnable = addParameter< bool >(
+                    "Debug: Emphasize Label",
+                    "Enable to emphasize the regions with the defined label and to gray-out others.",
+                    false
+            );
 
+            m_maskLabel = addParameter< int >(
+                    "Debug: Label ID",
+                    "Define the label to emphasize.",
+                    0
+            );
         }
 
         RenderIllustrativeLines::~RenderIllustrativeLines()
@@ -291,6 +301,10 @@ namespace di
             m_transformShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             m_transformShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
             m_transformShaderProgram->setUniform( "u_specularity",      m_specularity->get() );
+
+            m_transformShaderProgram->setUniform( "u_maskLabel",      m_maskLabel->get() );
+            m_transformShaderProgram->setUniform( "u_maskLabelEnable",      m_maskLabelEnable->get() );
+
             logGLError();
 
             // NOTE: keep original Viewport
@@ -519,7 +533,7 @@ namespace di
             GLint colorLoc = m_transformShaderProgram->getAttribLocation( "color" );
             GLint normalLoc = m_transformShaderProgram->getAttribLocation( "normal" );
             GLint vectorsLoc = m_transformShaderProgram->getAttribLocation( "vectors" );
-            // GLint labelsLoc = m_transformShaderProgram->getAttribLocation( "label" );
+            GLint labelsLoc = m_transformShaderProgram->getAttribLocation( "label" );
 
             logGLError();
 
@@ -533,7 +547,7 @@ namespace di
             m_normalBuffer = std::make_shared< core::Buffer >();
             m_colorBuffer = std::make_shared< core::Buffer >();
             m_vectorsBuffer = std::make_shared< core::Buffer >();
-            // m_labelsBuffer = std::make_shared< core::Buffer >();
+            m_labelsBuffer = std::make_shared< core::Buffer >();
             m_indexBuffer = std::make_shared< core::Buffer >( core::Buffer::BufferType::ElementArray );
             logGLError();
 
@@ -568,14 +582,12 @@ namespace di
             glVertexAttribPointer( vectorsLoc, 3, GL_FLOAT, 0, 0, 0 );
             logGLError();
 
-            /*
             m_labelsBuffer->realize();
             m_labelsBuffer->bind();
             m_labelsBuffer->data( m_visTriangleLabelData->getAttributes() );
             glEnableVertexAttribArray( labelsLoc );
-            glVertexAttribPointer( labelsLoc, 1, GL_UNSIGNED_INT, 0, 0, 0 );
+            glVertexAttribIPointer( labelsLoc, 1, GL_UNSIGNED_INT, 0, 0 );
             logGLError();
-            */
 
             m_indexBuffer->realize();
             m_indexBuffer->bind();
