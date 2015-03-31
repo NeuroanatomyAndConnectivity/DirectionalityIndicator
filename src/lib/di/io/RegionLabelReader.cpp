@@ -52,7 +52,7 @@ namespace di
         bool RegionLabelReader::canLoad( const std::string& filename ) const
         {
             std::string ext = di::core::getFileExtension( filename );
-            return ( di::core::toLower( ext ) == "labels" );
+            return ( di::core::toLower( ext ) == "labelorder" ) || ( di::core::toLower( ext ) == "labels" );
         }
 
         di::SPtr< di::core::DataSetBase > RegionLabelReader::load( const std::string& filename ) const

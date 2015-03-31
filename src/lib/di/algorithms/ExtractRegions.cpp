@@ -62,7 +62,7 @@ namespace di
             );
 
             m_regionMeshOutput = addOutput< di::core::LineDataSet >(
-                    "Region Meshes",
+                    "Region Mesh as Lines",
                     "Extracted region meshes as lines."
             );
 
@@ -96,6 +96,12 @@ namespace di
                     "Triangle Labels",
                     "Labels to assign a region to each mesh vertex."
             );
+
+            m_dataLabelOrderingInput = addInput< di::io::RegionLabelReader::DataSetType >(
+                    "Label Ordering",
+                    "Label ordering to use for determining direction between regions."
+            );
+
 
             m_enableDirectionSwitch = addParameter< bool >(
                     "Switch Directionality",
@@ -198,7 +204,8 @@ namespace di
             // Get input data
             auto triangleDataSet = m_dataInput->getData();
             auto triangleLabelDataSet = m_dataLabelInput->getData();
-            if( !triangleDataSet || !triangleLabelDataSet )
+            auto labelOrderDataSet = m_dataLabelOrderingInput->getData();
+            if( !triangleDataSet || !triangleLabelDataSet || !labelOrderDataSet )
             {
                 return;
             }
@@ -206,11 +213,21 @@ namespace di
             auto triangles = triangleDataSet->getGrid();
             auto attribute = triangleDataSet->getAttributes< 0 >(); // the color in our case
             auto labels = triangleLabelDataSet->getAttributes< 0 >();
+            auto labelOrders = labelOrderDataSet->getAttributes< 0 >();
 
             if( labels->size() != triangles->getNumVertices() )
             {
                 LogE << "Number of labels needs to match the number of vertices in the triangle mesh." << LogEnd;
             }
+
+            // Debug Code
+            LogD << "Label ordering: ";
+            for( auto l : *labelOrders )
+            {
+                LogContinue << l << ", ";
+            }
+            LogContinue << " - total: " << labelOrders->size() << LogEnd;
+
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -322,17 +339,13 @@ namespace di
             }
 
             // Create a wireframe mesh for debug
-            m_regionMeshOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Mesh", linesMesh, colorsMesh ) );
+            m_regionMeshOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Mesh as Lines", linesMesh, colorsMesh ) );
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
             // Build an directed neighbourhood between regions at the border vertices
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            std::vector< size_t > labelOrders( { 16, 12, 15,  1,  14, 11,  4,  7, 18,  5,  9,  10,  6,
-                                                 2,   3,  17,   8,  13 } );
-
 
             // DATA: Used to store the direction at each vertex
             auto vectorAttribute = std::make_shared< di::Vec3Array >( triangles->getNumVertices() );
@@ -380,10 +393,10 @@ namespace di
                         auto vertexDest  = triangles->getVertex( neighbourID );
 
                         auto neighbourLabel = regionLabels->at( neighbourRegionID );
-                        auto neighbourPos = std::find( labelOrders.begin(), labelOrders.end(), neighbourLabel );
-                        auto vertexPos    = std::find( labelOrders.begin(), labelOrders.end(), label );
+                        auto neighbourPos = std::find( labelOrders->begin(), labelOrders->end(), neighbourLabel );
+                        auto vertexPos    = std::find( labelOrders->begin(), labelOrders->end(), label );
 
-                        if( ( vertexPos == labelOrders.end() ) || ( neighbourPos == labelOrders.end() ) )
+                        if( ( vertexPos == labelOrders->end() ) || ( neighbourPos == labelOrders->end() ) )
                         {
                             LogE << "ERROR: label not in orders list?" << LogEnd;
                         }

@@ -53,6 +53,7 @@
 // include some icons as XPM. This will be replaced by a proper file loading.
 #include "icons/iconMesh.xpm"
 #include "icons/iconLabels.xpm"
+#include "icons/iconLabelOrder.xpm"
 
 #include "App.h"
 
@@ -128,11 +129,20 @@ namespace di
                                                        QString( "Stanford Poly Format (*.ply)" ) );
             m_dataWidget->addFileWidget( fileWidget );
 
+            // Load Labels
             auto fileWidgetLabels = new di::gui::FileWidget( std::make_shared< di::io::RegionLabelReader >(),
                                                              "Region Labels",
                                                              QIcon( QPixmap( iconLabels_xpm ) ),
                                                              QString( "Region Labels File (*.labels)" ) );
             m_dataWidget->addFileWidget( fileWidgetLabels );
+
+            // Load Label Order List
+            auto fileWidgetLabelOrder = new di::gui::FileWidget( std::make_shared< di::io::RegionLabelReader >(),
+                                                                 "Label Ordering",
+                                                                 QIcon( QPixmap( iconLabelOrder_xpm ) ),
+                                                                 QString( "Region Label Order File (*.labelorder)" ) );
+            m_dataWidget->addFileWidget( fileWidgetLabelOrder );
+
 
             // Create the strategies:
             // Strategy 1:
@@ -163,12 +173,14 @@ namespace di
                                                        m_extractRegions->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( fileWidgetLabels->getDataInject(), "Data",
                                                        m_extractRegions->getAlgorithm(), "Triangle Labels" );
+            getProcessingNetwork()->connectAlgorithms( fileWidgetLabelOrder->getDataInject(), "Data",
+                                                       m_extractRegions->getAlgorithm(), "Label Ordering" );
 
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", renderArrows->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", lic->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Directionality",
                                                        renderArrows->getAlgorithm(), "Directions" );
-            // getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Region Meshes",
+            // getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Region Mesh as Lines",
             //                                            renderMeshAsLines->getAlgorithm(), "Lines" );
 
             getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Directionality", lic->getAlgorithm(), "Directions" );

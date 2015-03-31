@@ -38,6 +38,7 @@
 
 #define LogStream std::cout << std::resetiosflags( std::ios_base::basefield | std::ios_base::floatfield | std::ios_base::adjustfield )
 #define LogEnd std::endl;
+#define LogContinue LogStream
 #define LogD LogStream << "DEBUG [" << LogTag << "]: "
 #define LogI LogStream << "INFO  [" << LogTag << "]: "
 #define LogW LogStream << "WARN  [" << LogTag << "]: "

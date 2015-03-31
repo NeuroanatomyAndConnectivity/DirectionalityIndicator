@@ -130,6 +130,12 @@ namespace di
              * The triangle label input to use.
              */
             SPtr< di::core::Connector< di::io::RegionLabelReader::DataSetType > > m_dataLabelInput;
+
+            /**
+             * The triangle label ordering to use.
+             */
+            SPtr< di::core::Connector< di::io::RegionLabelReader::DataSetType > > m_dataLabelOrderingInput;
+
         };
     }
 }
