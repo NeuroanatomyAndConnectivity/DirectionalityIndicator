@@ -24,6 +24,10 @@
 
 #version 330
 
+uniform float u_widthTails = 0.25;
+
+uniform vec4 u_arrowColor = vec4( 1.0 );
+
 in vec4 v_color;
 in vec3 v_normal;
 in vec2 v_surfaceUV;
@@ -38,7 +42,7 @@ void main()
 {
     // arrow :-)
     float shade = 1.0;
-    vec4 arrowColor = v_color;
+    vec4 arrowColor = u_arrowColor;
 
     // the head: above a threshold along y axis (longitudinal)
     if( v_surfaceUV.y >= 0.5 )
@@ -56,7 +60,7 @@ void main()
     else
     {
         float body = abs( v_surfaceUV.x );
-        float skip = smoothstep( 0.50, 0.65, body );
+        float skip = step( u_widthTails, body );
         shade = 1.0 - skip;
     }
 
@@ -69,7 +73,7 @@ void main()
     // Light
     // float light = blinnPhongIlluminationIntensity( normalize( v_normal.xyz ) );
     float light = clamp( 0.1 + pow( abs( dot( v_normal, vec3( 0.0, 0.0, 1.0 ) ) ), 2.0 ), 0.0, 1.0 );
-    vec4 finalColor = vec4( vec3( light ), arrowColor.a );
+    vec4 finalColor = vec4( arrowColor.rgb * vec3( light ), arrowColor.a );
 
     // Write
     fragColor = finalColor;

@@ -96,6 +96,12 @@ namespace di
                     "Triangle Labels",
                     "Labels to assign a region to each mesh vertex."
             );
+
+            m_enableDirectionSwitch = addParameter< bool >(
+                    "Switch Directionality",
+                    "If enabled, the directionality of the arrows will be inverted.",
+                    true
+            );
         }
 
         ExtractRegions::~ExtractRegions()
@@ -382,7 +388,11 @@ namespace di
                             LogE << "ERROR: label not in orders list?" << LogEnd;
                         }
 
-                        float invert = ( vertexPos < neighbourPos ) ? -1.0f : 1.0f;
+                        // Standard case: FROM the latter TO the earlier. The default direction is FROM vertexID TO neighbourID
+                        float invert = ( vertexPos > neighbourPos ) ? -1.0f : 1.0f;
+
+                        // But allow the user to change it again
+                        invert *= m_enableDirectionSwitch->get() ? -1.0f : 1.0f;
 
                         // Finally, a direction. Add and go on to the next neighbour
                         auto direction = invert * glm::normalize( vertexDest - vertexSource );

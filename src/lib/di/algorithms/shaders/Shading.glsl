@@ -212,6 +212,23 @@ float blinnPhongIlluminationIntensityFullDiffuse( in vec3 normal )
     return blinnPhongIlluminationIntensity( DefaultLightIntensityFullDiffuse, normal );
 }
 
+/**
+ * Function to calculate lighting intensity based on "Real-Time Volume Graphics, p 119, chapter 5.4, Listing 5.1".
+ * It is basically the same as blinnPhongIllumination function above. But it is faster if you just need
+ * the intensity. This uses the DefaultLightIntensityFullDiffuse.
+ *
+ * \param normal the normal. Must be normalized beforehand
+ *
+ * \return the light intensity
+ */
+float blinnPhongIlluminationIntensityFullDiffuse( in vec3 normal, in float specularity )
+{
+    LightIntensityParameter params = DefaultLightIntensityFullDiffuse;
+    params.materialSpecular *= specularity;
+    return blinnPhongIlluminationIntensity( params, normal );
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // This is based on the LineAO algorithm from http://doi.ieeecomputersociety.org/10.1109/TVCG.2012.142

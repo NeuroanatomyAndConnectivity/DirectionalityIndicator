@@ -66,10 +66,23 @@ namespace di
 
 
             m_enableSSAO = addParameter< bool >(
-                    "Enable SSAO",
+                    "Shading: SSAO",
                     "SSAO is a modern rendering approach to get smooth shadows in a scene. This helps to improve spatial perception, at the cost of "
                     "rendering performance",
                     true
+            );
+
+            m_specularity = addParameter< double >(
+                    "Shading: Specularity",
+                    "Change the intensity of the specular highlights on the surface.",
+                    0.25
+            );
+            m_specularity->setRangeHint( 0.0, 1.0 );
+
+            m_colorArrows = addParameter< di::Color >(
+                    "Arrows: Color",
+                    "Define the color of the arrows.",
+                    di::Color( 1.0, 1.0, 1.0, 1.0 )
             );
 
             m_numArrows = addParameter< int >(
@@ -85,6 +98,13 @@ namespace di
                     1.5
             );
             m_widthArrows->setRangeHint( 0.0, 5.0 );
+
+            m_widthArrowTails = addParameter< double >(
+                    "Arrows: Tail Width ",
+                    "Define the width of the arrow tails as a fraction of the overall width.",
+                    0.25
+            );
+            m_widthArrowTails->setRangeHint( 0.0, 1.0 );
 
             m_lengthArrows = addParameter< double >(
                     "Arrows: Length",
@@ -108,7 +128,7 @@ namespace di
             // nothing to clean up so far
         }
 
-        void RenderIllustrativeLines::onParameterChange( SPtr< core::ParameterBase > parameter )
+        void RenderIllustrativeLines::onParameterChange( SPtr< core::ParameterBase > /* parameter */ )
         {
             // The VIS parameters do not need a complete update.
             return;
@@ -268,6 +288,7 @@ namespace di
             m_transformShaderProgram->bind();
             m_transformShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             m_transformShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
+            m_transformShaderProgram->setUniform( "u_specularity",      m_specularity->get() );
             logGLError();
 
             // NOTE: keep original Viewport
@@ -322,8 +343,10 @@ namespace di
             // m_arrowShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
             m_arrowShaderProgram->setUniform( "u_viewportScale", ( view.getViewportSize() - glm::vec2( 1.0 ) ) / glm::vec2( 2048, 2048 ) );
             m_arrowShaderProgram->setUniform( "u_width", m_widthArrows->get() );
+            m_arrowShaderProgram->setUniform( "u_widthTails", m_widthArrowTails->get() );
             m_arrowShaderProgram->setUniform( "u_height", m_lengthArrows->get() );
             m_arrowShaderProgram->setUniform( "u_dist", m_distArrows->get() );
+            m_arrowShaderProgram->setUniform( "u_arrowColor", m_colorArrows->get() );
             logGLError();
 
             glActiveTexture( GL_TEXTURE0 );

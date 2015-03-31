@@ -31,6 +31,7 @@ in vec3 v_vector;
 in float v_vectorLength;
 
 uniform mat4 u_ViewMatrix;
+uniform float u_specularity = 0.25;
 
 out vec4 fragColor;
 out vec4 fragVec;
@@ -38,11 +39,11 @@ out vec4 fragNormal;
 out vec4 fragPos;
 
 // NOTE the following is LIB code. Load Shading.glsl on host side
-float blinnPhongIlluminationIntensityFullDiffuse( in vec3 normal );
+float blinnPhongIlluminationIntensityFullDiffuse( in vec3 normal, in float specularity );
 
 void main()
 {
-    float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.rgb ) );
+    float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.rgb ), u_specularity );
 
     // Write
     fragColor = vec4( light * v_color.xyz, 1.0 );

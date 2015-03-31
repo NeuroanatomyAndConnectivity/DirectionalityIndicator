@@ -135,9 +135,19 @@ namespace di
             core::ParamBool m_enableSSAO;
 
             /**
+             * The specularity value
+             */
+            core::ParamDouble m_specularity;
+
+            /**
              * Number of arrows.
              */
             core::ParamInt m_numArrows;
+
+            /**
+             * Color of the arrows
+             */
+            core::ParamColor m_colorArrows;
 
             /**
              * Dist of arrows.
@@ -148,6 +158,11 @@ namespace di
              * Width of arrows.
              */
             core::ParamDouble m_widthArrows;
+
+            /**
+             * Width of arrow tails.
+             */
+            core::ParamDouble m_widthArrowTails;
 
             /**
              * Length of arrows.

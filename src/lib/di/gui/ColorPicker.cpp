@@ -54,6 +54,11 @@ namespace di
 
             connect( m_colorBtn, SIGNAL( released() ), this, SLOT( selectColor() ) );
 
+            m_colorDialog = new QColorDialog( this );
+            connect( m_colorDialog, SIGNAL( accepted() ), this, SLOT( accepted() ) );
+            connect( m_colorDialog, SIGNAL( rejected() ), this, SLOT( rejected() ) );
+            connect( m_colorDialog, SIGNAL( currentColorChanged( const QColor& ) ), this, SLOT( colorChanged( const QColor& ) ) );
+
             // Color everything
             update();
         }
@@ -69,15 +74,35 @@ namespace di
             update();
         }
 
-        void ColorPicker::selectColor()
+        void ColorPicker::accpeted()
         {
-            // Use 8bit colors:
-            auto newColor = QColorDialog::getColor( m_color, this, "Select Color", QColorDialog::ShowAlphaChannel );
+            auto newColor = m_colorDialog->currentColor();
             if( newColor.isValid() )
             {
                 m_color = newColor;
                 update();
             }
+        }
+
+        void ColorPicker::rejected()
+        {
+            m_color = m_oldColor;
+            update();
+        }
+
+        void ColorPicker::colorChanged( const QColor& color )
+        {
+            if( m_tracking )
+            {
+                m_color = color;
+                update();
+            }
+        }
+
+        void ColorPicker::selectColor()
+        {
+            m_colorDialog->show();
+            m_oldColor = m_color;
         }
 
         void ColorPicker::update()
@@ -95,6 +120,13 @@ namespace di
             QPixmap px( 20, 20 );
             px.fill( m_color );
             m_colorBtn->setIcon( px );
+
+            emit onColorChange( m_color );
+        }
+
+        void ColorPicker::setTracking( bool track )
+        {
+            m_tracking = track;
         }
     }
 }

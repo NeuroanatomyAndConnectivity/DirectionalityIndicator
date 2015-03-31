@@ -27,6 +27,7 @@
 
 #include <QWidget>
 #include <QToolButton>
+#include <QColorDialog>
 
 namespace di
 {
@@ -66,6 +67,22 @@ namespace di
              * \param color the color
              */
             void setColor( const QColor& color );
+
+            /**
+             * Track all changes immediately?
+             *
+             * \param track true to track. If false, changes will be applied after the user closed the color dialog.
+             */
+            void setTracking( bool track = true );
+
+        signals:
+            /**
+             * Called when the color was changed by the user.
+             *
+             * \param color the color.
+             */
+            void onColorChange( QColor color );
+
         private slots:
             /**
              * Update the color information everywhere.
@@ -77,7 +94,29 @@ namespace di
              */
             virtual void selectColor();
 
+            /**
+             * When the color is accepted.
+             */
+            void accpeted();
+
+            /**
+             * Whenever the color is rejected.
+             */
+            void rejected();
+
+            /**
+             * User changes the color in the dialog
+             *
+             * \param color the color
+             */
+            void colorChanged( const QColor& color );
+
         private:
+            /**
+             * The color dialog
+             */
+            QColorDialog* m_colorDialog = nullptr;
+
             /**
              * The color button itself
              */
@@ -92,6 +131,16 @@ namespace di
              * Color
              */
             QColor m_color;
+
+            /**
+             * Color before opening the dialog
+             */
+            QColor m_oldColor;
+
+            /**
+             * Track color changes in the dialog immediately?
+             */
+            bool m_tracking = false;
         };
     }
 }

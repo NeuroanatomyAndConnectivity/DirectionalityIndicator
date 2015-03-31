@@ -21,6 +21,7 @@
 #define DI_PARAMETERTYPES_H
 
 #include <di/core/Parameter.h>
+#include <di/GfxTypes.h>
 
 namespace di
 {
@@ -52,6 +53,11 @@ namespace di
          * Unsigned double parameter
          */
         typedef SPtr< Parameter< double > > ParamDouble;
+
+        /**
+         * Colors
+         */
+        typedef SPtr< Parameter< di::Color > > ParamColor;
     }
 }
 

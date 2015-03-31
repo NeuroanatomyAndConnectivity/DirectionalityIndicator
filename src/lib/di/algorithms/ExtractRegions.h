@@ -32,6 +32,7 @@
 #include <di/core/Algorithm.h>
 #include <di/core/data/DataSetTypes.h>
 #include <di/io/RegionLabelReader.h>
+#include <di/core/ParameterTypes.h>
 
 namespace di
 {
@@ -85,6 +86,11 @@ namespace di
 
         protected:
         private:
+            /**
+             * True to switch directions
+             */
+            core::ParamBool m_enableDirectionSwitch;
+
             /**
              * The resulting line data.
              */
