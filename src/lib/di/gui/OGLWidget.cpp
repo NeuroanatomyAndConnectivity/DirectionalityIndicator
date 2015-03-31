@@ -225,7 +225,11 @@ namespace di
             // move scene into the visible area
             glm::mat4 moveToVisibleArea = glm::translate( glm::vec3( 0.0, 0.0, -( m_zoom * 0.5 + near ) ) );
 
-            m_camera.setViewMatrix( m_dragMatrix * moveToVisibleArea * zoom * scaleToFit * m_arcballMatrix * rotationPointTranslate );
+            glm::mat4 dragMatrix = glm::translate( static_cast< float >( maxExtend ) *
+                                                   ( 1.0f / static_cast< float >( m_zoom ) ) *
+                                                   glm::vec3( m_dragOffset.x, m_dragOffset.y, 0.0 ) );
+
+            m_camera.setViewMatrix( moveToVisibleArea * scaleToFit * zoom * dragMatrix * m_arcballMatrix * rotationPointTranslate );
 
             // set a nice default projection matrix:
             m_camera.setProjectionMatrix(
@@ -398,7 +402,7 @@ namespace di
             if( event->button() == Qt::MiddleButton )
             {
                 m_dragState = 1;
-                m_dragPrevMatrix = m_dragMatrix;
+                m_dragPrevOffset = m_dragOffset;
             }
             if( event->button() == Qt::LeftButton )
             {
@@ -459,8 +463,7 @@ namespace di
             {
                 auto currPos = toScreenCoord( event->x(), event->y() );
                 auto diff = currPos - m_arcballPrevPos;
-                m_dragMatrix = glm::translate( glm::vec3( diff.x, diff.y, 0.0 ) ) * m_dragPrevMatrix;
-                LogD << "Not yet completed" << diff.x << " - " << diff.y << LogEnd;
+                m_dragOffset = glm::vec2( diff.x, diff.y ) + m_dragPrevOffset;
             }
 
             event->accept();
@@ -508,7 +511,7 @@ namespace di
         void OGLWidget::resetView()
         {
             m_arcballMatrix = glm::mat4();
-            m_dragMatrix = glm::mat4();
+            m_dragOffset = glm::vec2();
         }
 
         void OGLWidget::setViewAlongPosX()

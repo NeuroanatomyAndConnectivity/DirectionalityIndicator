@@ -319,12 +319,12 @@ namespace di
             /**
              * The current drag matrix.
              */
-            glm::mat4 m_dragMatrix;
+            glm::vec2 m_dragOffset;
 
             /**
              * The previous drag matrix.
              */
-            glm::mat4 m_dragPrevMatrix;
+            glm::vec2 m_dragPrevOffset;
 
             /**
              * The current arcball matrix.
