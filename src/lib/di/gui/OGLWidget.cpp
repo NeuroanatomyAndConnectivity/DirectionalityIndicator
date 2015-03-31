@@ -225,7 +225,7 @@ namespace di
             // move scene into the visible area
             glm::mat4 moveToVisibleArea = glm::translate( glm::vec3( 0.0, 0.0, -( m_zoom * 0.5 + near ) ) );
 
-            m_camera.setViewMatrix( moveToVisibleArea * zoom * scaleToFit * m_arcballMatrix * rotationPointTranslate );
+            m_camera.setViewMatrix( m_dragMatrix * moveToVisibleArea * zoom * scaleToFit * m_arcballMatrix * rotationPointTranslate );
 
             // set a nice default projection matrix:
             m_camera.setProjectionMatrix(
@@ -395,6 +395,11 @@ namespace di
 
         void OGLWidget::mousePressEvent( QMouseEvent* event )
         {
+            if( event->button() == Qt::MiddleButton )
+            {
+                m_dragState = 1;
+                m_dragPrevMatrix = m_dragMatrix;
+            }
             if( event->button() == Qt::LeftButton )
             {
                 m_arcballState = 1;
@@ -405,6 +410,10 @@ namespace di
 
         void OGLWidget::mouseReleaseEvent( QMouseEvent* event )
         {
+            if( event->button() == Qt::MiddleButton )
+            {
+                m_dragState = 0;
+            }
             if( event->button() == Qt::LeftButton )
             {
                 m_arcballState = 0;
@@ -414,29 +423,45 @@ namespace di
 
         void OGLWidget::mouseMoveEvent( QMouseEvent* event )
         {
-            if( m_arcballState == 0 )
+            if( ( m_arcballState == 0 ) && ( m_dragState == 0 ) )
             {
                 event->ignore();
                 return;
             }
-            else if( m_arcballState == 1 )
+            else if( ( m_arcballState == 1 ) || ( m_dragState == 1 ) )
             {
                 // Store initial position only.
                 m_arcballPrevPos = toScreenCoord( event->x(), event->y() );
-                m_arcballState = 2;
+                if( m_arcballState == 1 )
+                {
+                    m_arcballState = 2;
+                }
+                else
+                {
+                    m_dragState = 2;
+                }
                 event->ignore();
                 return;
             }
+            else if( m_arcballState == 2 )
+            {
+                // Tracking the subsequent
+                m_arcballCurrPos = toScreenCoord( event->x(), event->y() );
+                // Calculate the angle in radians, and clamp it between 0 and 90 degrees
+                m_arcballAngle = acos( std::min( 1.0f, glm::dot( m_arcballPrevPos, m_arcballCurrPos ) ) );
+                // Cross product to get the rotation axis, but it's still in camera coordinate
+                m_arcballCamAxis = glm::cross( m_arcballPrevPos, m_arcballCurrPos );
 
-            // Tracking the subsequent
-            m_arcballCurrPos = toScreenCoord( event->x(), event->y() );
-            // Calculate the angle in radians, and clamp it between 0 and 90 degrees
-            m_arcballAngle = acos( std::min( 1.0f, glm::dot( m_arcballPrevPos, m_arcballCurrPos ) ) );
-            // Cross product to get the rotation axis, but it's still in camera coordinate
-            m_arcballCamAxis = glm::cross( m_arcballPrevPos, m_arcballCurrPos );
-
-            m_arcballMatrix = glm::rotate( glm::degrees( m_arcballAngle ) * m_arcballRollSpeed, m_arcballCamAxis ) *
-                              m_arcballPrevMatrix;
+                m_arcballMatrix = glm::rotate( glm::degrees( m_arcballAngle ) * m_arcballRollSpeed, m_arcballCamAxis ) *
+                                  m_arcballPrevMatrix;
+            }
+            else if( m_dragState == 2 )
+            {
+                auto currPos = toScreenCoord( event->x(), event->y() );
+                auto diff = currPos - m_arcballPrevPos;
+                m_dragMatrix = glm::translate( glm::vec3( diff.x, diff.y, 0.0 ) ) * m_dragPrevMatrix;
+                LogD << "Not yet completed" << diff.x << " - " << diff.y << LogEnd;
+            }
 
             event->accept();
         }
@@ -462,40 +487,6 @@ namespace di
         {
             switch( event->key() )
             {
-/*                case Qt::Key_Space:
-                    resetView();
-                    break;*/
-                /*case Qt::Key_X: // rotate along x
-                    if( event->modifiers() == Qt::ShiftModifier )
-                    {
-                        m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) ) * m_arcballMatrix;
-                    }
-                    else
-                    {
-                        m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) ) * m_arcballMatrix;
-                    }
-                    break;
-                case Qt::Key_Y: // rotate along y
-                    if( event->modifiers() == Qt::ShiftModifier )
-                    {
-                        m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) * m_arcballMatrix;
-                    }
-                    else
-                    {
-                        m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) * m_arcballMatrix;
-                    }
-                    break;
-                case Qt::Key_Z: // rotate along z
-                    if( event->modifiers() == Qt::ShiftModifier )
-                    {
-                        m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) * m_arcballMatrix;
-                    }
-                    else
-                    {
-                        m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) * m_arcballMatrix;
-                    }
-                    break;
-*/
                 case Qt::Key_D:
                     // restore default for our current data. Just a convenient shortcut for now. Later this will not be needed as project
                     // files store the cam too.
@@ -517,38 +508,45 @@ namespace di
         void OGLWidget::resetView()
         {
             m_arcballMatrix = glm::mat4();
+            m_dragMatrix = glm::mat4();
         }
 
         void OGLWidget::setViewAlongPosX()
         {
+            resetView();
             m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
                               glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongNegX()
         {
+            resetView();
             m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
                               glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongPosY()
         {
+            resetView();
             m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongNegY()
         {
+            resetView();
             m_arcballMatrix =  glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
                                glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongPosZ()
         {
+            resetView();
             m_arcballMatrix = glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
         }
 
         void OGLWidget::setViewAlongNegZ()
         {
+            resetView();
             // the default camera
             m_arcballMatrix = glm::mat4();
         }

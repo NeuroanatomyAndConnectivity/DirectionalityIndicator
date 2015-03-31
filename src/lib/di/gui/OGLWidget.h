@@ -272,6 +272,11 @@ namespace di
             QTimer* m_redrawTimer;
 
             /**
+             * State of the mouse drag feature
+             */
+            int m_dragState = 0;
+
+            /**
              * Use the arcball functionality.
              */
             int m_arcballState = 0;
@@ -310,6 +315,16 @@ namespace di
              * Arcball on Y axis.
              */
             bool m_arcballYAxis = true;
+
+            /**
+             * The current drag matrix.
+             */
+            glm::mat4 m_dragMatrix;
+
+            /**
+             * The previous drag matrix.
+             */
+            glm::mat4 m_dragPrevMatrix;
 
             /**
              * The current arcball matrix.
