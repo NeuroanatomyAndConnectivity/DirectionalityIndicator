@@ -324,6 +324,10 @@ namespace di
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            std::vector< size_t > labelOrders( { 16, 12, 15,  1,  14, 11,  4,  7, 18,  5,  9,  10,  6,
+                                                 2,   3,  17,   8,  13 } );
+
+
             // DATA: Used to store the direction at each vertex
             auto vectorAttribute = std::make_shared< di::Vec3Array >( triangles->getNumVertices() );
 
@@ -338,7 +342,8 @@ namespace di
             {
                 // Get vertex region and ignore unknown or "null" regions
                 auto vertexRegionID = vertexRegion[ vertexID ];
-                if( regionLabels->at( vertexRegionID ) == 0 )
+                auto label = regionLabels->at( vertexRegionID );
+                if( label == 0 )
                 {
                     vectorAttribute->at( vertexID ) = glm::vec3( 0.0f );
                     vectorAttributeSet.at( vertexID ) = true;
@@ -368,9 +373,16 @@ namespace di
                         auto vertexSource = triangles->getVertex( vertexID );
                         auto vertexDest  = triangles->getVertex( neighbourID );
 
-                        // TODO: not yet really correct!?!?
-                        // float invert = ( vertexRegionID < neighbourRegionID ) ? -1.0f : 1.0f;
-                        float invert = ( vertexID < neighbourID ) ? -1.0f : 1.0f;
+                        auto neighbourLabel = regionLabels->at( neighbourRegionID );
+                        auto neighbourPos = std::find( labelOrders.begin(), labelOrders.end(), neighbourLabel );
+                        auto vertexPos    = std::find( labelOrders.begin(), labelOrders.end(), label );
+
+                        if( ( vertexPos == labelOrders.end() ) || ( neighbourPos == labelOrders.end() ) )
+                        {
+                            LogE << "ERROR: label not in orders list?" << LogEnd;
+                        }
+
+                        float invert = ( vertexPos < neighbourPos ) ? -1.0f : 1.0f;
 
                         // Finally, a direction. Add and go on to the next neighbour
                         auto direction = invert * glm::normalize( vertexDest - vertexSource );
