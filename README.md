@@ -65,8 +65,9 @@ It is planned to allow specification of data files on the command line. Right no
 This is needed if your system does not provide a modern GCC, or you are not allowed to install one from a repository. There are some prerequisites
 that need to be available on the build system:
 
-* _some_ GCC
+* _some_ GCC!
 
+Let's start building:
 
 ```shell
 $ cd ~
@@ -87,10 +88,10 @@ $ make -j4
 $ make install
 ```
 
-Now, you need to tell CMake to use the alternative toolchain to build DirectionalityIndicator. Follow the above instructions but replace the CMake
-call by this one:
+Now, you need to tell CMake to use the alternative toolchain to build DirectionalityIndicator. Follow the instructions on how to build
+DirectionalityIndicator, but replace the CMake call by this one:
 
 ```shell
-DI_FORCE_LIBDIR=~/.local/toolchains/gcc/lib64 CC=~/.local/toolchains/gcc/bin/ CXX=~/.local/toolchains/gcc/bin/g++ cmake ../src
+DI_FORCE_LIBDIR=~/.local/toolchains/gcc/lib64 CC=~/.local/toolchains/gcc/bin/gcc CXX=~/.local/toolchains/gcc/bin/g++ cmake ../src
 ```
 
