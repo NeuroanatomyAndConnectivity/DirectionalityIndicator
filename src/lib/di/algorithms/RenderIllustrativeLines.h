@@ -255,6 +255,11 @@ namespace di
             SPtr< di::core::Buffer > m_vectorsBuffer = nullptr;
 
             /**
+             * Label data
+             */
+            SPtr< di::core::Buffer > m_labelsBuffer = nullptr;
+
+            /**
              * Normal data.
              */
             SPtr< di::core::Buffer > m_normalBuffer = nullptr;

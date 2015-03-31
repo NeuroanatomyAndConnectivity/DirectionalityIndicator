@@ -64,7 +64,6 @@ namespace di
                     "Mesh Labels"
             );
 
-
             m_enableSSAO = addParameter< bool >(
                     "Shading: SSAO",
                     "SSAO is a modern rendering approach to get smooth shadows in a scene. This helps to improve spatial perception, at the cost of "
@@ -142,13 +141,14 @@ namespace di
             auto labels = m_dataLabelInput->getData();
 
             // only valid if the grids match
-            if( data && vectors )
+            if( data && vectors && labels )
             {
                 if( data->getGrid() != vectors->getGrid() )
                 {
                     LogD << "Grids do not match. Ignoring new data." << LogEnd;
                     data = nullptr;
                     vectors = nullptr;
+                    labels = nullptr;
                 }
             }
             else
@@ -159,7 +159,9 @@ namespace di
             }
 
             // Provide the needed information to the visualizer itself.
-            bool changeVis = ( m_visTriangleData != data ) || ( m_visTriangleVectorData != vectors );
+            bool changeVis = ( m_visTriangleData != data ) ||
+                             ( m_visTriangleLabelData != labels ) ||
+                             ( m_visTriangleVectorData != vectors );
             m_visTriangleData = data;
             m_visTriangleVectorData = vectors;
             m_visTriangleLabelData = labels;
@@ -475,7 +477,7 @@ namespace di
             // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
             // and many code parts repeat again and again.
 
-            if( !m_visTriangleData || !m_visTriangleVectorData )
+            if( !m_visTriangleData || !m_visTriangleVectorData || !m_visTriangleLabelData )
             {
                 return;
             }
@@ -517,6 +519,8 @@ namespace di
             GLint colorLoc = m_transformShaderProgram->getAttribLocation( "color" );
             GLint normalLoc = m_transformShaderProgram->getAttribLocation( "normal" );
             GLint vectorsLoc = m_transformShaderProgram->getAttribLocation( "vectors" );
+            // GLint labelsLoc = m_transformShaderProgram->getAttribLocation( "label" );
+
             logGLError();
 
             // Create the VAO
@@ -529,6 +533,7 @@ namespace di
             m_normalBuffer = std::make_shared< core::Buffer >();
             m_colorBuffer = std::make_shared< core::Buffer >();
             m_vectorsBuffer = std::make_shared< core::Buffer >();
+            // m_labelsBuffer = std::make_shared< core::Buffer >();
             m_indexBuffer = std::make_shared< core::Buffer >( core::Buffer::BufferType::ElementArray );
             logGLError();
 
@@ -562,6 +567,15 @@ namespace di
             glEnableVertexAttribArray( vectorsLoc );
             glVertexAttribPointer( vectorsLoc, 3, GL_FLOAT, 0, 0, 0 );
             logGLError();
+
+            /*
+            m_labelsBuffer->realize();
+            m_labelsBuffer->bind();
+            m_labelsBuffer->data( m_visTriangleLabelData->getAttributes() );
+            glEnableVertexAttribArray( labelsLoc );
+            glVertexAttribPointer( labelsLoc, 1, GL_UNSIGNED_INT, 0, 0, 0 );
+            logGLError();
+            */
 
             m_indexBuffer->realize();
             m_indexBuffer->bind();

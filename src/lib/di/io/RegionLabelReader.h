@@ -47,7 +47,7 @@ namespace di
             /**
              * The resulting data set type after loading.
              */
-            typedef core::DataSetCollection< std::vector< uint16_t > > DataSetType;
+            typedef core::DataSetCollection< std::vector< uint32_t > > DataSetType;
 
             /**
              * Constructor;

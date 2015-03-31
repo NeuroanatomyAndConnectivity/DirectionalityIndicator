@@ -60,9 +60,9 @@ namespace di
             LogD << "Loading \"" << filename << "\"." << LogEnd;
             auto file = core::readTextFile( filename );
 
-            auto labels = std::make_shared< std::vector< uint16_t > >();
-            uint16_t min = std::numeric_limits< uint16_t >::max();
-            uint16_t max = 0;
+            auto labels = std::make_shared< std::vector< uint32_t > >();
+            uint32_t min = std::numeric_limits< uint16_t >::max();
+            uint32_t max = 0;
 
             // each line
             auto items = core::split( file, ',' );
@@ -72,7 +72,7 @@ namespace di
             }
             for( auto line : items )
             {
-                uint16_t l = std::atoi( line.c_str() );
+                uint32_t l = std::atoi( line.c_str() );
                 // A line contains a region label - line number corresponds to the mesh vertex IDs
                 labels->push_back( l );
 

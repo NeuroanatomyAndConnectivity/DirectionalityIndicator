@@ -55,6 +55,7 @@ namespace di
             connect( m_colorBtn, SIGNAL( released() ), this, SLOT( selectColor() ) );
 
             m_colorDialog = new QColorDialog( this );
+            m_colorDialog->setOption( QColorDialog::ShowAlphaChannel );
             connect( m_colorDialog, SIGNAL( accepted() ), this, SLOT( accepted() ) );
             connect( m_colorDialog, SIGNAL( rejected() ), this, SLOT( rejected() ) );
             connect( m_colorDialog, SIGNAL( currentColorChanged( const QColor& ) ), this, SLOT( colorChanged( const QColor& ) ) );

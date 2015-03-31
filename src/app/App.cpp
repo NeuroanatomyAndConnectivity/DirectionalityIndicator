@@ -176,6 +176,9 @@ namespace di
             getProcessingNetwork()->connectAlgorithms( fileWidgetLabelOrder->getDataInject(), "Data",
                                                        m_extractRegions->getAlgorithm(), "Label Ordering" );
 
+            getProcessingNetwork()->connectAlgorithms( fileWidgetLabels->getDataInject(), "Data",
+                                                       renderArrows->getAlgorithm(), "Labels" );
+
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", renderArrows->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", lic->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Directionality",
