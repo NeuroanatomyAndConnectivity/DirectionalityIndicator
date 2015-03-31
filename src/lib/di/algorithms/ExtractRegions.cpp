@@ -405,15 +405,17 @@ namespace di
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            // This is an iterative process to spread the values in to each vertex by using its neighbours
             bool keepRunning = true;
             while( keepRunning )
             {
                 auto nowSet = vectorAttributeSet;
 
-                // Iterate all triangles, find the border triangles
+                // Iterate all vertices
                 for( size_t vertexID = 0; vertexID < triangles->getNumVertices(); ++vertexID )
                 {
                     // already set?
+                    // NOTE: this also includes 0-label vertices
                     if( vectorAttributeSet.at( vertexID ) )
                     {
                         continue;
@@ -421,12 +423,30 @@ namespace di
 
                     // Get neighbours
                     auto neighbours = triangles->getNeighbourVertices( vertexID );
+
+                    // We need to know how much neighbours already have a value and the longest distance between those neighbours
                     size_t includedNeighbours = 0;
                     float longestDistance = 0.0f;
                     for( auto neighbourID : neighbours )
                     {
+                        // Well, the neighbour function includes the source vertex too. Skip the source vertex.
+                        if( vertexID == neighbourID )
+                        {
+                            continue;
+                        }
+
+                        // If a neighbour is a 0-label vertex, ignore it explicitly
+                        auto neighbourLabel = regionLabels->at( vertexRegion.at( neighbourID ) );
+                        if( neighbourLabel == 0 )
+                        {
+                            continue;
+                        }
+
+                        // Now, has this neighbour a value being set already?
                         if( vectorAttributeSet.at( neighbourID ) )
                         {
+                            includedNeighbours++;
+
                             // for scaling the interpolation
                             longestDistance = std::max( longestDistance,
                                                         glm::distance( triangles->getVertex( vertexID ), triangles->getVertex( neighbourID ) )
@@ -434,39 +454,68 @@ namespace di
                         }
                     }
 
+                    // We want at least two vertices being set.
+                    if( includedNeighbours < 2 )
+                    {
+                        continue;
+                    }
+
+                    // Repeat to go to each neighbour, this time merge the values using the distance we calculated earlier:
                     glm::vec3 meanVec = glm::vec3( 0.0f );
                     float factor = 0.0;
                     for( auto neighbourID : neighbours )
                     {
+                        // Well, the neighbour function includes the source vertex too. Skip the source vertex.
                         if( vertexID == neighbourID )
                         {
                             continue;
                         }
 
+                        // If a neighbour is a 0-label vertex, ignore it
+                        auto neighbourLabel = regionLabels->at( vertexRegion.at( neighbourID ) );
+                        if( neighbourLabel == 0 )
+                        {
+                            continue;
+                        }
+
+                        // If a value is defined ->
                         if( vectorAttributeSet.at( neighbourID ) )
                         {
-                            includedNeighbours++;
+                            // How far is it away?
                             auto dist = glm::distance( triangles->getVertex( vertexID ), triangles->getVertex( neighbourID ) );
 
+                            // The value of the neighbour:
                             auto srcVec = vectorAttribute->at( neighbourID );
+                            // To keep the vectors projected on the surface, we need the normal at our current vertex:
                             auto normal = glm::normalize( triangles->getNormal( vertexID ) );
-                            auto biNormal = glm::normalize( glm::cross( normal, glm::normalize( srcVec ) ) );
-                            auto vec = glm::normalize( glm::cross( biNormal, normal ) );
+
+                            // We need to project the vectors to the plane represented by this vertex's normal. To do this, the srcVec needs a minimal
+                            // length and the angle to the normal should not be too small:
+                            auto vec = glm::vec3( 0.0f );
+                            auto cosAngle = std::abs( glm::dot( srcVec, normal ) );
+                            if( ( glm::length( srcVec ) > 0.001 ) && ( cosAngle < 0.98 ) )
+                            {
+                                // The normal and the vector define a bi-normal (tangent)
+                                auto biNormal = glm::normalize( glm::cross( normal, glm::normalize( srcVec ) ) );
+
+                                // The binormal now allows a projection to the plane
+                                vec = glm::normalize( glm::cross( biNormal, normal ) );
+
+                                // Ensure the proper length
+                                vec *= glm::length( srcVec );
+                            }
 
                             // ensure length again
-                            vec *= glm::length( srcVec );
                             factor += ( dist / longestDistance );
                             meanVec += ( dist / longestDistance ) * vec;
                         }
                     }
 
-                    if( includedNeighbours >= 2 )
-                    {
-                        vectorAttribute->at( vertexID ) = meanVec / factor;
-                        nowSet.at( vertexID ) = true;
-                    }
+                    vectorAttribute->at( vertexID ) = meanVec / factor;
+                    nowSet.at( vertexID ) = true;
                 }
 
+                // As this is iterative and will converge -> go on until it converged
                 vectorAttributeSet = nowSet;
                 keepRunning = false;
                 for( auto vSet : vectorAttributeSet )
@@ -481,6 +530,7 @@ namespace di
 
             LogD << "Done propagating directions." << LogEnd;
 
+            // Update outputs
             LogD << "Done. Updating output." << LogEnd;
             m_vectorOutput->setData( std::make_shared< di::core::TriangleVectorField >( "Directionality", triangles, vectorAttribute ) );
 
