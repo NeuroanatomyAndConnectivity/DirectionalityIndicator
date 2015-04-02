@@ -399,7 +399,7 @@ namespace di
 
         void OGLWidget::mousePressEvent( QMouseEvent* event )
         {
-            if( event->button() == Qt::MiddleButton )
+            if( event->button() == Qt::RightButton )
             {
                 m_dragState = 1;
                 m_dragPrevOffset = m_dragOffset;
@@ -414,7 +414,7 @@ namespace di
 
         void OGLWidget::mouseReleaseEvent( QMouseEvent* event )
         {
-            if( event->button() == Qt::MiddleButton )
+            if( event->button() == Qt::RightButton )
             {
                 m_dragState = 0;
             }
