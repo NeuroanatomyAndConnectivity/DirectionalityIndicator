@@ -119,6 +119,12 @@ namespace di
             );
             m_distArrows->setRangeHint( 0.0, 10.0 );
 
+            m_jitterArrows = addParameter< bool >(
+                    "Arrows: Jitter",
+                    "Activate to move the center of each arrow around on a random basis. This can help to avoid grid-like arrows artifacts.",
+                    false
+            );
+
             m_maskLabelEnable = addParameter< bool >(
                     "Debug: Emphasize Label",
                     "Enable to emphasize the regions with the defined label and to gray-out others.",
@@ -160,6 +166,12 @@ namespace di
                     vectors = nullptr;
                     labels = nullptr;
                 }
+
+                auto lmax = *std::max_element( labels->getAttributes()->begin(),
+                                               labels->getAttributes()->end() );
+                m_maskLabel->setRangeHint( 0, lmax );
+
+                LogD << "New Label Data in [0, " << lmax << "]." << LogEnd;
             }
             else
             {
@@ -319,6 +331,14 @@ namespace di
 
             glBindVertexArray( m_VAO );
 
+            // We need random numbers for the arrows
+
+            auto widthOfArrowArea = 1.0f / static_cast< float >( m_numArrows->get() );
+
+            std::default_random_engine generator;
+            std::uniform_real_distribution< float > distribution( -1.0f * widthOfArrowArea, 1.0f * widthOfArrowArea  );
+            auto dice = std::bind( distribution, generator );
+
             // Need to update points?
             unsigned int desiredArrows = m_numArrows->get() * m_numArrows->get();
             if( !m_points || ( desiredArrows != m_points->getNumVertices() ) )
@@ -332,8 +352,16 @@ namespace di
                 {
                     for( size_t x = 0; x <= xSize; ++x )
                     {
-                        m_points->addVertex( static_cast< float >( x ) / static_cast< float >( xSize ),
-                                             static_cast< float >( y ) / static_cast< float >( ySize ),
+                        auto jitterX = 0.0f;
+                        auto jitterY = 0.0f;
+                        if( m_jitterArrows->get() )
+                        {
+                            jitterX = 0.25f * dice();
+                            jitterY = 0.25f * dice();
+                        }
+
+                        m_points->addVertex( jitterX + static_cast< float >( x ) / static_cast< float >( xSize ),
+                                             jitterY + static_cast< float >( y ) / static_cast< float >( ySize ),
                                              0.0
                                            );
                     }
