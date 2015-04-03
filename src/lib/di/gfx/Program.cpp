@@ -55,27 +55,60 @@ namespace di
             finalize();
         }
 
-        bool Program::realize()
+        bool Program::isAttached( SPtr< Shader > shader )
         {
-            if( isRealized() )
+            GLsizei count = 0;
+            GLuint shaderIds[32];
+            glGetAttachedShaders( m_object, 32, &count, &shaderIds[0] );
+
+            bool found = false;
+            for( int i = 0; i < count; ++i )
             {
-                return true;
+                found = found || ( shader->getObjectID() == shaderIds[ i ] );
+            }
+            return found;
+        }
+
+        bool Program::compileAndLink()
+        {
+            if( !isRealized() )
+            {
+                return false;
             }
 
-            m_object = glCreateProgram();
-            logGLError();
+            m_needCompile = false;
+
+            // Add all defines to the string:
+            std::string prefixCode = "";
+            for( auto define : m_defines )
+            {
+                if( define.second.first )
+                {
+                    prefixCode += "#define " + define.first + " " + define.second.second + "\n";
+                }
+                else // only define name
+                {
+                    prefixCode += "#define " + define.first + "\n";
+                }
+            }
 
             // Realize all shaders and attach.
             for( auto shader : m_shaders )
             {
+                shader->setPrefixCode( prefixCode );
                 if( !shader->realize() )
                 {
-                    glDeleteProgram( m_object );
-                    m_object = 0;
+                    LogE << "Shader compilation failed." << LogEnd;
+                    m_needCompile = true;
                     return false;
                 }
-                glAttachShader( m_object, shader->getObjectID() );
-                logGLError();
+
+                // Only attach if not yet done
+                if( !isAttached( shader ) )
+                {
+                    glAttachShader( m_object, shader->getObjectID() );
+                    logGLError();
+                }
             }
             glLinkProgram( m_object );
             logGLError();
@@ -94,12 +127,24 @@ namespace di
                 LogE << "Program linker failed. Log: " << LogEnd
                 LogE << errorLog.data() << LogEnd;
 
-                glDeleteProgram( m_object );
                 m_object = 0;
                 return false;
             }
 
             return true;
+        }
+
+        bool Program::realize()
+        {
+            if( isRealized() )
+            {
+                return true;
+            }
+
+            m_object = glCreateProgram();
+            logGLError();
+
+            return compileAndLink();
         }
 
         void Program::finalize()
@@ -113,10 +158,19 @@ namespace di
 
         void Program::bind()
         {
-            if( !isRealized() )
+            if( !realize() )
             {
                 LogE << "Bind: un-realized GLObject." << LogEnd;
                 return;
+            }
+
+            if( m_needCompile )
+            {
+                if( !compileAndLink() )
+                {
+                    LogE << "Bind: program could not be build." << LogEnd;
+                    return;
+                }
             }
 
             glUseProgram( m_object );
@@ -168,6 +222,36 @@ namespace di
             }
 
             return loc;
+        }
+
+        void Program::unsetDefine( const std::string& name )
+        {
+            // remove and recompile if something was removed
+            if( m_defines.erase( name ) )
+            {
+                m_needCompile = true;
+            }
+        }
+
+        void Program::setDefine( const std::string& name, bool value )
+        {
+            if( !value )
+            {
+                unsetDefine( name );
+                return;
+            }
+
+            setDefine( name, true, "" );
+        }
+
+        void Program::setDefine( const std::string& name, bool defineOnly, std::string value )
+        {
+            // Only apply if different.
+            if( ( m_defines[ name ].first != defineOnly ) || ( m_defines[ name ].second != value ) )
+            {
+                m_defines[ name ] = std::make_pair( defineOnly, value );
+                m_needCompile = true;
+            }
         }
     }
 }

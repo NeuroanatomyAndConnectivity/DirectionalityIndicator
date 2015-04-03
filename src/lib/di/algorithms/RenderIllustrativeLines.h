@@ -185,6 +185,11 @@ namespace di
             core::ParamBool m_jitterArrows;
 
             /**
+             * If true, colors on the surface will be interpolated.
+             */
+            core::ParamBool m_interpolateOnSurface;
+
+            /**
              * The triangle mesh input to use.
              */
             SPtr< di::core::Connector< di::core::TriangleDataSet > > m_triangleDataInput;

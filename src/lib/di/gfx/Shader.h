@@ -79,7 +79,21 @@ namespace di
              */
             void finalize() override;
 
+            /**
+             * Inject this code at the beginning of the shader and mark dirty.
+             *
+             * \param code
+             */
+            void setPrefixCode( const std::string& code );
+
         protected:
+            /**
+             * Compile the shader.
+             *
+             * \return true if successful.
+             */
+            bool compile();
+
         private:
             /**
              * The type of this shader.
@@ -90,6 +104,16 @@ namespace di
              * The code of the shader.
              */
             std::string m_code;
+
+            /**
+             * The code to inject before the actual shader code.
+             */
+            std::string m_prefixCode;
+
+            /**
+             * True if shader code is marked dirty
+             */
+            bool m_needCompile = true;
         };
     }
 }

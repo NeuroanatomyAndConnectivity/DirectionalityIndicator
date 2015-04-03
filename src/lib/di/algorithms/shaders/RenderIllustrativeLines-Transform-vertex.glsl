@@ -38,12 +38,18 @@ uniform int u_maskLabel;
 uniform bool u_maskLabelEnable;
 
 // Varying out
-flat out vec4 v_color;
 out vec3 v_normal;
 out vec4 v_posView;
 out vec3 v_vector;
 out float v_vectorLength;
-flat out float v_emphasizeScale;
+
+#ifdef d_enableInterpolation
+    out vec4 v_color;
+    out float v_emphasizeScale;
+#else
+    flat out vec4 v_color;
+    flat out float v_emphasizeScale;
+#endif
 
 void main()
 {

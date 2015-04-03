@@ -78,6 +78,12 @@ namespace di
             );
             m_specularity->setRangeHint( 0.0, 1.0 );
 
+            m_interpolateOnSurface = addParameter< bool >(
+                    "Interpolate",
+                    "Turn on/off interpolation of color on the surface itself. This does not influence the calculation and rendering og arrows.",
+                    false
+            );
+
             m_colorArrows = addParameter< di::Color >(
                     "Arrows: Color",
                     "Define the color of the arrows.",
@@ -316,6 +322,8 @@ namespace di
 
             m_transformShaderProgram->setUniform( "u_maskLabel",      m_maskLabel->get() );
             m_transformShaderProgram->setUniform( "u_maskLabelEnable",      m_maskLabelEnable->get() );
+
+            m_transformShaderProgram->setDefine( "d_enableInterpolation", m_interpolateOnSurface->get() );
 
             logGLError();
 

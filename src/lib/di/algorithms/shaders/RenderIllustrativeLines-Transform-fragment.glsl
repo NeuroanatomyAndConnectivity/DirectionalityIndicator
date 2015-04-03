@@ -24,12 +24,18 @@
 
 #version 330
 
-flat in vec4 v_color;
+#ifdef d_enableInterpolation
+    in vec4 v_color;
+    in float v_emphasizeScale;
+#else
+    flat in vec4 v_color;
+    flat in float v_emphasizeScale;
+#endif
+
 in vec3 v_normal;
 in vec4 v_posView;
 in vec3 v_vector;
 in float v_vectorLength;
-flat in float v_emphasizeScale;
 
 uniform mat4 u_ViewMatrix;
 uniform float u_specularity = 0.25;

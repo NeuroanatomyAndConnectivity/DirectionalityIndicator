@@ -27,6 +27,7 @@
 
 #include <initializer_list>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <map>
 
@@ -224,7 +225,64 @@ namespace di
                 logGLError();
             }
 
+            /**
+             * Define a compile-time value with a given name. Bool version: set as defined only. No value.
+             *
+             * \param name the name of the definition
+             * \param value the value. Needs to provide a << operator.
+             */
+            void setDefine( const std::string& name, bool value );
+
+            /**
+             * Define a compile-time value with a given name.
+             *
+             * \tparam ValueType the type of the value to set. Needs to provide operator<<.
+             * \param name the name of the definition
+             * \param value the value. Needs to provide a << operator.
+             */
+            template< typename ValueType >
+            void setDefine( const std::string& name, ValueType value )
+            {
+                std::stringstream ss;
+                ss << value;
+                setDefine( name, ss.str().empty(), ss.str() );
+            }
+
+            /**
+             * Unset any previously set define with the given name
+             *
+             * \param name the name to remove from the definitions list.
+             */
+            void unsetDefine( const std::string& name );
+
         protected:
+
+            /**
+             * Define a compile-time value with a given name.
+             *
+             * \tparam ValueType the type of the value to set. Needs to provide operator<<.
+             * \param name the name of the definition
+             * \param value the value as string.
+             * \param defineOnly true to only define the name
+             */
+            void setDefine( const std::string& name, bool defineOnly, std::string value );
+
+            /**
+             * Compile and link the shader. Assumes the program ID was created previously.
+             *
+             * \return true if program was build properly.
+             */
+            virtual bool compileAndLink();
+
+            /**
+             * The shader is attached to this program?
+             *
+             * \param shader the shader to check
+             *
+             * \return true if attached
+             */
+            bool isAttached( SPtr< Shader > shader );
+
         private:
             /**
              * The shaders to attach.
@@ -232,9 +290,19 @@ namespace di
             std::vector< SPtr< Shader > > m_shaders;
 
             /**
+             * Needs to re-compile?
+             */
+            bool m_needCompile = true;
+
+            /**
              * Keep track of queried uniform locations to avoid this every frame.
              */
             mutable std::map< std::string, GLint > m_uniformLocationCache;
+
+            /**
+             * Collect all definitions that need to be applied when compiling. Similar to the -D flag of compilers.
+             */
+            std::map< std::string, std::pair< bool, std::string > > m_defines;
         };
     }
 }

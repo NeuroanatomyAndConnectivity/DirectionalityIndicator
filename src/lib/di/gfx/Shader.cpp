@@ -23,9 +23,13 @@
 //---------------------------------------------------------------------------------------
 
 #include <string>
+#include <sstream>
 #include <vector>
+#include <locale>
 
 #include "Shader.h"
+
+#include <di/core/StringUtils.h>
 
 #include <di/core/Logger.h>
 #define LogTag "gfx/Shader"
@@ -49,11 +53,107 @@ namespace di
             finalize();
         }
 
+        void Shader::setPrefixCode( const std::string& code )
+        {
+            if( m_prefixCode != code )
+            {
+                m_prefixCode = code;
+                m_needCompile = true;
+            }
+        }
+
+        bool Shader::compile()
+        {
+            if( !isRealized() )
+            {
+                LogE << "Cannot non-realized shader." << LogEnd;
+                return false;
+            }
+
+            m_needCompile = false;
+
+            // We NEED to ensure the injected code is AFTER the version statement
+            // --> so lets find "#version"
+            std::stringstream ss( m_code );
+            std::string line;
+            size_t lineNo = 0;
+            bool isFirst = true;
+
+            std::stringstream result;
+            while( std::getline( ss, line ) )
+            {
+                lineNo++;
+                // Is version line?
+                if( std::string::npos == line.find( "#version" ) )
+                {
+                    // No. Just add the line to the final code
+                    result << line << std::endl;
+                }
+                else if( isFirst ) // found.
+                {
+                    isFirst = false;
+
+                    // Skip empty injections
+                    if( m_prefixCode.empty() )
+                    {
+                        result << line << std::endl;
+                        continue;
+                    }
+
+                    // Prefix
+                    result << line << std::endl
+                           << m_prefixCode << std::endl
+                           << "#line " << lineNo + 1 << std::endl;
+                }
+                else
+                {
+                    LogW << "Multiple version statements. Line: " << lineNo << LogEnd;
+                }
+            }
+
+            auto finalCode = result.str();
+            const char* codeStr = finalCode.c_str();
+            // LogD << codeStr << LogEnd;
+            glShaderSource( m_object, 1, &codeStr, NULL );
+            logGLError();
+            glCompileShader( m_object );
+            logGLError();
+
+            GLint isCompiled = 0;
+            glGetShaderiv( m_object, GL_COMPILE_STATUS, &isCompiled );
+            if( isCompiled == GL_FALSE )
+            {
+                GLint maxLength = 0;
+                glGetShaderiv( m_object, GL_INFO_LOG_LENGTH, &maxLength );
+
+                // The maxLength includes the NULL character
+                std::vector< GLchar > errorLog( maxLength );
+                glGetShaderInfoLog( m_object, maxLength, &maxLength, &errorLog[0] );
+
+                LogE << "Fragment shader compilation failed. Log: " << LogEnd
+                LogE << errorLog.data() << LogEnd;
+
+                // Provide the infolog in whatever manor you deem best.
+                // Exit with failure.
+                m_needCompile = true;
+
+                return false;
+            }
+
+            return true;
+        }
+
         bool Shader::realize()
         {
-            if( isRealized() )
+            if( isRealized() && !m_needCompile )
             {
                 return true;
+            }
+
+            // Only re-compile
+            if( isRealized() && m_needCompile )
+            {
+                return compile();
             }
 
             GLenum shaderType = GL_VERTEX_SHADER;
@@ -82,36 +182,7 @@ namespace di
             m_object = glCreateShader( shaderType );
             logGLError();
 
-            const char* codeStr = m_code.c_str();
-            glShaderSource( m_object, 1, &codeStr, NULL );
-            logGLError();
-            glCompileShader( m_object );
-            logGLError();
-
-            GLint isCompiled = 0;
-            glGetShaderiv( m_object, GL_COMPILE_STATUS, &isCompiled );
-            if( isCompiled == GL_FALSE )
-            {
-                GLint maxLength = 0;
-                glGetShaderiv( m_object, GL_INFO_LOG_LENGTH, &maxLength );
-
-                // The maxLength includes the NULL character
-                std::vector< GLchar > errorLog( maxLength );
-                glGetShaderInfoLog( m_object, maxLength, &maxLength, &errorLog[0] );
-
-                LogE << "Fragment shader compilation failed. Log: " << LogEnd
-                LogE << errorLog.data() << LogEnd;
-
-                // Provide the infolog in whatever manor you deem best.
-                // Exit with failure.
-                glDeleteShader( m_object ); // Don't leak the shader.
-
-                m_object = 0;
-
-                return false;
-            }
-
-            return true;
+            return compile();
         }
 
         void Shader::finalize()
