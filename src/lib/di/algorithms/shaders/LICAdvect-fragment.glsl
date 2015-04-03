@@ -128,7 +128,8 @@ void main()
     vec2 vec    = getVec( texel, vecLen );
     if( vecLen < 0.0001 )
     {
-        discard;
+        fragAdvect = vec4( vec3( 0.0 ), 1.0 );
+        return;
     }
 
     // simply iterate along the line using the vector at each point
