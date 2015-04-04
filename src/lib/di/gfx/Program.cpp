@@ -82,7 +82,7 @@ namespace di
             std::string prefixCode = "";
             for( auto define : m_defines )
             {
-                if( define.second.first )
+                if( !define.second.first )
                 {
                     prefixCode += "#define " + define.first + " " + define.second.second + "\n";
                 }
@@ -251,6 +251,7 @@ namespace di
             {
                 m_defines[ name ] = std::make_pair( defineOnly, value );
                 m_needCompile = true;
+                m_uniformLocationCache.clear();
             }
         }
     }

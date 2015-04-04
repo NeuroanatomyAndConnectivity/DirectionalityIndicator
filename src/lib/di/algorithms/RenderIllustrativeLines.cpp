@@ -315,6 +315,7 @@ namespace di
             glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboTransform );
 
             glDisable( GL_BLEND );
+            m_transformShaderProgram->setDefine( "d_enableInterpolation", m_interpolateOnSurface->get() );
             m_transformShaderProgram->bind();
             m_transformShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             m_transformShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
@@ -322,8 +323,6 @@ namespace di
 
             m_transformShaderProgram->setUniform( "u_maskLabel",      m_maskLabel->get() );
             m_transformShaderProgram->setUniform( "u_maskLabelEnable",      m_maskLabelEnable->get() );
-
-            m_transformShaderProgram->setDefine( "d_enableInterpolation", m_interpolateOnSurface->get() );
 
             logGLError();
 
@@ -393,7 +392,8 @@ namespace di
             m_arrowShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             // m_arrowShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
             // m_arrowShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
-            m_arrowShaderProgram->setUniform( "u_viewportScale", ( view.getViewportSize() - glm::vec2( 1.0 ) ) / glm::vec2( 2048, 2048 ) );
+            m_arrowShaderProgram->setUniform( "u_viewportScale", ( view.getViewportSize() - glm::vec2( 1.0 ) ) / glm::vec2( m_fboResolution.x,
+                                                                                                                            m_fboResolution.y ) );
             m_arrowShaderProgram->setUniform( "u_width", m_widthArrows->get() );
             m_arrowShaderProgram->setUniform( "u_widthTails", m_widthArrowTails->get() );
             m_arrowShaderProgram->setUniform( "u_height", m_lengthArrows->get() );
@@ -435,24 +435,24 @@ namespace di
             // Bind it to be able to modify and configure:
             glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboCompose );
 
+            if( view.isHQMode() )
+            {
+                m_composeShaderProgram->setDefine( "d_samples", 64 );
+            }
+            else
+            {
+                m_composeShaderProgram->setDefine( "d_samples", 16 );
+            }
+            logGLError();
+
             // draw a big quad and compose
             m_composeShaderProgram->bind();
             // m_composeShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             m_composeShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
             // m_composeShaderProgram->setUniform( "u_viewportSize", view.getViewportSize() );
-            m_composeShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            m_composeShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( m_fboResolution.x, m_fboResolution.y ) );
             m_composeShaderProgram->setUniform( "u_bbSize", getBoundingBox().getSize() );
             m_composeShaderProgram->setUniform( "u_enableSSAO", m_enableSSAO->get() );
-
-            if( view.isHQMode() )
-            {
-                m_composeShaderProgram->setUniform( "u_samples", 128 );
-            }
-            else
-            {
-                m_composeShaderProgram->setUniform( "u_samples", 16 );
-            }
-            logGLError();
 
             // Textures
             glActiveTexture( GL_TEXTURE0 );
@@ -497,7 +497,7 @@ namespace di
 
             // draw a big quad and compose
             m_finalShaderProgram->bind();
-            m_finalShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            m_finalShaderProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( m_fboResolution.x, m_fboResolution.y ) );
             logGLError();
 
             // Textures
@@ -522,10 +522,20 @@ namespace di
             logGLError();
         }
 
-        void RenderIllustrativeLines::update( const core::View& /* view */, bool reload )
+        void RenderIllustrativeLines::update( const core::View& view, bool reload )
         {
-            // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
-            // and many code parts repeat again and again.
+            // Force update if resolution mismatch
+            auto resolution = di::core::Texture::powerOfTwoResolution( view.getViewportSize() );
+            if( m_fboResolution != resolution )
+            {
+                LogD << "Framebuffer resolution not optimal:" <<
+                        " View: " <<  view.getViewportSize().x << "x" <<  view.getViewportSize().y <<
+                        ", Current FBO: " << m_fboResolution.x << "x" << m_fboResolution.y <<
+                        ", New FBO: " << resolution.x << "x" << resolution.y << LogEnd;
+
+                reload = true;
+                m_fboResolution = resolution;
+            }
 
             if( !m_visTriangleData || !m_visTriangleVectorData || !m_visTriangleLabelData )
             {
@@ -686,28 +696,28 @@ namespace di
             m_step1ColorTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
-            m_step1ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            m_step1ColorTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
             logGLError();
 
             m_step1VecTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
             m_step1VecTex->realize();
             m_step1VecTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1VecTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
+            m_step1VecTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
             logGLError();
 
             m_step1NormalTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
             m_step1NormalTex->realize();
             m_step1NormalTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1NormalTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
+            m_step1NormalTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
             logGLError();
 
             m_step1PosTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
             m_step1PosTex->realize();
             m_step1PosTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1PosTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
+            m_step1PosTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
             logGLError();
 
             m_step1DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -715,7 +725,7 @@ namespace di
             m_step1DepthTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step1DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
-            m_step1DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
+            m_step1DepthTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
             logGLError();
 
             // Bind textures to FBO
@@ -762,7 +772,7 @@ namespace di
             m_step2ColorTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
-            m_step2ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            m_step2ColorTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
             logGLError();
 
             m_step2DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -770,7 +780,7 @@ namespace di
             m_step2DepthTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step2DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
-            m_step2DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
+            m_step2DepthTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
             logGLError();
 
             // Bind textures to FBO
@@ -871,7 +881,7 @@ namespace di
             m_step3ColorTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
-            m_step3ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            m_step3ColorTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
             logGLError();
 
             // We need two target texture: color and noise
@@ -880,7 +890,7 @@ namespace di
             m_step3AOTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
-            m_step3AOTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            m_step3AOTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
             logGLError();
 
             m_step3DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
@@ -888,7 +898,7 @@ namespace di
             m_step3DepthTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             m_step3DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
-            m_step3DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
+            m_step3DepthTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
             logGLError();
 
             // Bind textures to FBO

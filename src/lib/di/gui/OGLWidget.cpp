@@ -285,7 +285,12 @@ namespace di
             Application::getProcessingNetwork()->visitVisualizations(
                 [ this, targetView ]( SPtr< di::core::Visualization > vis )
                 {
-                    vis->update( *targetView, m_forceReload );
+                    if( vis->isRenderingActive() )
+                    {
+                        targetView->bind();
+                        vis->update( *targetView, m_forceReload );
+                    }
+
                 }
             );
             m_forceReload = false;

@@ -363,6 +363,11 @@ namespace di
              * Depth
              */
             SPtr< di::core::Texture > m_step3DepthTex = nullptr;
+
+            /**
+             * Current FBO resolution.
+             */
+            glm::ivec2 m_fboResolution = glm::ivec2( 2048, 2048 );
         };
     }
 }

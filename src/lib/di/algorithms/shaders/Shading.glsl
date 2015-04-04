@@ -275,7 +275,9 @@ float getZoom( vec2 where );
 float getInfluence( vec2 where );
 vec3 getNoiseAsVector( vec2 where );
 
-uniform int u_samples = 16;
+#ifndef d_samples
+    #define d_samples 16
+#endif
 
 /**
  * Calculate the screen-space ambient occlusion LineAO for the given pixel.
@@ -283,7 +285,7 @@ uniform int u_samples = 16;
 float getLineAO( vec2 where, vec2 px2tx, LineAOParameter params )
 {
     #define SCALERS 2  // how much hemispheres to sample?
-    float invSamples = 1.0 / float( u_samples );
+    float invSamples = 1.0 / float( d_samples );
 
     // Fall-off for SSAO per occluder. This should be zero (or nearly zero) since it defines what is counted as before, or behind.
     float falloff = 0.001;
@@ -340,10 +342,10 @@ float getLineAO( vec2 where, vec2 px2tx, LineAOParameter params )
 
         // Get SAMPLES-times samples on the hemisphere and check for occluders
         int numSamplesAdded = 0;    // used to count how many samples really got added to the occlusion term
-        for( int i = 0; i < u_samples; ++i )
+        for( int i = 0; i < d_samples; ++i )
         {
             // grab a rand normal from the noise texture
-            vec3 randSphereNormal = getNoiseAsVector( vec2( float( i ) / float( u_samples ),
+            vec3 randSphereNormal = getNoiseAsVector( vec2( float( i ) / float( d_samples ),
                                                             float( l + 1 ) / float( SCALERS ) ) );
 
             // get a vector (randomized inside of a sphere with radius 1.0) from a texture and reflect it
