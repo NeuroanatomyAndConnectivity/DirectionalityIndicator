@@ -29,6 +29,7 @@
 
 #include <di/gfx/OpenGL.h>
 #include <di/gfx/GLBindable.h>
+#include <di/GfxTypes.h>
 
 namespace di
 {
@@ -179,6 +180,15 @@ namespace di
             {
                 read( pixels.data(), format, type );
             }
+
+            /**
+             * Calculate an optimal power-of-two resolution for a given size.
+             *
+             * \param size the size to use to find the next power-of-two resolution.
+             *
+             * \return the next resolution, or size if it already has a power of two.
+             */
+            static glm::ivec2 powerOfTwoResolution( const glm::ivec2& size );
 
         protected:
 

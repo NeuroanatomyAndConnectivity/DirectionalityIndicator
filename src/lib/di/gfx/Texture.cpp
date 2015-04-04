@@ -210,6 +210,22 @@ namespace di
             }
         }
 
+        glm::ivec2 Texture::powerOfTwoResolution( const glm::ivec2& size )
+        {
+            glm::ivec2 result( std::pow( 2, std::floor( std::log2( size.x ) ) ),
+                               std::pow( 2, std::floor( std::log2( size.y ) ) ) );
+            // This ensures that we keep the power-of-two resolution IF the view has exactly a power-of-two resolution (already).
+            if( result.x < size.x  )
+            {
+                result.x = std::pow( 2, std::floor( std::log2( size.x ) ) + 1 );
+            }
+            if( result.y < size.y  )
+            {
+                result.y = std::pow( 2, std::floor( std::log2( size.y ) ) + 1 );
+            }
+            return result;
+        }
+
     }
 }
 
