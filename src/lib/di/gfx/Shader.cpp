@@ -113,7 +113,9 @@ namespace di
 
             auto finalCode = result.str();
             const char* codeStr = finalCode.c_str();
+
             // LogD << codeStr << LogEnd;
+
             glShaderSource( m_object, 1, &codeStr, NULL );
             logGLError();
             glCompileShader( m_object );

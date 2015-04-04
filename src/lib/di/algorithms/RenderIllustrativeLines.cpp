@@ -219,9 +219,6 @@ namespace di
 
             std::string localShaderPath = core::getResourcePath() + "/algorithms/shaders/";
 
-            auto shadingLib = std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
-                                                                core::readTextFile( localShaderPath + "Shading.glsl" ) );
-
             // Transformation Stage
             auto transformVertex = std::make_shared< core::Shader >( core::Shader::ShaderType::Vertex,
                                                                      core::readTextFile(
@@ -235,7 +232,8 @@ namespace di
                         {
                             transformVertex,
                             transformFragment,
-                            shadingLib
+                            std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                              core::readTextFile( localShaderPath + "Shading.glsl" ) )
                         }
             ) );
             m_transformShaderProgram->realize();
@@ -256,8 +254,8 @@ namespace di
                             arrowVertex,
                             arrowsFragment,
                             arrowGeometry,
-                            shadingLib
-                        }
+                            std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                              core::readTextFile( localShaderPath + "Shading.glsl" ) )                        }
             ) );
             m_arrowShaderProgram->realize();
 
@@ -273,7 +271,10 @@ namespace di
                         {
                             composeVertex,
                             composeFragment,
-                            shadingLib
+                            std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                              core::readTextFile( localShaderPath + "Shading.glsl" ) ),
+                            std::make_shared< core::Shader >( core::Shader::ShaderType::Fragment,
+                                                              core::readTextFile( localShaderPath + "LineAO.glsl" ) )
                         }
             ) );
             m_composeShaderProgram->realize();
@@ -434,15 +435,6 @@ namespace di
 
             // Bind it to be able to modify and configure:
             glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboCompose );
-
-            if( view.isHQMode() )
-            {
-                m_composeShaderProgram->setDefine( "d_samples", 64 );
-            }
-            else
-            {
-                m_composeShaderProgram->setDefine( "d_samples", 16 );
-            }
             logGLError();
 
             // draw a big quad and compose
@@ -857,6 +849,14 @@ namespace di
             logGLError();
 
             // Do not forget to make the textures available to the final step
+            if( view.isHQMode() )
+            {
+                m_composeShaderProgram->setDefine( "d_samples", 64 );
+            }
+            else
+            {
+                m_composeShaderProgram->setDefine( "d_samples", 16 );
+            }
             m_composeShaderProgram->bind();
             m_composeShaderProgram->setUniform( "u_meshColorSampler",  0 );
             m_composeShaderProgram->setUniform( "u_arrowColorSampler", 1 );
@@ -928,9 +928,6 @@ namespace di
             m_finalShaderProgram->setUniform( "u_depthSampler", 1 );
             m_finalShaderProgram->setUniform( "u_aoSampler",  2 );
             logGLError();
-
-
-
         }
     }
 }

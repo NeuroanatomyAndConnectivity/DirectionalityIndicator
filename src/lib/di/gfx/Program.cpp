@@ -95,6 +95,12 @@ namespace di
             // Realize all shaders and attach.
             for( auto shader : m_shaders )
             {
+                if( isAttached( shader ) )
+                {
+                    glDetachShader( m_object, shader->getObjectID() );
+                    logGLError();
+                }
+
                 shader->setPrefixCode( prefixCode );
                 if( !shader->realize() )
                 {
@@ -103,12 +109,7 @@ namespace di
                     return false;
                 }
 
-                // Only attach if not yet done
-                if( !isAttached( shader ) )
-                {
-                    glAttachShader( m_object, shader->getObjectID() );
-                    logGLError();
-                }
+                glAttachShader( m_object, shader->getObjectID() );
             }
             glLinkProgram( m_object );
             logGLError();
@@ -151,6 +152,16 @@ namespace di
         {
             if( isRealized() )
             {
+                // Detach first
+                for( auto shader : m_shaders )
+                {
+                    if( isAttached( shader ) )
+                    {
+                        glDetachShader( m_object, shader->getObjectID() );
+                        logGLError();
+                    }
+                }
+
                 glDeleteProgram( m_object );
                 m_object = 0;
             }
@@ -250,6 +261,7 @@ namespace di
             if( ( m_defines[ name ].first != defineOnly ) || ( m_defines[ name ].second != value ) )
             {
                 m_defines[ name ] = std::make_pair( defineOnly, value );
+                // LogD << "Defined " << name << " as \"" << value << "\" - " << defineOnly << LogEnd;
                 m_needCompile = true;
                 m_uniformLocationCache.clear();
             }
