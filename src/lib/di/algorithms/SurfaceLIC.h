@@ -246,6 +246,11 @@ namespace di
              * Compose everything and build final image.
              */
             SPtr< di::core::Program > m_composeProgram = nullptr;
+
+            /**
+             * Current FBO resolution.
+             */
+            glm::ivec2 m_fboResolution = glm::ivec2( 2048, 2048 );
         };
     }
 }

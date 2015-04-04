@@ -266,7 +266,7 @@ namespace di
             // draw a big quad
             m_advectProgram->bind();
             m_advectProgram->setUniform( "u_viewportSize", view.getViewportSize() );
-            m_advectProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            m_advectProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( m_fboResolution.x, m_fboResolution.y ) );
             logGLError();
 
             glActiveTexture( GL_TEXTURE0 );
@@ -287,7 +287,7 @@ namespace di
 
             // draw a big quad
             m_composeProgram->bind();
-            m_composeProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( 2048, 2048 ) );
+            m_composeProgram->setUniform( "u_viewportScale", view.getViewportSize() / glm::vec2( m_fboResolution.x, m_fboResolution.y ) );
             logGLError();
 
             glActiveTexture( GL_TEXTURE0 );
@@ -309,10 +309,20 @@ namespace di
             logGLError();
         }
 
-        void SurfaceLIC::update( const core::View& /* view */, bool reload )
+        void SurfaceLIC::update( const core::View& view, bool reload )
         {
-            // Be warned: this method is huge. I did not yet use a VAO and VBO abstraction. This causes the code to be quite long. But I structured it
-            // and many code parts repeat again and again.
+            // Force update if resolution mismatch
+            auto resolution = di::core::Texture::powerOfTwoResolution( view.getViewportSize() );
+            if( m_fboResolution != resolution )
+            {
+                LogD << "Framebuffer resolution not optimal:" <<
+                        " View: " <<  view.getViewportSize().x << "x" <<  view.getViewportSize().y <<
+                        ", Current FBO: " << m_fboResolution.x << "x" << m_fboResolution.y <<
+                        ", New FBO: " << resolution.x << "x" << resolution.y << LogEnd;
+
+                reload = true;
+                m_fboResolution = resolution;
+            }
 
             if( !m_visTriangleData )
             {
@@ -462,28 +472,28 @@ namespace di
             m_step1ColorTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
-            m_step1ColorTex->data( nullptr, 2048, 2048, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
+            m_step1ColorTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE );
             logGLError();
 
             m_step1VecTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
             m_step1VecTex->realize();
             m_step1VecTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1VecTex->data( nullptr, 2048, 2048, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
+            m_step1VecTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT );
             logGLError();
 
             m_step1NoiseTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
             m_step1NoiseTex->realize();
             m_step1NoiseTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1NoiseTex->data( nullptr, 2048, 2048, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE );
+            m_step1NoiseTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE );
             logGLError();
 
             m_step1DepthTex = std::make_shared< core::Texture >( core::Texture::TextureType::Tex2D );
             m_step1DepthTex->realize();
             m_step1DepthTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
-            m_step1DepthTex->data( nullptr, 2048, 2048, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
+            m_step1DepthTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_FLOAT );
             m_step1DepthTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
             logGLError();
 
@@ -522,7 +532,7 @@ namespace di
             m_step2EdgeTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
-            m_step2EdgeTex->data( nullptr, 2048, 2048, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE );
+            m_step2EdgeTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE );
             m_step2EdgeTex->setTextureFilter( core::Texture::TextureFilter::LinearMipmapLinear, core::Texture::TextureFilter::Linear );
             logGLError();
 
@@ -561,7 +571,7 @@ namespace di
             m_step3AdvectTex->bind();
             // NOTE: to use an FBO, the texture needs to be initalized empty.
             // TODO(sebastian): fixed size textures are a problem ...
-            m_step3AdvectTex->data( nullptr, 2048, 2048, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE );
+            m_step3AdvectTex->data( nullptr, m_fboResolution.x, m_fboResolution.y, 1, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE );
             logGLError();
 
             // Bind textures to FBO
