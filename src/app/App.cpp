@@ -86,7 +86,12 @@ namespace di
         void App::prepareUI()
         {
             // Create the GL output:
-            getMainWindow()->setCentralWidget( new di::gui::ViewWidget( "Visualization" ) );
+            auto viewWidget = new di::gui::ViewWidget( "Visualization" );
+            getMainWindow()->setCentralWidget( viewWidget );
+
+            // We want a custom rotation as default
+            viewWidget->setViewPreset( glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                                       glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) );
 
             // Create the data widget:
             m_dataWidget = new di::gui::DataWidget( getMainWindow() );

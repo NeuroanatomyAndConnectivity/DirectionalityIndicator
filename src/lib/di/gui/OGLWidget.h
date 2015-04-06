@@ -105,6 +105,13 @@ namespace di
              */
             void setResponsibleScreenShotWidget( ScreenShotWidget* screenShotWidget );
 
+            /**
+             * Define a matrix as the default view. Default is identity.
+             *
+             * \param view the view to use as default
+             */
+            void setViewPreset( const glm::mat4& view = glm::mat4() );
+
         signals:
             /**
              * Issued whenever a screenshot is ready.
@@ -315,6 +322,11 @@ namespace di
              * Arcball on Y axis.
              */
             bool m_arcballYAxis = true;
+
+            /**
+             * The default view.
+             */
+            glm::mat4 m_defaultView;
 
             /**
              * The current drag matrix.

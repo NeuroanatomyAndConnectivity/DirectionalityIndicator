@@ -495,12 +495,6 @@ namespace di
         {
             switch( event->key() )
             {
-                case Qt::Key_D:
-                    // restore default for our current data. Just a convenient shortcut for now. Later this will not be needed as project
-                    // files store the cam too.
-                    m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
-                                      glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-                    break;
                 case Qt::Key_Period:
                     // forced reload
                     m_forceReload = true;
@@ -515,7 +509,7 @@ namespace di
 
         void OGLWidget::resetView()
         {
-            m_arcballMatrix = glm::mat4();
+            m_arcballMatrix = m_defaultView;
             m_dragOffset = glm::vec2();
         }
 
@@ -549,14 +543,15 @@ namespace di
         void OGLWidget::setViewAlongPosZ()
         {
             resetView();
-            m_arcballMatrix = glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+            m_arcballMatrix = glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
+                              glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
         }
 
         void OGLWidget::setViewAlongNegZ()
         {
             resetView();
             // the default camera
-            m_arcballMatrix = glm::mat4();
+            m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
         }
 
         glm::vec3 OGLWidget::toScreenCoord( double x, double y )
@@ -610,6 +605,12 @@ namespace di
         void OGLWidget::setResponsibleScreenShotWidget( ScreenShotWidget* screenShotWidget )
         {
             m_screenShotWidget = screenShotWidget;
+        }
+
+        void OGLWidget::setViewPreset( const glm::mat4& view )
+        {
+            m_defaultView = view;
+            resetView();
         }
     }
 }

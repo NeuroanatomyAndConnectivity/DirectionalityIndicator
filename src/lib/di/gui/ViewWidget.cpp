@@ -215,6 +215,11 @@ namespace di
                 QMessageBox::critical( this, "Screenshot failed.", "Unable to write the screenshot to disk." );
             }
         }
+
+        void ViewWidget::setViewPreset( const glm::mat4& view )
+        {
+            m_oglWidget->setViewPreset( view );
+        }
     }
 }
 

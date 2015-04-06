@@ -70,6 +70,13 @@ namespace di
              */
             void setTechnicalDefaultViews();
 
+            /**
+             * Define a matrix as the default view. Default is identity.
+             *
+             * \param view the view to use as default
+             */
+            void setViewPreset( const glm::mat4& view = glm::mat4() );
+
         public slots:
             /**
              * Take screenshot.
