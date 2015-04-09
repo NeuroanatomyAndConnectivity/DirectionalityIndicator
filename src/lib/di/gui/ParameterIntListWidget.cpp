@@ -71,12 +71,15 @@ namespace di
         {
             auto param = getParameter< core::ParamIntList >();
             std::string text;
-            for( size_t i = 0; i < param->get().size() - 1; ++i )
+            if( !param->get().empty() )
             {
-                text += std::to_string( param->get().at( i ) ) + ", ";
-            }
+                for( size_t i = 0; i < param->get().size() - 1; ++i )
+                {
+                    text += std::to_string( param->get().at( i ) ) + ", ";
+                }
 
-            text += std::to_string( param->get().back() ) ;
+                text += std::to_string( param->get().back() ) ;
+            }
             m_edit->setText( QString::fromStdString( text ) );
         }
 

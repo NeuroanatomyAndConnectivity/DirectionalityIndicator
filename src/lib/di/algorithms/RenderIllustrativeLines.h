@@ -140,6 +140,11 @@ namespace di
             core::ParamBool m_maskLabelEnable;
 
             /**
+             * Amount of desaturation during masking.
+             */
+            core::ParamDouble m_desaturationIntensity;
+
+            /**
              * True to enable ambient occlusion
              */
             core::ParamBool m_enableSSAO;

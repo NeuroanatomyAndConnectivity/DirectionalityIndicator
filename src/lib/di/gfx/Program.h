@@ -226,6 +226,45 @@ namespace di
             }
 
             /**
+             * Set the given value to the specified uniform. This version expects the vector to be adequately sized.
+             *
+             * \param name the name of the uniform
+             * \param value the value to set
+             */
+            void setUniform( const std::string name, const std::vector< int >& values )
+            {
+                glUniform1iv( getUniformLocation( name ), values.size(), values.data() );
+                logGLError();
+            }
+
+            /**
+             * Set the given value to the specified uniform. This version expects an arbitrary sized vector and automatically takes the desired number
+             * of elements and fills missing elements with a default value.
+             *
+             * \param name the name of the uniform
+             * \param values the value array
+             * \param size the array size of the GLSL uniform
+             * \param defaultValue if to few items where specified, use this default
+             */
+            void setUniform( const std::string name, const std::vector< int >& values, size_t size, int defaultValue )
+            {
+                // ensure a proper sized vector first:
+                std::vector< int > correct( size, defaultValue );
+
+                if( values.size() >= size )
+                {
+                    std::copy( values.begin(), values.begin() + size, correct.begin() );
+                }
+                else
+                {
+                    std::copy( values.begin(), values.end(), correct.begin() );
+                }
+
+                // Forward
+                setUniform( name, correct );
+            }
+
+            /**
              * Define a compile-time value with a given name. Bool version: set as defined only. No value.
              *
              * \param name the name of the definition

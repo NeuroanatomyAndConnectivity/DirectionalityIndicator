@@ -142,6 +142,13 @@ namespace di
                     "Define the labels to emphasize as comma separated list.",
                     { 1, 3, 5 }
             );
+
+            m_desaturationIntensity = addParameter< double >(
+                    "Labels: Desaturation Intensity",
+                    "Define the intensity of desaturation.",
+                    0.125
+            );
+            m_desaturationIntensity->setRangeHint( 0.0, 1.0 );
         }
 
         RenderIllustrativeLines::~RenderIllustrativeLines()
@@ -322,9 +329,9 @@ namespace di
             m_transformShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
             m_transformShaderProgram->setUniform( "u_specularity",      m_specularity->get() );
 
-            //m_transformShaderProgram->setUniform( "u_maskLabel",      m_maskLabel->get() );
-            m_transformShaderProgram->setUniform( "u_maskLabelEnable",      m_maskLabelEnable->get() );
-
+            m_transformShaderProgram->setUniform( "u_maskLabel",        m_maskLabel->get(), 20, -1 );
+            m_transformShaderProgram->setUniform( "u_maskLabelEnable",  m_maskLabelEnable->get() );
+            m_transformShaderProgram->setUniform( "u_desaturationIntensity", m_desaturationIntensity->get() );
             logGLError();
 
             // NOTE: keep original Viewport

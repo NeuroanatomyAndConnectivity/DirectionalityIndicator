@@ -24,6 +24,8 @@
 
 #version 330
 
+#define NumLabels 20
+
 // Attribute data
 in vec3 position;
 in vec4 color;
@@ -34,8 +36,9 @@ in uint label;
 // Uniforms
 uniform mat4 u_ProjectionMatrix;
 uniform mat4 u_ViewMatrix;
-uniform int u_maskLabel;
+uniform int[NumLabels] u_maskLabel;
 uniform bool u_maskLabelEnable;
+uniform float u_desaturationIntensity;
 
 // Varying out
 out vec3 v_normal;
@@ -56,12 +59,21 @@ void main()
     // v_color = vec4( abs(vectors.rgb), 1.0 );
     v_color = color;
 
+    // Use this varying and set to non-1 value if a region should be masked out somehow:
     v_emphasizeScale = 1.0;
     if( u_maskLabelEnable )
     {
-        if( int( label ) != u_maskLabel )
+        // Assume vertex to be masked out
+        v_emphasizeScale = u_desaturationIntensity;
+        // But if it is inside the list
+        for( int i = 0; i < NumLabels; ++i )
         {
-            v_emphasizeScale = 0.125;
+            if( int( label ) == u_maskLabel[i] )
+            {
+                // do not mask out
+                v_emphasizeScale = 1.0;
+                break;
+            }
         }
     }
 
