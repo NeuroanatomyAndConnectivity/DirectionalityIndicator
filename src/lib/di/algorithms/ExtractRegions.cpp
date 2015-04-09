@@ -505,7 +505,7 @@ namespace di
                 }
 
                 // As this is iterative and will converge -> go on until it converged
-                vectorAttributeSet = nowSet;
+                /*vectorAttributeSet = nowSet;
                 keepRunning = false;
                 for( auto vSet : vectorAttributeSet )
                 {
@@ -515,6 +515,35 @@ namespace di
                         break;
                     }
                 }
+                */
+
+                // Iterate both sets and check for differences
+                auto first1 = nowSet.begin();
+                auto first2 = vectorAttributeSet.begin();
+                auto last1 = nowSet.end();
+                keepRunning = false;
+                bool allEqual = true;
+                for( ; first1 != last1; ++first1, ++first2 )
+                {
+                    if( !( *first1 == *first2 ) )
+                    {
+                        allEqual = false;
+                    }
+
+                    if( !*first1 )
+                    {
+                        keepRunning = true;
+                    }
+                }
+
+                // Now there might be the case where all elements are equal but keepRunning is true -> break to avoid endless loops
+                if( keepRunning && allEqual )
+                {
+                    LogW << "The data contains areas where propagation is stuck. Aborting those regions now." << LogEnd;
+                    keepRunning = false;
+                }
+
+                vectorAttributeSet = nowSet;
             }
 
             LogD << "Done propagating directions." << LogEnd;
