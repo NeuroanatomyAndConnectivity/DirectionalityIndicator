@@ -54,5 +54,18 @@ namespace di
             }
             return elems;
         }
+
+        std::string trim( const std::string& theString )
+        {
+            size_t first = theString.find_first_not_of( ' ' );
+            size_t last = theString.find_last_not_of( ' ' );
+
+            // If not found, the string is completely "space".
+            if( ( first == std::string::npos ) || ( last == std::string::npos ) )
+            {
+                return "";
+            }
+            return theString.substr( first, ( last - first + 1 ) );
+        }
     }
 }

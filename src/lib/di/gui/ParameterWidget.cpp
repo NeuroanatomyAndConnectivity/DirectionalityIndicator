@@ -40,6 +40,7 @@
 #include <di/gui/ParameterIntWidget.h>
 #include <di/gui/ParameterColorWidget.h>
 #include <di/gui/ParameterDoubleWidget.h>
+#include <di/gui/ParameterIntListWidget.h>
 
 #include "ParameterWidget.h"
 
@@ -85,6 +86,11 @@ namespace di
             if( paramColor )
             {
                 return new ParameterColorWidget( parameter, parent );
+            }
+            auto paramIntList = core::ParameterBase::as< core::ParamIntList >( parameter );
+            if( paramIntList )
+            {
+                return new ParameterIntListWidget( parameter, parent );
             }
 
             LogW << "Your parameter type is not yet implemented!" << LogEnd;

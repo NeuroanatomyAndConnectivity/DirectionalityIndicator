@@ -52,6 +52,15 @@ namespace di
          * \return the tokens as vector.
          */
         std::vector< std::string > split( const std::string& theString, const char& delim = '\n' );
+
+        /**
+         * Trim whitespace from a string
+         *
+         * \param theString the string
+         *
+         * \return the trimmed string
+         */
+        std::string trim( const std::string& theString );
     }
 }
 

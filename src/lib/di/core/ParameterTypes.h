@@ -1,3 +1,8 @@
+//---------------------------------------------------------------------------------------
+//
+// Project: DirectionalityIndicator
+//
+// Copyright 2014-2015 Sebastian Eichelbaum (http://www.sebastian-eichelbaum.de)
 //           2014-2015 Max Planck Research Group "Neuroanatomy and Connectivity"
 //
 // This file is part of DirectionalityIndicator.
@@ -19,6 +24,8 @@
 
 #ifndef DI_PARAMETERTYPES_H
 #define DI_PARAMETERTYPES_H
+
+#include <vector>
 
 #include <di/core/Parameter.h>
 #include <di/GfxTypes.h>
@@ -58,6 +65,11 @@ namespace di
          * Colors
          */
         typedef SPtr< Parameter< di::Color > > ParamColor;
+
+        /**
+         * List of integers.
+         */
+        typedef SPtr< Parameter< std::vector< int > > > ParamIntList;
     }
 }
 

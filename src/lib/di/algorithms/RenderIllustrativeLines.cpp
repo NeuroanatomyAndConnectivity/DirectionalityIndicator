@@ -132,15 +132,15 @@ namespace di
             );
 
             m_maskLabelEnable = addParameter< bool >(
-                    "Debug: Emphasize Label",
+                    "Labels: Emphasize Label",
                     "Enable to emphasize the regions with the defined label and to gray-out others.",
                     false
             );
 
-            m_maskLabel = addParameter< int >(
-                    "Debug: Label ID",
-                    "Define the label to emphasize.",
-                    0
+            m_maskLabel = addParameter< std::vector< int > >(
+                    "Labels: Emphasize IDs",
+                    "Define the labels to emphasize as comma separated list.",
+                    { 1, 3, 5 }
             );
         }
 
@@ -175,7 +175,7 @@ namespace di
 
                 auto lmax = *std::max_element( labels->getAttributes()->begin(),
                                                labels->getAttributes()->end() );
-                m_maskLabel->setRangeHint( 0, lmax );
+                // m_maskLabel->setRangeHint( 0, lmax );
 
                 LogD << "New Label Data in [0, " << lmax << "]." << LogEnd;
             }
@@ -322,7 +322,7 @@ namespace di
             m_transformShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
             m_transformShaderProgram->setUniform( "u_specularity",      m_specularity->get() );
 
-            m_transformShaderProgram->setUniform( "u_maskLabel",      m_maskLabel->get() );
+            //m_transformShaderProgram->setUniform( "u_maskLabel",      m_maskLabel->get() );
             m_transformShaderProgram->setUniform( "u_maskLabelEnable",      m_maskLabelEnable->get() );
 
             logGLError();

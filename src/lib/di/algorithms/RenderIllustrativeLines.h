@@ -132,7 +132,7 @@ namespace di
             /**
              * To mask all other labels
              */
-            core::ParamInt m_maskLabel;
+            core::ParamIntList m_maskLabel;
 
             /**
              * Enable label masking
