@@ -101,7 +101,7 @@ void main()
 
         // NOTE: magic number: it represents the scaling between texture space and actual transformed world space the arrows reside in ....
         float scale = 0.005;
-        float lscale = scale * 2.0 * height / float( d_curvatureNumSegments - 1 );
+        float lscale = scale * 2.0 * height / float( d_curvatureNumSegments );
         float wscale = scale * width;
 
         vec3 p = pinfo.pointPos.xyz;
