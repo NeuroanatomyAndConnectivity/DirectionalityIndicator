@@ -190,6 +190,17 @@ namespace di
             core::ParamBool m_jitterArrows;
 
             /**
+             * Follow curvature on surface
+             */
+            core::ParamBool m_curvatureArrows;
+
+            /**
+             * Follow curvature on surface
+             */
+            core::ParamInt m_curvatureArrowsSampleDensity;
+
+
+            /**
              * If true, colors on the surface will be interpolated.
              */
             core::ParamBool m_interpolateOnSurface;

@@ -71,8 +71,9 @@ void main()
     }
 
     // Light
-    // float light = blinnPhongIlluminationIntensity( normalize( v_normal.xyz ) );
+    // float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.xyz ) );
     float light = clamp( 0.1 + pow( abs( dot( v_normal, vec3( 0.0, 0.0, 1.0 ) ) ), 2.0 ), 0.0, 1.0 );
+
 
     vec3 mixedColor = mix( v_color.rgb, arrowColor.rgb, arrowColor.a );
     vec4 finalColor = vec4( mixedColor.rgb * light, 1.0 );

@@ -131,6 +131,19 @@ namespace di
                     false
             );
 
+            m_curvatureArrows = addParameter< bool >(
+                    "Arrows: Curved",
+                    "Activate to have the arrows follow the surface curvature.",
+                    false
+            );
+
+            m_curvatureArrowsSampleDensity = addParameter< int >(
+                    "Arrows: Curvature Sampling",
+                    "Change to increase or decrease the amount of samples on the surface. More means less performance but improved visuals.",
+                    16
+            );
+            m_curvatureArrowsSampleDensity->setRangeHint( 4, 32 );
+
             m_maskLabelEnable = addParameter< bool >(
                     "Labels: Emphasize Label",
                     "Enable to emphasize the regions with the defined label and to gray-out others.",
@@ -396,6 +409,10 @@ namespace di
             glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fboArrow );
 
             // draw a big grid of points as arrows
+            m_arrowShaderProgram->setDefine( "d_curvatureEnable", m_curvatureArrows->get() );
+            m_arrowShaderProgram->setDefine( "d_curvatureNumSegments", m_curvatureArrowsSampleDensity->get() );
+            m_arrowShaderProgram->setDefine( "d_curvatureNumVerts", 2 * m_curvatureArrowsSampleDensity->get() );
+
             m_arrowShaderProgram->bind();
             m_arrowShaderProgram->setUniform( "u_ProjectionMatrix", view.getCamera().getProjectionMatrix() );
             // m_arrowShaderProgram->setUniform( "u_ViewMatrix",       view.getCamera().getViewMatrix() );
@@ -407,6 +424,13 @@ namespace di
             m_arrowShaderProgram->setUniform( "u_height", m_lengthArrows->get() );
             m_arrowShaderProgram->setUniform( "u_dist", m_distArrows->get() );
             m_arrowShaderProgram->setUniform( "u_arrowColor", m_colorArrows->get() );
+
+            // Allow the next shader to access step 1 textures
+            m_arrowShaderProgram->setUniform( "u_colorSampler",  0 );
+            m_arrowShaderProgram->setUniform( "u_vecSampler",    1 );
+            m_arrowShaderProgram->setUniform( "u_normalSampler", 2 );
+            m_arrowShaderProgram->setUniform( "u_posSampler",    3 );
+
             logGLError();
 
             glActiveTexture( GL_TEXTURE0 );
@@ -791,12 +815,6 @@ namespace di
             // Define the out vars to bind to the attachments
             glBindFragDataLocation( m_arrowShaderProgram->getObjectID(), 0, "fragColor" );
             logGLError();
-
-            // Allow the next shader to access step 1 textures
-            m_arrowShaderProgram->setUniform( "u_colorSampler",  0 );
-            m_arrowShaderProgram->setUniform( "u_vecSampler",    1 );
-            m_arrowShaderProgram->setUniform( "u_normalSampler", 2 );
-            m_arrowShaderProgram->setUniform( "u_posSampler",    3 );
 
             // Check for validity
             if( glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
