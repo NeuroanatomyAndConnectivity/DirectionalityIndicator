@@ -75,7 +75,7 @@ namespace di
             update();
         }
 
-        void ColorPicker::accpeted()
+        void ColorPicker::accepted()
         {
             auto newColor = m_colorDialog->currentColor();
             if( newColor.isValid() )

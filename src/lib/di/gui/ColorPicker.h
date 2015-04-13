@@ -97,7 +97,7 @@ namespace di
             /**
              * When the color is accepted.
              */
-            void accpeted();
+            void accepted();
 
             /**
              * Whenever the color is rejected.
