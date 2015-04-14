@@ -77,6 +77,7 @@ namespace di
             }
 
             m_needCompile = false;
+            m_uniformLocationCache.clear();
 
             // Add all defines to the string:
             std::string prefixCode = "";
@@ -91,6 +92,9 @@ namespace di
                     prefixCode += "#define " + define.first + "\n";
                 }
             }
+
+            // LogD << "Prefix:" << LogEnd;
+            // LogD << prefixCode << LogEnd;
 
             // Realize all shaders and attach.
             for( auto shader : m_shaders )
@@ -241,6 +245,7 @@ namespace di
             if( m_defines.erase( name ) )
             {
                 m_needCompile = true;
+                m_uniformLocationCache.clear();
             }
         }
 
