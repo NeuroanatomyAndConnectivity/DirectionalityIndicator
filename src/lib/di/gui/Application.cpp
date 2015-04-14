@@ -22,6 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <clocale>
+
 #include <string>
 
 #include <QApplication>
@@ -65,6 +67,10 @@ namespace di
 
             // Create QApplication
             QApplication application( m_argc, m_argv, true );
+
+            // Force C locale to avoid issues with comma vs dot in different languages
+            QLocale::setDefault( QLocale::c() );
+            setlocale( LC_ALL, "C" );
 
             // We need this for shader loading and others.
             di::core::initRuntimePath( QCoreApplication::applicationDirPath().toStdString() );

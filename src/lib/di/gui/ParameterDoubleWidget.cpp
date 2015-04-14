@@ -22,6 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <string>
+#include <sstream>
 #include <memory>
 
 #include <QHBoxLayout>
@@ -59,7 +61,7 @@ namespace di
             m_edit = new QLineEdit( widget );
             if( param->hasRangeHint() )
             {
-                m_edit->setValidator( new QDoubleValidator( param->getRangeHint().first, param->getRangeHint().second, 5 ) );
+                m_edit->setValidator( new QDoubleValidator( param->getRangeHint().first, param->getRangeHint().second, 10 ) );
             }
             else
             {
@@ -86,7 +88,10 @@ namespace di
 
                 m_slider->setValue( 100.0 * ( val - min ) / width );
             }
-            m_edit->setText( QString::fromStdString( std::to_string( param->get() ) ) );
+
+            std::stringstream ss;
+            ss << std::setprecision( 10 ) << param->get();
+            m_edit->setText( QString::fromStdString( ss.str() ) );
         }
 
         void ParameterDoubleWidget::changedSlider()
@@ -100,7 +105,12 @@ namespace di
 
         void ParameterDoubleWidget::changedEdit()
         {
-            getParameter< core::ParamDouble >()->set( m_edit->text().toDouble() );
+            bool ok = true;
+            auto val = m_edit->text().toDouble( &ok );
+            if( ok )
+            {
+                getParameter< core::ParamDouble >()->set( val );
+            }
         }
     }
 }
