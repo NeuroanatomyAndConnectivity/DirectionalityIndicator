@@ -207,34 +207,42 @@ namespace di
             // Update Camera
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            // Calculate scene
-            double maxExtend = sqrt( 3.0 ) *
-                               std::max( sceneBB.getSize().x,
-                                         std::max( sceneBB.getSize().y,
-                                                   sceneBB.getSize().z ) );
             double near = 0.3; // the near plane
             double far = m_zoom * sqrt( 3.0 ) + near;    // the diagonal of the cube needs to fit (sqrt(3))
+            if( sceneBB.isValid() )
+            {
+                // Calculate scene
+                double maxExtend = sqrt( 3.0 ) *
+                                   std::max( sceneBB.getSize().x,
+                                             std::max( sceneBB.getSize().y,
+                                                       sceneBB.getSize().z ) );
 
-            // Move scene to rotation point
-            glm::mat4 rotationPointTranslate = glm::translate( -sceneBB.getCenter() );
-            // Scale scene down to match screen size. The scene is now inside a unit sized cube
-            glm::mat4 scaleToFit = glm::scale( glm::vec3( 1.0 / ( 1.0 * maxExtend ) ) );
-            // Zoom
-            glm::mat4 zoom = glm::scale( glm::vec3( m_zoom ) );
+                // Move scene to rotation point
+                glm::mat4 rotationPointTranslate = glm::translate( -sceneBB.getCenter() );
+                // Scale scene down to match screen size. The scene is now inside a unit sized cube
+                glm::mat4 scaleToFit = glm::scale( glm::vec3( 1.0 / ( 1.0 * maxExtend ) ) );
+                // Zoom
+                glm::mat4 zoom = glm::scale( glm::vec3( m_zoom ) );
 
-            // move scene into the visible area
-            glm::mat4 moveToVisibleArea = glm::translate( glm::vec3( 0.0, 0.0, -( m_zoom * 0.5 + near ) ) );
+                // move scene into the visible area
+                glm::mat4 moveToVisibleArea = glm::translate( glm::vec3( 0.0, 0.0, -( m_zoom * 0.5 + near ) ) );
 
-            glm::mat4 dragMatrix = glm::translate( static_cast< float >( maxExtend ) *
-                                                   ( 1.0f / static_cast< float >( m_zoom ) ) *
-                                                   glm::vec3( m_dragOffset.x, m_dragOffset.y, 0.0 ) );
+                glm::mat4 dragMatrix = glm::translate( static_cast< float >( maxExtend ) *
+                                                       ( 1.0f / static_cast< float >( m_zoom ) ) *
+                                                       glm::vec3( m_dragOffset.x, m_dragOffset.y, 0.0 ) );
 
-            m_camera.setViewMatrix( moveToVisibleArea * scaleToFit * zoom * dragMatrix * m_arcballMatrix * rotationPointTranslate );
+                m_camera.setViewMatrix( moveToVisibleArea * scaleToFit * zoom * dragMatrix * m_arcballMatrix * rotationPointTranslate );
 
-            // set a nice default projection matrix:
-            m_camera.setProjectionMatrix(
-                glm::ortho( 0.5 * -getAspectRatio(), 0.5 * getAspectRatio(), -0.5, 0.5, near, far )
-            );
+                // set a nice default projection matrix:
+                m_camera.setProjectionMatrix(
+                    glm::ortho( 0.5 * -getAspectRatio(), 0.5 * getAspectRatio(), -0.5, 0.5, near, far )
+                );
+            }
+            else
+            {
+                m_camera.setProjectionMatrix( glm::mat4() );
+                m_camera.setViewMatrix( glm::mat4() );
+            }
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Define render target

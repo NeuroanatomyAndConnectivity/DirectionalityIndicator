@@ -96,6 +96,48 @@ namespace di
             CommandQueue::stop( graceful );
         }
 
+        SPtr< di::commands::QueryState > ProcessingNetwork::queryState( SPtr< CommandObserver > observer )
+        {
+            // Use the command
+            return commit(
+                SPtr< di::commands::QueryState >(
+                    new di::commands::QueryState( observer )
+                )
+            );
+        }
+
+        di::core::State ProcessingNetwork::getState() const
+        {
+            // Avoid concurrent access:
+            std::lock_guard< std::mutex > lockAlgo( m_algorithmsMutex );
+            std::lock_guard< std::mutex > lockCon( m_connectionsMutex );
+
+            State s;
+            for( auto algo : m_algorithms )
+            {
+                auto name = algo->getRuntimeName();
+                State algoState;
+
+                // Iterate parameters and store
+                for( auto param : algo->getParameters() )
+                {
+                    algoState.set( param->getName(), *param );
+                }
+
+                // Store the algorithm state
+                s.set( name, algoState );
+
+                LogD << "Storing state of \"" << name << "\"" << LogEnd;
+            }
+
+            return s;
+        }
+
+        bool ProcessingNetwork::restoreState( const di::core::State& state )
+        {
+            return false;
+        }
+
         void ProcessingNetwork::addVisualization( SPtr< Visualization > visualization )
         {
             if( !visualization )
@@ -128,6 +170,12 @@ namespace di
             algorithm->observe( m_onDirtyObserver );
 
             m_algorithms.push_back( algorithm );
+
+            // find a proper instance name
+            if( algorithm->getRuntimeName().empty() )
+            {
+                algorithm->setRuntimeName( algorithm->getName() + " " + std::to_string( m_algorithms.size() ) );
+            }
 
             lock.unlock();
 
@@ -361,6 +409,13 @@ namespace di
             {
                 // Call the proper function. Keep in mind that this is a temporary solution. The will be done by a scheduler in the future.
                 runNetworkImpl();
+            }
+
+            // Query State?
+            SPtr< di::commands::QueryState > queryStateCmd = std::dynamic_pointer_cast< di::commands::QueryState >( command );
+            if( queryStateCmd )
+            {
+                queryStateCmd->setState( getState() );
             }
         }
 

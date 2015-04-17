@@ -39,6 +39,7 @@ namespace di
         // Forward declarations
         class AlgorithmStrategies;
         class DataWidget;
+        class ViewWidget;
         class AlgorithmWidget;
     }
 
@@ -67,33 +68,49 @@ namespace di
             /**
              * Destroy and clean up.
              */
-            ~App() override;
+            virtual~App() override;
 
         protected:
             /**
              * Implement your specific UI code here. The network was not yet started. So only do GUI stuff here.
              */
-            void prepareUI() override;
+            virtual void prepareUI() override;
 
             /**
              * Implement your specific network code here. Network was started.
              */
-            void prepareNetwork() override;
+            virtual void prepareNetwork() override;
 
             /**
              * Implement the code that will be called after all preparations to start the UI.
              */
-            void show() override;
+            virtual void show() override;
 
             /**
              * Called when using the default MainWindow on shutdown. Implement all your state-save operations here.
              */
-            void close() override;
+            virtual void close() override;
 
             /**
              * Called when the processing network is marked as dirty. Use this to re-run the network or delay or ...
              */
-            void onDirtyNetwork() override;
+            virtual void onDirtyNetwork() override;
+
+            /**
+             * Called when the user wants to load a project from file. Does nothing by default. Implement this if you want to save specific things.
+             *
+             * \param filename the state-file to restore
+             *
+             * \return true if everything was OK.
+             */
+            virtual void loadProject( const QString& filename ) override;
+
+            /**
+             * Called when the user wants to save a project file.
+             *
+             * \param filename the desired state filename.
+             */
+            virtual void saveProject( const QString& filename ) override;
 
         private:
             /**
@@ -115,6 +132,11 @@ namespace di
              * Algorithm property dock
              */
             QDockWidget* m_tbDock = nullptr;
+
+            /**
+             * The view
+             */
+            di::gui::ViewWidget* m_viewWidget = nullptr;
         };
     }
 }

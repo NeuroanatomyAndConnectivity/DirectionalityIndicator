@@ -77,6 +77,22 @@ namespace di
              */
             void setViewPreset( const glm::mat4& view = glm::mat4() );
 
+            /**
+             * Get the state object representing this object at the moment of the call.
+             *
+             * \return  the state
+             */
+            di::core::State getState() const;
+
+            /**
+             * Apply the state to this instance.
+             *
+             * \param state the state to set
+             *
+             * \return  true if everything was fine.
+             */
+            bool setState( const di::core::State& state );
+
         public slots:
             /**
              * Take screenshot.

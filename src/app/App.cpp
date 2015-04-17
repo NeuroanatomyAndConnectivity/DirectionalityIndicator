@@ -86,12 +86,15 @@ namespace di
         void App::prepareUI()
         {
             // Create the GL output:
-            auto viewWidget = new di::gui::ViewWidget( "Visualization" );
-            getMainWindow()->setCentralWidget( viewWidget );
+            m_viewWidget = new di::gui::ViewWidget( "Visualization" );
+            getMainWindow()->setCentralWidget( m_viewWidget );
+
+            // Use the di::gui::Application build a nice menu for us:
+            getMainWindow()->addMenu();
 
             // We want a custom rotation as default
-            viewWidget->setViewPreset( glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
-                                       glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) );
+            m_viewWidget->setViewPreset( glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                                         glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) );
 
             // Create the data widget:
             m_dataWidget = new di::gui::DataWidget( getMainWindow() );
@@ -201,6 +204,28 @@ namespace di
         void App::close()
         {
             LogD << "Shutdown. Bye!" << LogEnd;
+        }
+
+        void App::loadProject( const QString& filename )
+        {
+
+        }
+
+        void App::saveProject( const QString& filename )
+        {
+            // Collect everything. First: the view:
+            auto viewState = m_viewWidget->getState();
+            // And network parameters
+            auto networkState = getProcessingNetwork()->getState();
+
+            // Create a encapsulating state
+            di::core::State main;
+            main.set( "program", "DirectionalityIndicator" );
+            main.set( "version", "1.0" );
+            main.set( "view1", viewState );
+            main.set( "parameters", networkState );
+
+            main.toFile( filename.toStdString() );
         }
     }
 }

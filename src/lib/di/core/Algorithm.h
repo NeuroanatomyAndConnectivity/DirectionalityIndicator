@@ -57,6 +57,21 @@ namespace di
             virtual const std::string& getName() const;
 
             /**
+             * Get a name that is used for this instance in the network. If an empty string is returned, the algorithm has no runtime name yet.
+             * This will be set automatically by the di::core::ProcessingNetwork if not done manually via setRuntimeName.
+             *
+             * \return the runtime name
+             */
+            const std::string& getRuntimeName() const;
+
+            /**
+             * Set the runtime name. Overwrites any existing name.
+             *
+             * \param name the name
+             */
+            void setRuntimeName( const std::string& name );
+
+            /**
              * Returns a useful description for the algorithm. Everything is allowed in the string. Please use a description that helps the user to
              * understand your algorithm. Refer to papers if necessary.
              *
@@ -398,6 +413,11 @@ namespace di
              * The name of the algorithm.
              */
             std::string m_name = "";
+
+            /**
+             * Runtime name.
+             */
+            std::string m_runtimeName = "";
 
             /**
              * The description of the algorithm.

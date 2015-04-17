@@ -94,6 +94,12 @@ namespace di
             include( bb.getMin().x, bb.getMin().y, bb.getMin().z );
             include( bb.getMax().x, bb.getMax().y, bb.getMax().z );
         }
+
+        bool BoundingBox::isValid() const
+        {
+            // ignore BB without a size
+            return ( m_bbMin.x <= m_bbMax.x );
+        }
     }
 }
 

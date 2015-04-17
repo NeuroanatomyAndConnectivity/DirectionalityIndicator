@@ -41,12 +41,14 @@
 #include <di/core/Algorithm.h>
 #include <di/core/Visualization.h>
 #include <di/core/Connection.h>
+#include <di/core/State.h>
 
 // All commands provided as convenience wrapper.
 #include <di/commands/ReadFile.h>
 #include <di/commands/AddAlgorithm.h>
 #include <di/commands/Connect.h>
 #include <di/commands/RunNetwork.h>
+#include <di/commands/QueryState.h>
 
 namespace di
 {
@@ -244,6 +246,29 @@ namespace di
              * \param observer the callback to remove.
              */
             void removeObserverOnDirty( SPtr< Observer > observer );
+
+            /**
+             * Get the state object representing this object at the moment of the call.
+             *
+             * \return  the state
+             */
+            virtual SPtr< di::commands::QueryState > queryState( SPtr< CommandObserver > observer = nullptr );
+
+            /**
+             * Apply the state to this instance.
+             *
+             * \param state the state to set
+             *
+             * \return  true if everything was fine.
+             */
+            bool restoreState( const di::core::State& state );
+
+            /**
+             * Get the state object representing this object at the moment of the call.
+             *
+             * \return  the state
+             */
+            di::core::State getState() const;
 
         protected:
             /**

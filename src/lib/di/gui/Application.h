@@ -110,6 +110,22 @@ namespace di
 
         protected:
             /**
+             * Called when the user wants to load a project from file. Does nothing by default. Implement this if you want to save specific things.
+             *
+             * \param filename the state-file to restore
+             *
+             * \return true if everything was OK.
+             */
+            virtual void loadProject( const QString& filename );
+
+            /**
+             * Called when the user wants to save a project file.
+             *
+             * \param filename the desired state filename.
+             */
+            virtual void saveProject( const QString& filename );
+
+            /**
              * Implement your specific UI code here. The network was not yet started. So only do GUI stuff here.
              */
             virtual void prepareUI() = 0;
@@ -138,6 +154,7 @@ namespace di
              * Called when the processing network is marked as dirty. Use this to re-run the network or delay or ...
              */
             virtual void onDirtyNetwork() = 0;
+
         private:
             /**
              * The application main window.

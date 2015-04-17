@@ -23,6 +23,11 @@
 //---------------------------------------------------------------------------------------
 
 #include <QMainWindow>
+#include <QMenuBar>
+#include <QAction>
+#include <QFileDialog>
+#include <QDir>
+#include <QMessageBox>
 
 #include <di/gui/Application.h>
 
@@ -66,5 +71,101 @@ namespace di
 
             QMainWindow::closeEvent( event );
         }
+
+        void MainWindow::addMenu()
+        {
+            addProjectMenu();
+        }
+
+        void MainWindow::addProjectMenu()
+        {
+            auto menu = menuBar();
+            auto ProjectMenu = menu->addMenu( "Project" );
+            auto loadAction = ProjectMenu->addAction( "Load" );
+            auto saveAction = ProjectMenu->addAction( "Save" );
+
+            loadAction->setShortcut( QKeySequence::Open );
+            saveAction->setShortcut( QKeySequence::Save );
+
+            connect( loadAction, SIGNAL( triggered( bool ) ), this, SLOT( loadProjectHandler() ) );
+            connect( saveAction, SIGNAL( triggered( bool ) ), this, SLOT( saveProjectHandler() ) );
+        }
+
+        void MainWindow::loadProjectHandler()
+        {
+            QString lastPath =
+                Application::getSettings()->value( "LastProjectFilePath", Application::getSettings()->value( "LastFilePath", "" ) ).toString();
+            QString selected = QFileDialog::getOpenFileName( this, "Load File", lastPath, QString( "Project File (*.project)" ) );
+            if( selected == "" )
+            {
+                return;
+            }
+
+            // Store the last path
+            // QFileInfo fi( selected );
+            Application::getSettings()->setValue( "LastProjectFilePath", selected );
+
+            setEnabled( false );
+
+            // Let the application programmer handle the remaining stuff
+            try
+            {
+                LogI << "Loading project from " << selected.toStdString() << LogEnd;
+                Application::getInstance()->loadProject( selected );
+            }
+            catch( std::exception& e )
+            {
+                QMessageBox::critical( this, "Load failed.", "Loading the project file has failed. Reason: \"" +
+                                                                 QString::fromStdString( std::string( e.what() ) ) + "\"." );
+            }
+            catch( ... )
+            {
+                QMessageBox::critical( this, "Load failed.", "Loading the project file has failed. View the log for more details." );
+            }
+
+            setEnabled( true );
+        }
+
+        void MainWindow::saveProjectHandler()
+        {
+            QString lastPath =
+                Application::getSettings()->value( "LastProjectFilePath", Application::getSettings()->value( "LastFilePath", "" ) ).toString();
+            QString selected = QFileDialog::getSaveFileName( this, "Save File", lastPath, QString( "Project File (*.project)" ) );
+            if( selected == "" )
+            {
+                return;
+            }
+
+            // Store the last path
+            QFileInfo fi( selected );
+            if( fi.suffix() != "project" )
+            {
+                selected += ".project";
+            }
+
+            Application::getSettings()->setValue( "LastProjectFilePath", selected );
+
+            setEnabled( false );
+
+            // Let the application programmer handle the remaining stuff
+            try
+            {
+                LogI << "Saving project to " << selected.toStdString() << LogEnd;
+                Application::getInstance()->saveProject( selected );
+            }
+            catch( std::exception& e )
+            {
+                QMessageBox::critical( this, "Save failed.",
+                                       "Saving the project file has failed. Reason: \"" + QString::fromStdString( std::string( e.what() ) ) + "\"." );
+                ;
+            }
+            catch( ... )
+            {
+                QMessageBox::critical( this, "Save failed.", "Saving the project file has failed. View the log for more details." );
+            }
+
+            setEnabled( true );
+        }
+
     }
 }

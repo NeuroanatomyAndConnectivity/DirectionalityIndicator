@@ -62,6 +62,16 @@ namespace di
              */
             virtual void saveStates();
 
+            /**
+             * Add a simple project file menu. Override to provide a more customized menu.
+             */
+            virtual void addProjectMenu();
+
+            /**
+             * Add a default menu to the application. This call all the add***Menu methods. Override for a more customized menu.
+             */
+            virtual void addMenu();
+
         signals:
             /**
              * On shutdown ...
@@ -75,6 +85,18 @@ namespace di
              * \param event the close event.
              */
             virtual void closeEvent( QCloseEvent* event );
+
+        protected slots:
+            /**
+             * Handle the load menu.
+             */
+            void loadProjectHandler();
+
+            /**
+             * Handle save project menu.
+             */
+            void saveProjectHandler();
+
         private:
         };
     }
