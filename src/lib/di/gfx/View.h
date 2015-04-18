@@ -104,7 +104,7 @@ namespace di
              *
              * \return  the state
              */
-            di::core::State getState() const;
+            virtual di::core::State getState() const = 0;
 
             /**
              * Apply the state to this instance.
@@ -113,7 +113,7 @@ namespace di
              *
              * \return  true if everything was fine.
              */
-            bool setState( const di::core::State& state );
+            virtual bool setState( const di::core::State& state ) = 0;
 
         protected:
             /**

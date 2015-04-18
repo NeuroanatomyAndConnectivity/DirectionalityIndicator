@@ -35,6 +35,7 @@
 // #include <QOpenGLWidget>
 #include <QGLWidget>
 
+#include <di/core/State.h>
 #include <di/gfx/PixelData.h>
 #include <di/GfxTypes.h>
 
@@ -112,6 +113,21 @@ namespace di
              */
             void setViewPreset( const glm::mat4& view = glm::mat4() );
 
+            /**
+             * Get the state object representing this object at the moment of the call.
+             *
+             * \return  the state
+             */
+            virtual di::core::State getState() const override;
+
+            /**
+             * Apply the state to this instance.
+             *
+             * \param state the state to set
+             *
+             * \return  true if everything was fine.
+             */
+            virtual bool setState( const di::core::State& state ) override;
         signals:
             /**
              * Issued whenever a screenshot is ready.

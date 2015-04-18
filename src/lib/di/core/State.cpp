@@ -26,6 +26,10 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <regex>
+
+#include <di/core/Filesystem.h>
+#include <di/core/StringUtils.h>
 
 #include "State.h"
 
@@ -35,12 +39,62 @@ namespace di
     {
         void State::set( const std::string& name, const State& state )
         {
+            if( name.empty() )
+            {
+                throw std::runtime_error( "Cannot set state without name." );
+            }
+
+            // is a path?
+            if( core::split( name, '/' ).size() != 1 )
+            {
+                throw std::runtime_error( "Cannot set state with the name being a path." );
+            }
+
             m_keyStateStore[ name ] = state;
         }
 
         const std::map< std::string, std::string >& State::get() const
         {
             return m_keyValueStore;
+        }
+
+        const std::string& State::getValue( const std::string& name, const std::string& def ) const
+        {
+            if( name.empty() )
+            {
+                throw std::runtime_error( "Cannot get value without name." );
+            }
+
+            // is a path?
+            if( core::split( name, '/' ).size() != 1 )
+            {
+                throw std::runtime_error( "Cannot get value with the name being a path." );
+            }
+
+            if( m_keyValueStore.count( name ) )
+            {
+                return m_keyValueStore.at( name );
+            }
+            else
+            {
+                return def;
+            }
+        }
+
+        const State& State::getState( const std::string& name ) const
+        {
+            if( name.empty() )
+            {
+                throw std::runtime_error( "Cannot get value without name." );
+            }
+
+            // is a path?
+            if( core::split( name, '/' ).size() != 1 )
+            {
+                throw std::runtime_error( "Cannot get value with the name being a path." );
+            }
+
+            return m_keyStateStore.at( name );
         }
 
         const std::map< std::string, State >& State::getNestedStates() const
@@ -54,12 +108,17 @@ namespace di
             // write obj to stream
             for( auto kv : get() )
             {
-                ss << prefix << kv.first << ":" << kv.second << std::endl;
+                ss << prefix << kv.first << "=" << kv.second << std::endl;
             }
 
             for( auto ks : getNestedStates() )
             {
-                ss << ks.second.toString( prefix + ks.first + "/" ) << std::endl;
+                auto stateString = ks.second.toString( prefix + ks.first + "/" );
+                if( !stateString.empty() )
+                {
+                    // ss << "// " << prefix << std::endl;
+                    ss << stateString;// << std::endl;
+                }
             }
 
             return ss.str();
@@ -71,6 +130,36 @@ namespace di
             fs.open( filename );
             fs << *this;
             fs.close();
+        }
+
+        State State::fromFile( const std::string& filename )
+        {
+            LogD << "Loading state file \"" << filename << "\"." << LogEnd;
+            auto file = core::readTextFile( filename );
+
+            di::core::State s;
+
+            // each line
+            auto items = core::split( file );
+            for( auto line : items )
+            {
+                if( line.empty() )
+                {
+                    continue;
+                }
+
+                // Ok. Split into parts:
+                std::regex rgx( "(.*)=(.*)$");
+                std::smatch match;
+
+                // Matches our format?
+                if( std::regex_search( line, match, rgx ) )
+                {
+                    s.set( match[ 1 ], match[ 2 ] );
+                }
+            }
+
+            return s;
         }
     }
 }

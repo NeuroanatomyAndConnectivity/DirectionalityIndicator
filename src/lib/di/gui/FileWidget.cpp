@@ -86,6 +86,26 @@ namespace di
         {
         }
 
+        std::string FileWidget::getTitle() const
+        {
+            return m_title.toStdString();
+        }
+
+        di::core::State FileWidget::getState() const
+        {
+            LogD << "Storing file loader state \"" << getTitle() << "\"." << LogEnd;
+
+            di::core::State state;
+            state.set( "Filename", m_currentFile.toStdString() );
+            return state;
+        }
+
+        bool FileWidget::setState( const di::core::State& state )
+        {
+            LogD << "Restoring file loader state \"" << getTitle() << "\"." << LogEnd;
+            return false;
+        }
+
         void FileWidget::prepareProcessingNetwork()
         {
             // We use DataInject algorithms to inject data we have loaded (or will load)
@@ -106,18 +126,12 @@ namespace di
             QFileInfo fi( selected );
             Application::getSettings()->setValue( "LastFilePath", fi.path() );
 
+            m_currentFile = selected;
+
             // Use deferred loading:
-            Application::getProcessingNetwork()->loadFile( m_reader,    // NOTE: nullptr is allowed by loadFile.
-                                                           selected.toStdString(),
-                                                       SPtr< CommandObserverQt >(
-                                                           new CommandObserverQt( this,
-                                                                                  {
-                                                                                      m_fileLoadLabel,
-                                                                                      m_fileLoadLabel
-                                                                                  }
-                                                                                )
-                                                       )
-                                                      );
+            Application::getProcessingNetwork()->loadFile(
+                m_reader, // NOTE: nullptr is allowed by loadFile.
+                m_currentFile.toStdString(), SPtr< CommandObserverQt >( new CommandObserverQt( this, { m_fileLoadLabel, m_fileLoadLabel } ) ) );
         }
 
         bool FileWidget::event( QEvent* event )

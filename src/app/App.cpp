@@ -50,6 +50,9 @@
 #include <di/gui/FileWidget.h>
 #include <di/gui/MainWindow.h>
 
+#include <di/core/Logger.h>
+#define LogTag "app/App"
+
 // include some icons as XPM. This will be replaced by a proper file loading.
 #include "icons/iconMesh.xpm"
 #include "icons/iconLabels.xpm"
@@ -208,7 +211,17 @@ namespace di
 
         void App::loadProject( const QString& filename )
         {
+            di::core::State s = di::core::State::fromFile( filename.toStdString() );
 
+            // Get States
+            auto viewState = s.getState( "view1" );
+            auto networkState = s.getState( "parameters" );
+            auto fileState = s.getState( "files" );
+
+            // Set them. These methods are very fault tolerant. They set what they can set.
+            m_viewWidget->setState( viewState );
+            //getProcessingNetwork()->setState( networkState );
+            m_dataWidget->setState( fileState );
         }
 
         void App::saveProject( const QString& filename )
@@ -217,6 +230,8 @@ namespace di
             auto viewState = m_viewWidget->getState();
             // And network parameters
             auto networkState = getProcessingNetwork()->getState();
+            // And the files to load
+            auto filesState = m_dataWidget->getState();
 
             // Create a encapsulating state
             di::core::State main;
@@ -224,6 +239,7 @@ namespace di
             main.set( "version", "1.0" );
             main.set( "view1", viewState );
             main.set( "parameters", networkState );
+            main.set( "files", filesState );
 
             main.toFile( filename.toStdString() );
         }

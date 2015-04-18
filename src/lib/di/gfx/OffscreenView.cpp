@@ -216,6 +216,16 @@ namespace di
             m_outputTex = nullptr;
             m_outputDepth = nullptr;
         }
+
+        di::core::State OffscreenView::getState() const
+        {
+            return di::core::State();
+        }
+
+        bool OffscreenView::setState( const di::core::State& /* state */ )
+        {
+            return false;
+        }
     }
 }
 

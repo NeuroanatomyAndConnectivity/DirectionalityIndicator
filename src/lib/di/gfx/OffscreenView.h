@@ -104,6 +104,23 @@ namespace di
              * \return the image
              */
             SPtr< RGBA8Image > read() const;
+
+            /**
+             * Get the state object representing this object at the moment of the call.
+             *
+             * \return  the state
+             */
+            virtual di::core::State getState() const override;
+
+            /**
+             * Apply the state to this instance.
+             *
+             * \param state the state to set
+             *
+             * \return  true if everything was fine.
+             */
+            virtual bool setState( const di::core::State& state ) override;
+
         protected:
         private:
             /**

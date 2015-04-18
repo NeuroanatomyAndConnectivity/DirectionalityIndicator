@@ -37,6 +37,7 @@ namespace di
     namespace core
     {
         class Algorithm;
+        class State;
     }
 
     namespace gui
@@ -84,6 +85,21 @@ namespace di
              */
             void connectDataToStrategies( AlgorithmStrategies* to );
 
+            /**
+             * Get the state object representing this object at the moment of the call.
+             *
+             * \return  the state
+             */
+            virtual di::core::State getState() const;
+
+            /**
+             * Apply the state to this instance.
+             *
+             * \param state the state to set
+             *
+             * \return  true if everything was fine.
+             */
+            virtual bool setState( const di::core::State& state );
         protected:
         private:
              /**

@@ -36,6 +36,11 @@
 
 namespace di
 {
+    namespace core
+    {
+        class State;
+    }
+
     namespace gui
     {
         class ScaleLabel;
@@ -94,6 +99,29 @@ namespace di
              */
             ConstSPtr< di::algorithms::DataInject > getDataInject() const;
 
+            /**
+             * Title of the file widget.
+             *
+             * \return the title
+             */
+            std::string getTitle() const;
+
+            /**
+             * Get the state object representing this object at the moment of the call.
+             *
+             * \return  the state
+             */
+            virtual di::core::State getState() const;
+
+            /**
+             * Apply the state to this instance.
+             *
+             * \param state the state to set
+             *
+             * \return  true if everything was fine.
+             */
+            virtual bool setState( const di::core::State& state );
+
         protected:
         private:
             /**
@@ -125,6 +153,11 @@ namespace di
              * Title of the file widget.
              */
             QString m_title = "File";
+
+            /**
+             * The current file. Empty if none.
+             */
+            QString m_currentFile;
         private slots:
             /**
              * Load the file data.

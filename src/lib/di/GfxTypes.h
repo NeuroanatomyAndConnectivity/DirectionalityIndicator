@@ -51,10 +51,38 @@ namespace di
 
 
     /**
-     * Output state to stream.
+     * Output to stream.
      *
      * \param os the stream to write to
-     * \param obj the state to write
+     * \param obj the obj to write
+     *
+     * \return the stream
+     */
+    inline std::ostream& operator<<( std::ostream& os, const glm::vec2& obj )
+    {
+        os << obj[ 0 ] << "," << obj[ 1 ];
+        return os;
+    }
+
+    /**
+     * Output to stream.
+     *
+     * \param os the stream to write to
+     * \param obj the obj to write
+     *
+     * \return the stream
+     */
+    inline std::ostream& operator<<( std::ostream& os, const glm::vec3& obj )
+    {
+        os << obj[ 0 ] << "," << obj[ 1 ] << "," << obj[ 2 ];
+        return os;
+    }
+
+    /**
+     * Output to stream.
+     *
+     * \param os the stream to write to
+     * \param obj the obj to write
      *
      * \return the stream
      */
@@ -69,10 +97,10 @@ namespace di
     }
 
     /**
-     * Output state to stream.
+     * Output to stream.
      *
      * \param os the stream to write to
-     * \param obj the state to write
+     * \param obj the obj to write
      *
      * \return the stream
      */
@@ -83,6 +111,24 @@ namespace di
             os << obj[ r ] << ",";
         }
         os << obj[ 3 ];
+        return os;
+    }
+
+    /**
+     * Output to stream.
+     *
+     * \param os the stream to write to
+     * \param obj the obj to write
+     *
+     * \return the stream
+     */
+    inline std::ostream& operator<<( std::ostream& os, const glm::mat3& obj )
+    {
+        for( int r = 0; r < 2; ++r )
+        {
+            os << obj[ r ] << ",";
+        }
+        os << obj[ 2 ];
         return os;
     }
 }

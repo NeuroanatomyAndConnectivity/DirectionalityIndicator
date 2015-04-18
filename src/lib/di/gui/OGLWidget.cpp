@@ -31,9 +31,11 @@
 
 #include <di/core/Filesystem.h>
 #include <di/core/BoundingBox.h>
+#include <di/core/State.h>
 #include <di/gfx/GL.h>
 #include <di/gfx/OffscreenView.h>
 #include <di/MathTypes.h>
+#include <di/GfxTypes.h>
 
 #include <di/gui/Application.h>
 #include <di/gui/ScreenShotWidget.h>
@@ -619,6 +621,26 @@ namespace di
         {
             m_defaultView = view;
             resetView();
+        }
+
+        di::core::State OGLWidget::getState() const
+        {
+            LogD << "Storing view state." << LogEnd;
+
+            di::core::State state;
+
+            // only store the camera. Everything else is managed by the rendering/windowing system
+            auto cam = getCamera();
+            state.set( "Arcball Matrix", m_arcballMatrix );
+            state.set( "Drag Offset", m_dragOffset );
+
+            return state;
+        }
+
+        bool OGLWidget::setState( const di::core::State& state )
+        {
+            LogD << "Restoring view state." << LogEnd;
+            return false;
         }
     }
 }

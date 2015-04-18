@@ -28,6 +28,14 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <stdexcept>
+
+#include <di/core/StringUtils.h>
+
+#include <di/GfxTypes.h>
+
+#include <di/core/Logger.h>
+#define LogTag "core/State"
 
 namespace di
 {
@@ -53,22 +61,56 @@ namespace di
              * Set the value of the specified key
              *
              * \tparam ValueType the type of the value. Needs to provide << operator
-             * \param name name
+             * \param name name. Can be a nested name in a path.
              * \param value the value
+             *
+             * \throw std::runtime_error if the name is invalid (empty)
              */
             template< typename ValueType >
             void set( const std::string& name, const ValueType& value )
             {
-                std::stringstream ss;
-                ss << value;
-                m_keyValueStore[ name ] = ss.str();
+                using di::operator<<;
+
+                if( name.empty() )
+                {
+                    throw std::runtime_error( "Cannot set value without name." );
+                }
+
+                // is a path?
+                auto names = core::split( name, '/' );
+
+                // Is a key?
+                if( names.size() == 1 )
+                {
+                    // LogD << "Set Value: " << names[ 0 ] << LogEnd;
+
+                    std::stringstream ss;
+                    ss << value;
+                    m_keyValueStore[ name ] = ss.str();
+                }
+                else
+                {
+                    // No it is part of a path. Create as many sub-states as needed
+                    State* current = this;
+                    // Iterate each path element, excluding the last one (the key itself)
+                    for( size_t i = 0; i < names.size() - 1; ++i )
+                    {
+                        // LogD << "Create State: " << names[ i ] << "-" << current->m_keyStateStore.count( names[ i ] ) << LogEnd;
+                        current = &current->m_keyStateStore[ names[ i ] ];
+                    }
+
+                    // The last path element is the key. Set:
+                    current->set( names[ names.size() - 1 ], value );
+                }
             }
 
             /**
              * Add a state. Useful for grouping things.
              *
-             * \param name the name
+             * \param name the name. Paths NOT allowed.
              * \param state the state to add
+             *
+             * \throw std::runtime_error if the name is invalid somehow (empty, is path).
              */
             void set( const std::string& name, const State& state );
 
@@ -78,6 +120,51 @@ namespace di
              * \return the key-value-pairs
              */
             const std::map< std::string, std::string >& get() const;
+
+            /**
+             * Get the value at a given name as string. Returns the specified default if no value was set.
+             *
+             * \param name the name. Path is not allowed.
+             * \param def the default to return in case of errors
+             *
+             * \throw std::runtime_error if the name is invalid somehow (empty, is path).
+             *
+             * \return the value as string
+             */
+            const std::string& getValue( const std::string& name, const std::string& def = "" ) const;
+
+            /**
+             * Get the value at a given name as string. Returns the specified default if no value was set.
+             *
+             * \param name the name. Path is not allowed.
+             * \param def the default to return in case of errors
+             *
+             * \tparam ValueType the desired type of the result.
+             *
+             * \throw std::runtime_error if the name is invalid somehow (empty, is path).
+             *
+             * \return the value or the specified default
+             */
+            template< typename ValueType >
+            ValueType getValue( const std::string& name, const ValueType& def = ValueType() ) const
+            {
+                auto result = getValue( name, "" );
+
+
+
+                return ValueType();
+            }
+
+            /**
+             * Get the value at a given name as string. Returns an empty state if not found.
+             *
+             * \param name the name. Path is not allowed.
+             *
+             * \throw std::runtime_error if the name is invalid somehow (empty, is path).
+             *
+             * \return the state
+             */
+            const State& getState( const std::string& name ) const;
 
             /**
              * Get all nested states.
@@ -103,6 +190,13 @@ namespace di
              * \throw std::exception if something goes wrong.
              */
             void toFile( const std::string& filename ) const;
+
+            /**
+             * Load state from file. This method is very forgiving. Only IO errors will be reported as std::exceptions.
+             *
+             * \param filename the file to load
+             */
+            static State fromFile( const std::string& filename );
 
         protected:
         private:

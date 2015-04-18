@@ -61,22 +61,6 @@ namespace di
         {
             m_hqMode = hq;
         }
-
-        di::core::State View::getState() const
-        {
-            State state;
-
-            // only store the camera. Everything else is managed by the rendering/windowing system
-            auto cam = getCamera();
-            state.set( "View Matrix", cam.getViewMatrix() );
-            state.set( "Projection Matrix", cam.getProjectionMatrix() );
-            return state;
-        }
-
-        bool View::setState( const di::core::State& state )
-        {
-            return false;
-        }
     }
 }
 

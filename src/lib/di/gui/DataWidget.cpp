@@ -33,10 +33,14 @@
 #include <di/gui/ScaleLabel.h>
 
 #include <di/core/Algorithm.h>
+#include <di/core/State.h>
 
 #include <di/gui/CommandObserverQt.h>
 #include <di/gui/events/CommandObserverEvent.h>
 #include <di/gui/FileWidget.h>
+
+#include <di/core/Logger.h>
+#define LogTag "gui/DataWidget"
 
 #include "DataWidget.h"
 
@@ -93,6 +97,24 @@ namespace di
                 auto lAlgo = l->getDataInject();
                 to->connectToAll( lAlgo, "Data", "Triangle Mesh" );
             }
+        }
+
+        di::core::State DataWidget::getState() const
+        {
+            LogD << "Storing data state." << LogEnd;
+
+            di::core::State state;
+            for( auto l : m_loaders )
+            {
+                state.set( l->getTitle(), l->getState() );
+            }
+            return state;
+        }
+
+        bool DataWidget::setState( const di::core::State& state )
+        {
+            LogD << "Restoring view state." << LogEnd;
+            return false;
         }
     }
 }
