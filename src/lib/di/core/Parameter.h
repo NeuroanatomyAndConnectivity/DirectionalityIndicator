@@ -316,7 +316,6 @@ namespace di
             }
             ValueType v;
             fromParameterString( source, v );
-            LogD << "Set " << getName() << " mit " << source << LogEnd;
             set( v );
         }
     }
