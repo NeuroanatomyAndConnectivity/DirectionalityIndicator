@@ -30,6 +30,7 @@
 #include <ostream>
 
 #include <di/core/ParameterBase.h>
+#include <di/core/Conversion.h>
 
 #include <di/core/Logger.h>
 #define LogTag "core/Parameter"
@@ -154,11 +155,20 @@ namespace di
             bool hasRangeHint() const;
 
             /**
-             * Convert to string
+             * Convert to string. Uses di::core::fromString. Accordingly, it might throw conversion
+             * exceptions.
              *
              * \return the string
              */
             virtual std::string toString() const override;
+
+            /**
+             * Convert from string to target type, set the resulting value. Uses di::core::fromString. Accordingly, it might throw conversion
+             * exceptions.
+             *
+             * \param source the string. Can be empty. Will be ignored in this case.
+             */
+            virtual void fromString( const std::string& source ) override;
 
         protected:
         private:
@@ -268,22 +278,25 @@ namespace di
         template< typename ValueType >
         std::string toParameterString( const ValueType& value )
         {
-            using di::operator<<;
-            std::stringstream ss;
-            ss << std::setprecision( 10 ) << value;
-            return ss.str();
+            return di::core::toString( value );
         }
 
         template< typename ValueType >
         std::string toParameterString( const std::vector< ValueType >& value )
         {
-            std::stringstream ss;
-            ss << std::setprecision( 10 );
-            for( auto v : value )
-            {
-                ss << toParameterString( v ) << ",";
-            }
-            return ss.str();
+            return di::core::toStringFromVector( value );
+        }
+
+        template< typename ValueType >
+        void fromParameterString( const std::string& value, ValueType& result )
+        {
+            result = di::core::fromString< ValueType >( value );
+        }
+
+        template< typename ValueType >
+        void fromParameterString( const std::string& value, std::vector< ValueType >& result )
+        {
+            result = di::core::fromStringAsVector< ValueType >( value );
         }
 
         template< typename ValueType >
@@ -292,6 +305,19 @@ namespace di
             std::stringstream ss;
             ss << toParameterString( m_value );
             return ss.str();
+        }
+
+        template< typename ValueType >
+        void Parameter< ValueType >::fromString( const std::string& source )
+        {
+            if( source.empty() )
+            {
+                return;
+            }
+            ValueType v;
+            fromParameterString( source, v );
+            LogD << "Set " << getName() << " mit " << source << LogEnd;
+            set( v );
         }
     }
 }

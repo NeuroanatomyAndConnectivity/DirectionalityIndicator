@@ -58,6 +58,36 @@ namespace di
             return m_keyValueStore;
         }
 
+        bool State::isSet( const std::string& name ) const
+        {
+            return ( m_keyValueStore.count( name ) != 0 );
+        }
+
+        bool State::isState( const std::string& name ) const
+        {
+            return ( m_keyStateStore.count( name ) != 0 );
+        }
+
+        bool State::empty() const
+        {
+            return ( size() == 0 );
+        }
+
+        bool State::size() const
+        {
+            return m_keyStateStore.size() + m_keyValueStore.size();
+        }
+
+        size_t State::countStates() const
+        {
+            return m_keyStateStore.size();
+        }
+
+        size_t State::countValues() const
+        {
+            return m_keyValueStore.size();
+        }
+
         const std::string& State::getValue( const std::string& name, const std::string& def ) const
         {
             if( name.empty() )
@@ -92,6 +122,11 @@ namespace di
             if( core::split( name, '/' ).size() != 1 )
             {
                 throw std::runtime_error( "Cannot get value with the name being a path." );
+            }
+
+            if( m_keyStateStore.count( name ) == 0 )
+            {
+                throw std::runtime_error( "State not found." );
             }
 
             return m_keyStateStore.at( name );

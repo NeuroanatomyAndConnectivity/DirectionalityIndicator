@@ -80,11 +80,21 @@ namespace di
             }
 
             /**
-             * Convert to string.
+             * Convert to string. Uses di::core::fromString. Accordingly, it might throw conversion
+             * exceptions.
              *
              * \return the string
              */
             virtual std::string toString() const = 0;
+
+            /**
+             * Convert from string to target type, set the resulting value. Uses di::core::fromString. Accordingly, it might throw conversion
+             * exceptions.
+             *
+             * \param source the string. Can be empty. Will be ignored in this case.
+             */
+            virtual void fromString( const std::string& source ) = 0;
+
         protected:
         private:
             /**

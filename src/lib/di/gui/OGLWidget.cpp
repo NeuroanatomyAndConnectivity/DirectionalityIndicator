@@ -630,7 +630,6 @@ namespace di
             di::core::State state;
 
             // only store the camera. Everything else is managed by the rendering/windowing system
-            auto cam = getCamera();
             state.set( "Arcball Matrix", m_arcballMatrix );
             state.set( "Drag Offset", m_dragOffset );
 
@@ -640,7 +639,11 @@ namespace di
         bool OGLWidget::setState( const di::core::State& state )
         {
             LogD << "Restoring view state." << LogEnd;
-            return false;
+
+            m_arcballMatrix = state.getValue< glm::mat4 >( "Arcball Matrix", glm::mat4() );
+            m_dragOffset = state.getValue< glm::vec2 >( "Drag Offset", glm::vec2( 0.0, 0.0 ) );;
+
+            return true;
         }
     }
 }

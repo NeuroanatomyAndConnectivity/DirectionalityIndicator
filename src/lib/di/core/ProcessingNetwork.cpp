@@ -112,10 +112,13 @@ namespace di
             std::lock_guard< std::mutex > lockAlgo( m_algorithmsMutex );
             std::lock_guard< std::mutex > lockCon( m_connectionsMutex );
 
+            // Just iterate algorithms and add their parameters to the state
             State s;
             for( auto algo : m_algorithms )
             {
                 auto name = algo->getRuntimeName();
+                LogD << "Storing state of \"" << name << "\"" << LogEnd;
+
                 State algoState;
 
                 // Iterate parameters and store
@@ -126,16 +129,41 @@ namespace di
 
                 // Store the algorithm state
                 s.set( name, algoState );
-
-                LogD << "Storing state of \"" << name << "\"" << LogEnd;
             }
 
             return s;
         }
 
-        bool ProcessingNetwork::restoreState( const di::core::State& state )
+        bool ProcessingNetwork::setState( const di::core::State& state )
         {
-            return false;
+            // Avoid concurrent access:
+            std::lock_guard< std::mutex > lockAlgo( m_algorithmsMutex );
+            std::lock_guard< std::mutex > lockCon( m_connectionsMutex );
+
+            for( auto algo : m_algorithms )
+            {
+                auto name = algo->getRuntimeName();
+                LogD << "Try restoring state of \"" << name << "\"" << LogEnd;
+
+                // Do we have a state?
+                if( state.isState( name ) )
+                {
+                    State algoState = state.getState( name );
+                    LogD << "Found state for \"" << name << "\"" << LogEnd;
+                    if( algoState.empty() )
+                    {
+                        continue;
+                    }
+
+                    // Iterate parameters and restore
+                    for( auto param : algo->getParameters() )
+                    {
+                        param->fromString( algoState.getValue( param->getName(), param->toString() ) );
+                    }
+                }
+            }
+
+            return true;
         }
 
         void ProcessingNetwork::addVisualization( SPtr< Visualization > visualization )

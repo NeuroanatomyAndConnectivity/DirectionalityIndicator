@@ -31,6 +31,7 @@
 #include <stdexcept>
 
 #include <di/core/StringUtils.h>
+#include <di/core/Conversion.h>
 
 #include <di/GfxTypes.h>
 
@@ -58,6 +59,52 @@ namespace di
             virtual ~State() = default;
 
             /**
+             * Check if the given name has a value assigned.
+             *
+             * \param name the name. No path allowed.
+             *
+             * \return true if name is valid and has a value assigned.
+             */
+            bool isSet( const std::string& name ) const;
+
+            /**
+             * Check if the given name has a state assigned.
+             *
+             * \param name the name. No path allowed.
+             *
+             * \return true if name is valid and has a value assigned.
+             */
+            bool isState( const std::string& name ) const;
+
+            /**
+             * Check if empty.
+             *
+             * \return true if no state or value is assigned.
+             */
+            bool empty() const;
+
+            /**
+             * Sum of all states and values.
+             *
+             * \return the number of assigned names.
+             */
+            bool size() const;
+
+            /**
+             * The number of states assigned.
+             *
+             * \return the size
+             */
+            size_t countStates() const;
+
+            /**
+             * The number of values.
+             *
+             * \return the number of values.
+             */
+            size_t countValues() const;
+
+            /**
              * Set the value of the specified key
              *
              * \tparam ValueType the type of the value. Needs to provide << operator
@@ -69,8 +116,6 @@ namespace di
             template< typename ValueType >
             void set( const std::string& name, const ValueType& value )
             {
-                using di::operator<<;
-
                 if( name.empty() )
                 {
                     throw std::runtime_error( "Cannot set value without name." );
@@ -83,10 +128,7 @@ namespace di
                 if( names.size() == 1 )
                 {
                     // LogD << "Set Value: " << names[ 0 ] << LogEnd;
-
-                    std::stringstream ss;
-                    ss << value;
-                    m_keyValueStore[ name ] = ss.str();
+                    m_keyValueStore[ name ] = di::core::toString( value );
                 }
                 else
                 {
@@ -131,7 +173,7 @@ namespace di
              *
              * \return the value as string
              */
-            const std::string& getValue( const std::string& name, const std::string& def = "" ) const;
+            const std::string& getValue( const std::string& name, const std::string& def ) const;
 
             /**
              * Get the value at a given name as string. Returns the specified default if no value was set.
@@ -139,28 +181,30 @@ namespace di
              * \param name the name. Path is not allowed.
              * \param def the default to return in case of errors
              *
-             * \tparam ValueType the desired type of the result.
+             * \tparam ValueType the desired type of the result. Provide some conversion for your type is available in di/core/Conversion.h
              *
              * \throw std::runtime_error if the name is invalid somehow (empty, is path).
              *
              * \return the value or the specified default
              */
             template< typename ValueType >
-            ValueType getValue( const std::string& name, const ValueType& def = ValueType() ) const
+            ValueType getValue( const std::string& name, const ValueType& def ) const
             {
                 auto result = getValue( name, "" );
+                if( result.empty() )
+                {
+                    return def;
+                }
 
-
-
-                return ValueType();
+                return di::core::fromString< ValueType >( result );
             }
 
             /**
-             * Get the value at a given name as string. Returns an empty state if not found.
+             * Get the value at a given name as string. Throws and exception of the state is not available.
              *
              * \param name the name. Path is not allowed.
              *
-             * \throw std::runtime_error if the name is invalid somehow (empty, is path).
+             * \throw std::runtime_error if the name is invalid somehow (empty, is path, not existing).
              *
              * \return the state
              */

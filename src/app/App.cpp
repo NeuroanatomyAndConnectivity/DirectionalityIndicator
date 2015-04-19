@@ -220,7 +220,7 @@ namespace di
 
             // Set them. These methods are very fault tolerant. They set what they can set.
             m_viewWidget->setState( viewState );
-            //getProcessingNetwork()->setState( networkState );
+            getProcessingNetwork()->setState( networkState );
             m_dataWidget->setState( fileState );
         }
 

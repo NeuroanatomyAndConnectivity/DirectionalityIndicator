@@ -103,7 +103,29 @@ namespace di
         bool FileWidget::setState( const di::core::State& state )
         {
             LogD << "Restoring file loader state \"" << getTitle() << "\"." << LogEnd;
-            return false;
+
+            // get filename and done
+            auto fn = state.getValue( "Filename", "" );
+            if( !fn.empty() )
+            {
+                m_currentFile = QString::fromStdString( fn );
+                // trigger load
+                postLoadCommand();
+            }
+            else
+            {
+                LogW << "No filename stored." << LogEnd;
+            }
+
+            return true;
+        }
+
+        void FileWidget::postLoadCommand()
+        {
+            // Use deferred loading:
+            Application::getProcessingNetwork()->loadFile(
+                m_reader, // NOTE: nullptr is allowed by loadFile.
+                m_currentFile.toStdString(), SPtr< CommandObserverQt >( new CommandObserverQt( this, { m_fileLoadLabel, m_fileLoadLabel } ) ) );
         }
 
         void FileWidget::prepareProcessingNetwork()
@@ -127,11 +149,7 @@ namespace di
             Application::getSettings()->setValue( "LastFilePath", fi.path() );
 
             m_currentFile = selected;
-
-            // Use deferred loading:
-            Application::getProcessingNetwork()->loadFile(
-                m_reader, // NOTE: nullptr is allowed by loadFile.
-                m_currentFile.toStdString(), SPtr< CommandObserverQt >( new CommandObserverQt( this, { m_fileLoadLabel, m_fileLoadLabel } ) ) );
+            postLoadCommand();
         }
 
         bool FileWidget::event( QEvent* event )

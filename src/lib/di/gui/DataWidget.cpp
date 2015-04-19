@@ -103,6 +103,7 @@ namespace di
         {
             LogD << "Storing data state." << LogEnd;
 
+            // Just forward the call
             di::core::State state;
             for( auto l : m_loaders )
             {
@@ -114,7 +115,21 @@ namespace di
         bool DataWidget::setState( const di::core::State& state )
         {
             LogD << "Restoring view state." << LogEnd;
-            return false;
+
+            bool ok = true;
+
+            // check for each file widget if there was a state in the file?
+            for( auto l : m_loaders )
+            {
+                // This is a state?
+                if( state.isState( l->getTitle() ) )
+                {
+                    auto s = state.getState( l->getTitle() );
+                    ok = ok && l->setState( s );
+                }
+            }
+
+            return ok;
         }
     }
 }

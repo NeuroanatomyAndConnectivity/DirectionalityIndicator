@@ -261,7 +261,7 @@ namespace di
              *
              * \return  true if everything was fine.
              */
-            bool restoreState( const di::core::State& state );
+            bool setState( const di::core::State& state );
 
             /**
              * Get the state object representing this object at the moment of the call.

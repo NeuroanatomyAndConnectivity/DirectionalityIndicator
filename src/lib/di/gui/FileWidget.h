@@ -158,6 +158,12 @@ namespace di
              * The current file. Empty if none.
              */
             QString m_currentFile;
+
+            /**
+             * Trigger the load command.
+             */
+            void postLoadCommand();
+
         private slots:
             /**
              * Load the file data.
