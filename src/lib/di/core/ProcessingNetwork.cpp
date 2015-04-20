@@ -136,6 +136,15 @@ namespace di
 
         bool ProcessingNetwork::setState( const di::core::State& state )
         {
+            LogD << "Restoring the processing network's parameter state." << LogEnd;
+
+            // Ignore empty states. But signal success since we did not fail setting anything.
+            if( state.empty() )
+            {
+                LogD << "State empty. Ignoring." << LogEnd;
+                return true;
+            }
+
             // Avoid concurrent access:
             std::lock_guard< std::mutex > lockAlgo( m_algorithmsMutex );
             std::lock_guard< std::mutex > lockCon( m_connectionsMutex );

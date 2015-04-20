@@ -111,7 +111,7 @@ namespace di
             }
         }
 
-        const State& State::getState( const std::string& name ) const
+        State State::getState( const std::string& name ) const
         {
             if( name.empty() )
             {
@@ -126,7 +126,7 @@ namespace di
 
             if( m_keyStateStore.count( name ) == 0 )
             {
-                throw std::runtime_error( "State not found." );
+                return State();
             }
 
             return m_keyStateStore.at( name );

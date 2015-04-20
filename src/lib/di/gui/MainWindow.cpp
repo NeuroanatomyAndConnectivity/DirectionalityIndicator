@@ -80,15 +80,30 @@ namespace di
         void MainWindow::addProjectMenu()
         {
             auto menu = menuBar();
-            auto ProjectMenu = menu->addMenu( "Project" );
-            auto loadAction = ProjectMenu->addAction( "Load" );
-            auto saveAction = ProjectMenu->addAction( "Save" );
+            auto projectMenu = menu->addMenu( "Project" );
+            auto loadAction = projectMenu->addAction( "Load" );
+            auto saveAction = projectMenu->addAction( "Save" );
+
+            projectMenu->addSeparator();
+            auto saveCamAction = projectMenu->addAction( "Save Camera Only" );
+            auto saveParamAction = projectMenu->addAction( "Save Parameters Only" );
+            auto saveDataAction = projectMenu->addAction( "Save Data Only" );
+
+            projectMenu->addSeparator();
+            auto exitAction = projectMenu->addAction( "Quit" );
 
             loadAction->setShortcut( QKeySequence::Open );
             saveAction->setShortcut( QKeySequence::Save );
+            exitAction->setShortcut( QKeySequence::Quit );
 
             connect( loadAction, SIGNAL( triggered( bool ) ), this, SLOT( loadProjectHandler() ) );
             connect( saveAction, SIGNAL( triggered( bool ) ), this, SLOT( saveProjectHandler() ) );
+
+            connect( saveCamAction, SIGNAL( triggered( bool ) ), this, SLOT( saveCamHandler() ) );
+            connect( saveDataAction, SIGNAL( triggered( bool ) ), this, SLOT( saveDataHandler() ) );
+            connect( saveParamAction, SIGNAL( triggered( bool ) ), this, SLOT( saveParamHandler() ) );
+
+            connect( exitAction, SIGNAL( triggered( bool ) ), this, SLOT( close() ) );
         }
 
         void MainWindow::loadProjectHandler()
@@ -126,7 +141,7 @@ namespace di
             setEnabled( true );
         }
 
-        void MainWindow::saveProjectHandler()
+        void MainWindow::saveProjectHandler( bool all, bool viewOnly, bool paramsOnly, bool dataOnly )
         {
             QString lastPath =
                 Application::getSettings()->value( "LastProjectFilePath", Application::getSettings()->value( "LastFilePath", "" ) ).toString();
@@ -151,7 +166,7 @@ namespace di
             try
             {
                 LogI << "Saving project to " << selected.toStdString() << LogEnd;
-                Application::getInstance()->saveProject( selected );
+                Application::getInstance()->saveProject( selected, all, viewOnly, paramsOnly, dataOnly );
             }
             catch( std::exception& e )
             {
@@ -167,5 +182,19 @@ namespace di
             setEnabled( true );
         }
 
+        void MainWindow::saveParamHandler()
+        {
+            saveProjectHandler( false, false, true, false );
+        }
+
+        void MainWindow::saveDataHandler()
+        {
+            saveProjectHandler( false, false, false, true );
+        }
+
+        void MainWindow::saveCamHandler()
+        {
+            saveProjectHandler( false, true, false, false );
+        }
     }
 }

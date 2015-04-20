@@ -262,23 +262,35 @@ namespace di
             m_dataWidget->setState( fileState );
         }
 
-        void App::saveProject( const QString& filename )
+        void App::saveProject( const QString& filename, bool all, bool viewOnly, bool paramsOnly, bool dataOnly )
         {
-            // Collect everything. First: the view:
-            auto viewState = m_viewWidget->getState();
-            // And network parameters
-            auto networkState = getProcessingNetwork()->getState();
-            // And the files to load
-            auto filesState = m_dataWidget->getState();
-
             // Create a encapsulating state
             di::core::State main;
             main.set( "program", "DirectionalityIndicator" );
             main.set( "version", "1.0" );
-            main.set( "view1", viewState );
-            main.set( "parameters", networkState );
-            main.set( "files", filesState );
 
+            if( viewOnly || all )
+            {
+                // Collect everything. First: the view:
+                auto viewState = m_viewWidget->getState();
+                main.set( "view1", viewState );
+            }
+
+            if( paramsOnly || all )
+            {
+                // And network parameters
+                auto networkState = getProcessingNetwork()->getState();
+                main.set( "parameters", networkState );
+            }
+
+            if( dataOnly || all )
+            {
+                // And the files to load
+                auto filesState = m_dataWidget->getState();
+                main.set( "files", filesState );
+            }
+
+            // Done collecting data. Save ...
             main.toFile( filename.toStdString() );
         }
     }

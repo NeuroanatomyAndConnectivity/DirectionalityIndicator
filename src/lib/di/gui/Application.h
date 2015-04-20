@@ -123,8 +123,13 @@ namespace di
              * Called when the user wants to save a project file.
              *
              * \param filename the desired state filename.
+             * \param all save all. Try by default.
+             * \param viewOnly only save camera/view settings.
+             * \param paramsOnly only save the parameters.
+             * \param dataOnly only save the loaded data files.
              */
-            virtual void saveProject( const QString& filename );
+            virtual void saveProject( const QString& filename,
+                                      bool all = true, bool viewOnly = false, bool paramsOnly = false, bool dataOnly = false );
 
             /**
              * Implement your specific UI code here. The network was not yet started. So only do GUI stuff here.

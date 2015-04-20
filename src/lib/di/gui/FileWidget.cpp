@@ -104,6 +104,13 @@ namespace di
         {
             LogD << "Restoring file loader state \"" << getTitle() << "\"." << LogEnd;
 
+            // Ignore empty states. But signal success since we did not fail setting anything.
+            if( state.empty() )
+            {
+                LogD << "State empty. Ignoring." << LogEnd;
+                return true;
+            }
+
             // get filename and done
             auto fn = state.getValue( "Filename", "" );
             if( !fn.empty() )

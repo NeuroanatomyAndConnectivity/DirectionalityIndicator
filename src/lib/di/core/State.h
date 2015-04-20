@@ -200,15 +200,15 @@ namespace di
             }
 
             /**
-             * Get the value at a given name as string. Throws and exception of the state is not available.
+             * Get the value at a given name as string. Returns empty state if the state is not available.
              *
              * \param name the name. Path is not allowed.
              *
-             * \throw std::runtime_error if the name is invalid somehow (empty, is path, not existing).
+             * \throw std::runtime_error if the name is invalid somehow (empty, is path).
              *
              * \return the state
              */
-            const State& getState( const std::string& name ) const;
+            State getState( const std::string& name ) const;
 
             /**
              * Get all nested states.

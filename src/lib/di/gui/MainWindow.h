@@ -94,9 +94,29 @@ namespace di
 
             /**
              * Handle save project menu.
+             *
+             * \param filename the desired state filename.
+             * \param all save all. Try by default.
+             * \param viewOnly only save camera/view settings.
+             * \param paramsOnly only save the parameters.
+             * \param dataOnly only save the loaded data files.
              */
-            void saveProjectHandler();
+            void saveProjectHandler( bool all = true, bool viewOnly = false, bool paramsOnly = false, bool dataOnly = false );
 
+            /**
+             * Save parameters only. Forwards call to \ref saveProjectHandler.
+             */
+            void saveParamHandler();
+
+            /**
+             * Save data info only. Forwards call to \ref saveProjectHandler.
+             */
+            void saveDataHandler();
+
+            /**
+             * Save only camera information. Forwards call to \ref saveProjectHandler.
+             */
+            void saveCamHandler();
         private:
         };
     }

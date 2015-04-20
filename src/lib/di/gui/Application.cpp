@@ -166,7 +166,8 @@ namespace di
         {
         }
 
-        void Application::saveProject( const QString& /* filename */ )
+        void Application::saveProject( const QString& /* filename */, bool /* all */, bool /* viewOnly */, bool /* paramsOnly */,
+                                       bool /* dataOnly */ )
         {
         }
     }

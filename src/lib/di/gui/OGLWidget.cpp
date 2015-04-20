@@ -640,6 +640,13 @@ namespace di
         {
             LogD << "Restoring view state." << LogEnd;
 
+            // Ignore empty states. But signal success since we did not fail setting anything.
+            if( state.empty() )
+            {
+                LogD << "State empty. Ignoring." << LogEnd;
+                return true;
+            }
+
             m_arcballMatrix = state.getValue< glm::mat4 >( "Arcball Matrix", glm::mat4() );
             m_dragOffset = state.getValue< glm::vec2 >( "Drag Offset", glm::vec2( 0.0, 0.0 ) );;
 
