@@ -26,6 +26,7 @@
 #define DI_PARAMETERBASE_H
 
 #include <string>
+#include <ostream>
 
 #include <di/core/Observable.h>
 
@@ -66,7 +67,7 @@ namespace di
              */
             const std::string& getDescription() const;
 
-          /**
+            /**
              * Get the parameter itself
              *
              * \param param the param to convert.
@@ -78,6 +79,12 @@ namespace di
                 return std::dynamic_pointer_cast< typename ValueType::element_type >( param );
             }
 
+            /**
+             * Convert to string.
+             *
+             * \return the string
+             */
+            virtual std::string toString() const = 0;
         protected:
         private:
             /**
@@ -90,6 +97,20 @@ namespace di
              */
             std::string m_description = "";
         };
+
+        /**
+         * Output parameter to stream.
+         *
+         * \param os the stream to write to
+         * \param obj the parameter  to write
+         *
+         * \return the stream
+         */
+        inline std::ostream& operator<<( std::ostream& os, const ParameterBase& obj )
+        {
+            os << obj.toString();
+            return os;
+        }
     }
 }
 

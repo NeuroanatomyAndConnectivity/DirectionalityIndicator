@@ -26,6 +26,8 @@
 #define DI_PARAMETER_H
 
 #include <string>
+#include <sstream>
+#include <ostream>
 
 #include <di/core/ParameterBase.h>
 
@@ -33,6 +35,7 @@
 #define LogTag "core/Parameter"
 
 #include <di/Types.h>
+#include <di/GfxTypes.h>
 
 namespace di
 {
@@ -150,6 +153,13 @@ namespace di
              */
             bool hasRangeHint() const;
 
+            /**
+             * Convert to string
+             *
+             * \return the string
+             */
+            virtual std::string toString() const override;
+
         protected:
         private:
             /**
@@ -253,6 +263,35 @@ namespace di
         bool Parameter< ValueType >::hasRangeHint() const
         {
             return m_rangeHint;
+        }
+
+        template< typename ValueType >
+        std::string toParameterString( const ValueType& value )
+        {
+            using di::operator<<;
+            std::stringstream ss;
+            ss << std::setprecision( 10 ) << value;
+            return ss.str();
+        }
+
+        template< typename ValueType >
+        std::string toParameterString( const std::vector< ValueType >& value )
+        {
+            std::stringstream ss;
+            ss << std::setprecision( 10 );
+            for( auto v : value )
+            {
+                ss << toParameterString( v ) << ",";
+            }
+            return ss.str();
+        }
+
+        template< typename ValueType >
+        std::string Parameter< ValueType >::toString() const
+        {
+            std::stringstream ss;
+            ss << toParameterString( m_value );
+            return ss.str();
         }
     }
 }

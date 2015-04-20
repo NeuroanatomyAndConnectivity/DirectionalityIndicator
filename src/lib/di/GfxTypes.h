@@ -28,6 +28,7 @@
 // NOTE: This file is mostly used to include some standard graphics types, like vector arrays and similar.
 
 #include <vector>
+#include <ostream>
 
 // we need the math types
 #include <di/MathTypes.h>
@@ -47,8 +48,44 @@ namespace di
     typedef std::vector< glm::ivec2 > IndexVec2Array;
     typedef std::vector< glm::ivec3 > IndexVec3Array;
     typedef std::vector< glm::ivec4 > IndexVec4Array;
+
+
+    /**
+     * Output state to stream.
+     *
+     * \param os the stream to write to
+     * \param obj the state to write
+     *
+     * \return the stream
+     */
+    inline std::ostream& operator<<( std::ostream& os, const glm::vec4& obj )
+    {
+        for( int c = 0; c < 3; ++c )
+        {
+            os << obj[ c ] << ",";
+        }
+        os << obj[ 3 ];
+        return os;
+    }
+
+    /**
+     * Output state to stream.
+     *
+     * \param os the stream to write to
+     * \param obj the state to write
+     *
+     * \return the stream
+     */
+    inline std::ostream& operator<<( std::ostream& os, const glm::mat4& obj )
+    {
+        for( int r = 0; r < 3; ++r )
+        {
+            os << obj[ r ] << ",";
+        }
+        os << obj[ 3 ];
+        return os;
+    }
 }
 
 #endif  // DI_GFXTYPES_H
-
 

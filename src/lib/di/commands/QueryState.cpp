@@ -22,61 +22,41 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <utility>
+#include <string>
 
-#include <di/GfxTypes.h>
-
-#include "View.h"
+#include "QueryState.h"
 
 namespace di
 {
-    namespace core
+    namespace commands
     {
-        View::View()
+        QueryState::QueryState( SPtr< di::core::CommandObserver > observer ):
+            Command( observer )
         {
-            // nothing
         }
 
-        View::~View()
+        QueryState::~QueryState()
         {
-            // nothing
         }
 
-        std::pair< glm::vec2, glm::vec2 > View::getViewport() const
+        std::string QueryState::getName() const
         {
-            return std::make_pair( getViewportOrigin(), getViewportOrigin() + getViewportSize() );
+            return "Query Network State";
         }
 
-        double View::getAspectRatio() const
+        std::string QueryState::getDescription() const
         {
-            return getViewportSize().x / getViewportSize().y;
+            return "Query the network state.";
         }
 
-        bool View::isHQMode() const
+        void QueryState::setState( const di::core::State& state )
         {
-            return m_hqMode;
+            m_state = state;
         }
 
-        void View::setHQMode( bool hq )
+        const di::core::State& QueryState::getState() const
         {
-            m_hqMode = hq;
-        }
-
-        di::core::State View::getState() const
-        {
-            State state;
-
-            // only store the camera. Everything else is managed by the rendering/windowing system
-            auto cam = getCamera();
-            state.set( "View Matrix", cam.getViewMatrix() );
-            state.set( "Projection Matrix", cam.getProjectionMatrix() );
-            return state;
-        }
-
-        bool View::setState( const di::core::State& state )
-        {
-            return false;
+            return m_state;
         }
     }
 }
-

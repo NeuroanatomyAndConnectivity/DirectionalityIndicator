@@ -154,5 +154,13 @@ namespace di
         {
             return m_mainWindow;
         }
+
+        void Application::loadProject( const QString& /* filename */ )
+        {
+        }
+
+        void Application::saveProject( const QString& /* filename */ )
+        {
+        }
     }
 }

@@ -22,61 +22,55 @@
 //
 //---------------------------------------------------------------------------------------
 
-#include <utility>
+#include <map>
+#include <string>
+#include <sstream>
+#include <fstream>
 
-#include <di/GfxTypes.h>
-
-#include "View.h"
+#include "State.h"
 
 namespace di
 {
     namespace core
     {
-        View::View()
+        void State::set( const std::string& name, const State& state )
         {
-            // nothing
+            m_keyStateStore[ name ] = state;
         }
 
-        View::~View()
+        const std::map< std::string, std::string >& State::get() const
         {
-            // nothing
+            return m_keyValueStore;
         }
 
-        std::pair< glm::vec2, glm::vec2 > View::getViewport() const
+        const std::map< std::string, State >& State::getNestedStates() const
         {
-            return std::make_pair( getViewportOrigin(), getViewportOrigin() + getViewportSize() );
+            return m_keyStateStore;
         }
 
-        double View::getAspectRatio() const
+        std::string State::toString( const std::string& prefix ) const
         {
-            return getViewportSize().x / getViewportSize().y;
+            std::stringstream ss;
+            // write obj to stream
+            for( auto kv : get() )
+            {
+                ss << prefix << kv.first << ":" << kv.second << std::endl;
+            }
+
+            for( auto ks : getNestedStates() )
+            {
+                ss << ks.second.toString( prefix + ks.first + "/" ) << std::endl;
+            }
+
+            return ss.str();
         }
 
-        bool View::isHQMode() const
+        void State::toFile( const std::string& filename ) const
         {
-            return m_hqMode;
-        }
-
-        void View::setHQMode( bool hq )
-        {
-            m_hqMode = hq;
-        }
-
-        di::core::State View::getState() const
-        {
-            State state;
-
-            // only store the camera. Everything else is managed by the rendering/windowing system
-            auto cam = getCamera();
-            state.set( "View Matrix", cam.getViewMatrix() );
-            state.set( "Projection Matrix", cam.getProjectionMatrix() );
-            return state;
-        }
-
-        bool View::setState( const di::core::State& state )
-        {
-            return false;
+            std::ofstream fs;
+            fs.open( filename );
+            fs << *this;
+            fs.close();
         }
     }
 }
-

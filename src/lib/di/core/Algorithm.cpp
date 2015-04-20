@@ -205,6 +205,16 @@ namespace di
             process();
             requestUpdate( false );
         }
+
+        const std::string& Algorithm::getRuntimeName() const
+        {
+            return m_runtimeName;
+        }
+
+        void Algorithm::setRuntimeName( const std::string& name )
+        {
+            m_runtimeName = name;
+        }
     }
 }
 

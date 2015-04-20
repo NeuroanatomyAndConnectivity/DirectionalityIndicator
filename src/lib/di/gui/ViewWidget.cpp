@@ -220,6 +220,17 @@ namespace di
         {
             m_oglWidget->setViewPreset( view );
         }
+
+        di::core::State ViewWidget::getState() const
+        {
+            // only store the camera. Everything else is managed by the rendering/windowing system
+            return m_oglWidget->getState();
+        }
+
+        bool ViewWidget::setState( const di::core::State& state )
+        {
+            return m_oglWidget->setState( state );
+        }
     }
 }
 

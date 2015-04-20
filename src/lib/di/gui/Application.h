@@ -26,6 +26,7 @@
 #define DI_APPLICATION_H
 
 #include <string>
+#include <vector>
 
 #include <di/core/ProcessingNetwork.h>
 
@@ -109,6 +110,22 @@ namespace di
             MainWindow* getMainWindow();
 
         protected:
+            /**
+             * Called when the user wants to load a project from file. Does nothing by default. Implement this if you want to save specific things.
+             *
+             * \param filename the state-file to restore
+             *
+             * \return true if everything was OK.
+             */
+            virtual void loadProject( const QString& filename );
+
+            /**
+             * Called when the user wants to save a project file.
+             *
+             * \param filename the desired state filename.
+             */
+            virtual void saveProject( const QString& filename );
+
             /**
              * Implement your specific UI code here. The network was not yet started. So only do GUI stuff here.
              */

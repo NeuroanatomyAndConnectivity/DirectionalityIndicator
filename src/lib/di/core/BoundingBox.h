@@ -76,6 +76,13 @@ namespace di
             glm::dvec3 getSize() const;
 
             /**
+             * Check if this is a valid BB.
+             *
+             * \return true if valid
+             */
+            bool isValid() const;
+
+            /**
              * Include the given vertex.
              *
              * \param x x coord
