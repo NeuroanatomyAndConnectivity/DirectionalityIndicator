@@ -100,6 +100,15 @@ namespace di
              * \return  true if everything was fine.
              */
             virtual bool setState( const di::core::State& state );
+
+            /**
+             * Try to load these files. If not possible, nothing happens. This is a convenience function to ease loading of a whole bunch of files at
+             * ones. For more control on who loads which file, use the FileWidget/ProcessingNetwork api directly.
+             *
+             * \param filenames list of files.
+             */
+            void tryLoad( std::vector< std::string > filenames );
+
         protected:
         private:
              /**

@@ -41,6 +41,7 @@ namespace di
         class DataWidget;
         class ViewWidget;
         class AlgorithmWidget;
+        class FileWidget;
     }
 
     namespace app
@@ -155,6 +156,21 @@ namespace di
              * Deferred load of files. Provided before starting the processing network.
              */
             std::vector< std::string > m_deferLoad;
+
+            /**
+             * Widget to handle label orders.
+             */
+            gui::FileWidget* m_labelOrderFile = nullptr;
+
+            /**
+             * Widget to handle label files.
+             */
+            gui::FileWidget* m_labelFile = nullptr;
+
+            /**
+             * Widget to handle mesh files.
+             */
+            gui::FileWidget* m_meshFile = nullptr;
         };
     }
 }

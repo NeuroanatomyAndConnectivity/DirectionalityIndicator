@@ -158,6 +158,7 @@ namespace di
             if( event->type() == QT_COMMANDOBSERVER_EVENT )
             {
                 CommandObserverEvent* coe = dynamic_cast< CommandObserverEvent* >( event );
+                LogD << "huhu" << this << " . " << coe->getObserverStatus() << LogEnd;
 
                 // status of a CommandObserver changed
                 if( coe->getObserverStatus() == CommandObserverEvent::GENERIC )
@@ -221,6 +222,32 @@ namespace di
         ConstSPtr< di::algorithms::DataInject > FileWidget::getDataInject() const
         {
             return m_dataInject;
+        }
+
+        bool FileWidget::canLoad( const std::string& filename ) const
+        {
+            if( m_reader )
+            {
+                return m_reader->canLoad( filename );
+            }
+
+            return false;
+        }
+
+        bool FileWidget::canLoad( const QString& filename ) const
+        {
+            return canLoad( filename.toStdString() );
+        }
+
+        void FileWidget::load( const QString& filename )
+        {
+            m_currentFile = filename;
+            postLoadCommand();
+        }
+
+        void FileWidget::load( const std::string& filename )
+        {
+            load( QString::fromStdString( filename ) );
         }
     }
 }

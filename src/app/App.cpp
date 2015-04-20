@@ -29,6 +29,7 @@
 #include <di/core/ProcessingNetwork.h>
 #include <di/core/Connection.h>
 #include <di/core/Filesystem.h>
+#include <di/core/StringUtils.h>
 
 #include <di/algorithms/SurfaceLIC.h>
 #include <di/algorithms/RenderTriangles.h>
@@ -144,26 +145,25 @@ namespace di
             // BEGIN:
 
             // Load mesh
-            auto fileWidget = new di::gui::FileWidget( std::make_shared< di::io::PlyReader >(),
-                                                       "Mesh",
-                                                       QIcon( QPixmap( iconMesh_xpm ) ),
-                                                       QString( "Stanford Poly Format (*.ply)" ) );
-            m_dataWidget->addFileWidget( fileWidget );
+            m_meshFile = new di::gui::FileWidget( std::make_shared< di::io::PlyReader >(),
+                                                  "Mesh",
+                                                  QIcon( QPixmap( iconMesh_xpm ) ),
+                                                  QString( "Stanford Poly Format (*.ply)" ) );
+            m_dataWidget->addFileWidget( m_meshFile );
 
             // Load Labels
-            auto fileWidgetLabels = new di::gui::FileWidget( std::make_shared< di::io::RegionLabelReader >(),
-                                                             "Region Labels",
-                                                             QIcon( QPixmap( iconLabels_xpm ) ),
-                                                             QString( "Region Labels File (*.labels)" ) );
-            m_dataWidget->addFileWidget( fileWidgetLabels );
+            m_labelFile = new di::gui::FileWidget( std::make_shared< di::io::RegionLabelReader >(),
+                                                   "Region Labels",
+                                                   QIcon( QPixmap( iconLabels_xpm ) ),
+                                                   QString( "Region Labels File (*.labels)" ) );
+            m_dataWidget->addFileWidget( m_labelFile );
 
             // Load Label Order List
-            auto fileWidgetLabelOrder = new di::gui::FileWidget( std::make_shared< di::io::RegionLabelReader >(),
-                                                                 "Label Ordering",
-                                                                 QIcon( QPixmap( iconLabelOrder_xpm ) ),
-                                                                 QString( "Region Label Order File (*.labelorder)" ) );
-            m_dataWidget->addFileWidget( fileWidgetLabelOrder );
-
+            m_labelOrderFile = new di::gui::FileWidget( std::make_shared< di::io::RegionLabelReader >(),
+                                                        "Label Ordering",
+                                                        QIcon( QPixmap( iconLabelOrder_xpm ) ),
+                                                        QString( "Region Label Order File (*.labelorder)" ) );
+            m_dataWidget->addFileWidget( m_labelOrderFile );
 
             // Create the strategies:
             // Strategy 1:
@@ -190,18 +190,18 @@ namespace di
             // getProcessingNetwork()->connectAlgorithms( algo1->getAlgorithm(), "Neighbour Arrows", algo10->getAlgorithm(), "Lines" );
 
             // Connect all modules with a "Triangle Mesh" input.
-            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data",
+            getProcessingNetwork()->connectAlgorithms( m_meshFile->getDataInject(), "Data",
                                                        m_extractRegions->getAlgorithm(), "Triangle Mesh" );
-            getProcessingNetwork()->connectAlgorithms( fileWidgetLabels->getDataInject(), "Data",
+            getProcessingNetwork()->connectAlgorithms( m_labelFile->getDataInject(), "Data",
                                                        m_extractRegions->getAlgorithm(), "Triangle Labels" );
-            getProcessingNetwork()->connectAlgorithms( fileWidgetLabelOrder->getDataInject(), "Data",
+            getProcessingNetwork()->connectAlgorithms( m_labelOrderFile->getDataInject(), "Data",
                                                        m_extractRegions->getAlgorithm(), "Label Ordering" );
 
-            getProcessingNetwork()->connectAlgorithms( fileWidgetLabels->getDataInject(), "Data",
+            getProcessingNetwork()->connectAlgorithms( m_labelFile->getDataInject(), "Data",
                                                        renderArrows->getAlgorithm(), "Labels" );
 
-            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", renderArrows->getAlgorithm(), "Triangle Mesh" );
-            getProcessingNetwork()->connectAlgorithms( fileWidget->getDataInject(), "Data", lic->getAlgorithm(), "Triangle Mesh" );
+            getProcessingNetwork()->connectAlgorithms( m_meshFile->getDataInject(), "Data", renderArrows->getAlgorithm(), "Triangle Mesh" );
+            getProcessingNetwork()->connectAlgorithms( m_meshFile->getDataInject(), "Data", lic->getAlgorithm(), "Triangle Mesh" );
             getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Directionality",
                                                        renderArrows->getAlgorithm(), "Directions" );
             // getProcessingNetwork()->connectAlgorithms( m_extractRegions->getAlgorithm(), "Region Mesh as Lines",
@@ -212,6 +212,34 @@ namespace di
             // END:
             // Hard-coded processing network ... ugly but working for now. The optimal solution would be a generic UI which provides this to the user
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // Process each filename. As some readers allow multiple file formats, it might light to ambiguous situations if we have multiple file
+            // widgets that use a single reader on different formats. As we (50 lines ago) build our file widgets manually, we can manually define the
+            // loader for each incoming file. We are forced to use extension.
+            for( auto filename : m_deferLoad )
+            {
+                auto ext = di::core::toLower( di::core::getFileExtension( filename ) );
+                if( ext == "project" )
+                {
+                    loadProject( QString::fromStdString( filename ) );
+                    continue;
+                }
+                if( ext == "labelorder" )
+                {
+                    m_labelOrderFile->load( filename );
+                    continue;
+                }
+                if( ext == "labels" )
+                {
+                    m_labelFile->load( filename );
+                    continue;
+                }
+                if( ext == "ply" )
+                {
+                    m_meshFile->load( filename );
+                    continue;
+                }
+            }
         }
 
         void App::close()

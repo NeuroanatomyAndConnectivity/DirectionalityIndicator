@@ -122,6 +122,42 @@ namespace di
              */
             virtual bool setState( const di::core::State& state );
 
+            /**
+             * Check whether the specified file can be loaded. If no reader has been specified, this will always return false.
+             *
+             * \param filename the file to load
+             *
+             * \return true if this  is able to load the data.
+             */
+            virtual bool canLoad( const QString& filename ) const;
+
+            /**
+             * Check whether the specified file can be loaded. If no reader has been specified, this will always return false.
+             *
+             * \param filename the file to load
+             *
+             * \return true if this  is able to load the data.
+             */
+            virtual bool canLoad( const std::string& filename ) const;
+
+            /**
+             * Request to load the specified file. It does not actually load the file. It only posts a command to the processing network.
+             *
+             * \note this method does not check \ref canLoad. If loading fails, the widget shows this to the user.
+             *
+             * \param filename the file to load
+             */
+            virtual void load( const QString& filename );
+
+            /**
+             * Request to load the specified file. It does not actually load the file. It only posts a command to the processing network.
+             *
+             * \note this method does not check \ref canLoad. If loading fails, the widget shows this to the user.
+             *
+             * \param filename the file to load
+             */
+            virtual void load( const std::string& filename );
+
         protected:
         private:
             /**

@@ -131,6 +131,24 @@ namespace di
 
             return ok;
         }
+
+        void DataWidget::tryLoad( std::vector< std::string > filenames )
+        {
+            // Maybe there is a loader that is able to handle the files
+            for( auto filename : filenames )
+            {
+                LogD << "Searching loader to handle \"" << filename << "\"." << LogEnd;
+                for( auto loader : m_loaders )
+                {
+                    if( loader->canLoad( filename ) )
+                    {
+                        LogD << "Found. Issuing load command." << LogEnd;
+                        loader->load( filename );
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 
