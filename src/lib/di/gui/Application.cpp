@@ -61,9 +61,21 @@ namespace di
             return m_name;
         }
 
+        bool Application::handleCommandLine( const std::vector< std::string >& /* arguments */, int /* argc */, char** /* argv */ )
+        {
+            LogW << "Command line parameters ignored. Not supported by this application." << LogEnd;
+            return true;
+        }
+
         int Application::run()
         {
-            // Initialize logger
+            // Handle Parameters first
+            std::vector< std::string > arguments;
+            for( int i = 1; i < m_argc; ++i )
+            {
+                arguments.push_back( std::string( m_argv[ i ] ) );
+            }
+            handleCommandLine( arguments, m_argc, m_argv );
 
             // Create QApplication
             QApplication application( m_argc, m_argv, true );
