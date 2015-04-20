@@ -112,6 +112,19 @@ namespace di
              */
             virtual void saveProject( const QString& filename ) override;
 
+            /**
+             * Handle the provided switches and parameters. Return false if the provided parameters are faulty. This causes the application to stop.
+             * It is your choice to either use the argument vector or argc,argv. If you do not override this method, it will allow all parameters but
+             * prints a warning that they are ignored.
+             *
+             * \param arguments each space separated argument. It does NOT contain the program name (as argv[0] does).
+             * \param argc the argument count in the char* array argv
+             * \param argv the argument char* array
+             *
+             * \return true if everything is ok
+             */
+            virtual bool handleCommandLine( const std::vector< std::string >& arguments, int argc, char** argv );
+
         private:
             /**
              * The data-handling widget.
@@ -137,6 +150,11 @@ namespace di
              * The view
              */
             di::gui::ViewWidget* m_viewWidget = nullptr;
+
+            /**
+             * Deferred load of files. Provided before starting the processing network.
+             */
+            std::vector< std::string > m_deferLoad;
         };
     }
 }

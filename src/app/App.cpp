@@ -41,6 +41,7 @@
 #include <di/algorithms/GaussSmooth.h>
 
 #include <di/io/RegionLabelReader.h>
+#include <di/io/PlyReader.h>
 
 #include <di/gui/ViewWidget.h>
 #include <di/gui/AlgorithmStrategies.h>
@@ -68,6 +69,13 @@ namespace di
 
         App::~App()
         {
+        }
+
+        bool App::handleCommandLine( const std::vector< std::string >& arguments, int /* argc */, char** /* argv */ )
+        {
+            // We assume all arguments to be filenames
+            m_deferLoad = arguments;
+            return true;
         }
 
         void App::show()
@@ -133,7 +141,9 @@ namespace di
             // BEGIN:
 
             // Load mesh
-            auto fileWidget = new di::gui::FileWidget( "Mesh", QIcon( QPixmap( iconMesh_xpm ) ),
+            auto fileWidget = new di::gui::FileWidget( std::make_shared< di::io::PlyReader >(),
+                                                       "Mesh",
+                                                       QIcon( QPixmap( iconMesh_xpm ) ),
                                                        QString( "Stanford Poly Format (*.ply)" ) );
             m_dataWidget->addFileWidget( fileWidget );
 
