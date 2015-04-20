@@ -26,6 +26,7 @@
 #define DI_APPLICATION_H
 
 #include <string>
+#include <vector>
 
 #include <di/core/ProcessingNetwork.h>
 
@@ -154,6 +155,19 @@ namespace di
              * Called when the processing network is marked as dirty. Use this to re-run the network or delay or ...
              */
             virtual void onDirtyNetwork() = 0;
+
+            /**
+             * Handle the provided switches and parameters. Return false if the provided parameters are faulty. This causes the application to stop.
+             * It is your choice to either use the argument vector or argc,argv. If you do not override this method, it will allow all parameters but
+             * prints a warning that they are ignored.
+             *
+             * \param arguments each space separated argument. It does NOT contain the program name (as argv[0] does).
+             * \param argc the argument count in the char* array argv
+             * \param argv the argument char* array
+             *
+             * \return true if everything is ok
+             */
+            virtual bool handleCommandLine( const std::vector< std::string >& arguments, int argc, char** argv );
 
         private:
             /**
