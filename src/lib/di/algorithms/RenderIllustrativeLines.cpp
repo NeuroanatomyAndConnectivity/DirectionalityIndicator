@@ -142,6 +142,13 @@ namespace di
                     "Change to increase or decrease the amount of samples on the surface. More means less performance but improved visuals.",
                     16
             );
+
+            m_emphasizeSingularPointsEnable = addParameter< bool >(
+                    "Arrows: Shade Singularities",
+                    "Enable to highlight singular points.",
+                    false
+            );
+
             m_curvatureArrowsSampleDensity->setRangeHint( 4, 32 );
 
             m_maskLabelEnable = addParameter< bool >(
@@ -213,6 +220,15 @@ namespace di
             m_visTriangleData = data;
             m_visTriangleVectorData = vectors;
             m_visTriangleLabelData = labels;
+
+            // Update normalization length:
+            auto vecs = vectors->getAttributes();
+            auto max = glm::length( vecs->at( 0 ) );
+            for( auto vec : *vecs )
+            {
+                max = std::max( glm::length( vec ), max );
+            }
+            m_visTriangleVectorMax = max;
 
             // As the rendering system does not render permanently, inform about the update.
             if( changeVis )
@@ -345,6 +361,9 @@ namespace di
             m_transformShaderProgram->setUniform( "u_maskLabel",        m_maskLabel->get(), 20, -1 );
             m_transformShaderProgram->setUniform( "u_maskLabelEnable",  m_maskLabelEnable->get() );
             m_transformShaderProgram->setUniform( "u_desaturationIntensity", m_desaturationIntensity->get() );
+            m_transformShaderProgram->setUniform( "u_maxVectorLength", m_visTriangleVectorMax );
+            m_transformShaderProgram->setUniform( "u_emphasizeSingularPointsEnable",  m_emphasizeSingularPointsEnable->get() );
+
             logGLError();
 
             // NOTE: keep original Viewport

@@ -140,6 +140,11 @@ namespace di
             core::ParamBool m_maskLabelEnable;
 
             /**
+             * Enable visualization of singular points
+             */
+            core::ParamBool m_emphasizeSingularPointsEnable;
+
+            /**
              * Amount of desaturation during masking.
              */
             core::ParamDouble m_desaturationIntensity;
@@ -229,6 +234,11 @@ namespace di
              * Vector attributes
              */
             ConstSPtr< di::core::TriangleVectorField > m_visTriangleVectorData = nullptr;
+
+            /**
+             * Longest vector in the data. Used for normalization.
+             */
+            float m_visTriangleVectorMax = 0.0;
 
             /**
              * Labels

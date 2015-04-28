@@ -39,6 +39,8 @@ in float v_vectorLength;
 
 uniform mat4 u_ViewMatrix;
 uniform float u_specularity = 0.25;
+uniform float u_maxVectorLength = 1.0;
+uniform bool u_emphasizeSingularPointsEnable = false;
 
 out vec4 fragColor;
 out vec4 fragVec;
@@ -66,10 +68,23 @@ void main()
 {
     float light = blinnPhongIlluminationIntensityFullDiffuse( normalize( v_normal.rgb ), u_specularity );
 
+    // Normalize length
+    float normalizedVectorLength = v_vectorLength / u_maxVectorLength;
+
     // Write
     fragColor = vec4( desaturate( light * v_color.xyz, 1.0 - v_emphasizeScale ), 1.0 );
     fragVec = vec4( v_vector.xyz, v_vectorLength );
     fragPos = v_posView;
     fragNormal = vec4( normalize( v_normal ), 1.0 );
+
+    if( ( normalizedVectorLength < 0.40 ) && ( u_emphasizeSingularPointsEnable ) )
+    {
+        fragColor = vec4( vec3( 1.0, 1.0, 1.0 ), 1.0 );
+    }
+    if( ( normalizedVectorLength < 0.33 ) && ( u_emphasizeSingularPointsEnable ) )
+    {
+        fragColor = vec4( vec3( 0.0, 0.0, 0.0 ), 1.0 );
+    }
+
 }
 
