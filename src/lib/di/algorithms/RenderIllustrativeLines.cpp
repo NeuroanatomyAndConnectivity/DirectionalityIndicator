@@ -222,13 +222,16 @@ namespace di
             m_visTriangleLabelData = labels;
 
             // Update normalization length:
-            auto vecs = vectors->getAttributes();
-            auto max = glm::length( vecs->at( 0 ) );
-            for( auto vec : *vecs )
+            if( vectors )
             {
-                max = std::max( glm::length( vec ), max );
+                auto vecs = vectors->getAttributes();
+                auto max = glm::length( vecs->at( 0 ) );
+                for( auto vec : *vecs )
+                {
+                    max = std::max( glm::length( vec ), max );
+                }
+                m_visTriangleVectorMax = max;
             }
-            m_visTriangleVectorMax = max;
 
             // As the rendering system does not render permanently, inform about the update.
             if( changeVis )
@@ -369,7 +372,7 @@ namespace di
             // NOTE: keep original Viewport
             // glViewport( 0, 0, view.getViewportSize().x, view.getViewportSize().y );
             logGLError();
-            GLenum drawBuffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+            GLenum drawBuffers[ 4 ] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
             glDrawBuffers( 4, drawBuffers );
             logGLError();
 
