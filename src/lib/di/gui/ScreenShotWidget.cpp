@@ -210,6 +210,12 @@ namespace di
             return glm::vec4( qcol.redF(), qcol.greenF(), qcol.blueF(), qcol.alphaF() );
         }
 
+        bool exists( const std::string& fileName )
+        {
+            std::ifstream infile( fileName.c_str() );
+            return infile.good();
+        }
+
         bool ScreenShotWidget::saveScreenShot( SPtr< core::RGBA8Image > pixels )
         {
             // Use time to construct filename
@@ -219,8 +225,22 @@ namespace di
             std::ostringstream fn;
             fn << m_location->text().toStdString() << "/Screenshot_"
                << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << "_"
-               << localTime->tm_hour << "-" << localTime->tm_min << "-" << localTime->tm_sec
-               << ".bmp";
+               << localTime->tm_hour << "-" << localTime->tm_min << "-" << localTime->tm_sec << "_";
+
+            // find next available filename
+            uint16_t nb = 1;
+            while( true )
+            {
+                if( exists( fn.str() + std::to_string( nb ) + ".bmp" ) )
+                {
+                    nb++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            fn << nb << ".bmp";
 
             LogD << "Saving screenshot to file \"" << fn.str() << "\"" << LogEnd;
             // and store as image
