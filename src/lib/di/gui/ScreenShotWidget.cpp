@@ -138,6 +138,13 @@ namespace di
             );
             m_bgColor->setToolTip( "Choose a background color for screenshots." );
 
+            // Capture all default views automatically?
+            m_allDefaultViews = new QCheckBox( "All default views", this );
+            m_allDefaultViews->setChecked( true );
+            m_allDefaultViews->setToolTip(
+                "Enable this to force automatic screenshots of all default views, along with the current camera."
+            );
+
             // Finish layout
             m_contentLayout->addWidget( new QLabel( "File Location", this ) );
             m_contentLayout->addWidget( m_location );
@@ -148,6 +155,8 @@ namespace di
             m_contentLayout->addWidget( new QLabel( "Background Color", this ) );
             m_contentLayout->addWidget( m_bgColorOverride );
             m_contentLayout->addWidget( m_bgColor );
+            m_contentLayout->addWidget( new QLabel( "Default Views", this ) );
+            m_contentLayout->addWidget( m_allDefaultViews );
 
             m_contentLayout->setAlignment( Qt::AlignTop );
 
@@ -159,6 +168,8 @@ namespace di
             m_bgColorOverride->setChecked( Application::getSettings()->value( "ScreenShotWidget_OverrideBG", false ).toBool() );
             QVariant col = Application::getSettings()->value( "ScreenShotWidget_BGColor", QColor::fromRgb( 255, 255, 255, 255 ) );
             m_bgColor->setColor( col.value< QColor >() );
+
+            m_allDefaultViews->setChecked( Application::getSettings()->value( "ScreenShotWidget_DefaultViews", false ).toBool() );
 
             // As we want to store values, register for shutdown. The Mainwindow notifies everyone.
             connect( Application::getInstance()->getMainWindow(), SIGNAL( shutdown() ), this, SLOT( shutdown() ) );
@@ -172,6 +183,11 @@ namespace di
             {
                 m_location->setText( dir );
             }
+        }
+
+        bool ScreenShotWidget::getCaptureAll() const
+        {
+            return m_allDefaultViews->isChecked();
         }
 
         int ScreenShotWidget::getWidth() const
@@ -216,7 +232,7 @@ namespace di
             return infile.good();
         }
 
-        bool ScreenShotWidget::saveScreenShot( SPtr< core::RGBA8Image > pixels )
+        bool ScreenShotWidget::saveScreenShot( SPtr< core::RGBA8Image > pixels, const std::string& nameHint )
         {
             // Use time to construct filename
             auto now = std::time( nullptr );
@@ -225,7 +241,7 @@ namespace di
             std::ostringstream fn;
             fn << m_location->text().toStdString() << "/Screenshot_"
                << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << "_"
-               << localTime->tm_hour << "-" << localTime->tm_min << "-" << localTime->tm_sec << "_";
+               << localTime->tm_hour << "-" << localTime->tm_min << "-" << localTime->tm_sec << "_" << nameHint << "_";
 
             // find next available filename
             uint16_t nb = 1;
@@ -295,6 +311,7 @@ namespace di
             Application::getSettings()->setValue( "ScreenShotWidget_Location", m_location->text() );
             Application::getSettings()->setValue( "ScreenShotWidget_OverrideBG", m_bgColorOverride->isChecked() );
             Application::getSettings()->setValue( "ScreenShotWidget_BGColor", m_bgColor->getColor() );
+            Application::getSettings()->setValue( "ScreenShotWidget_DefaultViews", m_allDefaultViews->isChecked() );
         }
     }
 }

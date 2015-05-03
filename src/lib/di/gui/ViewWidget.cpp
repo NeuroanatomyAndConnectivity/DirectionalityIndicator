@@ -135,13 +135,57 @@ namespace di
             // Wire them:
             connect( m_screenshotButton, SIGNAL( released() ), this, SLOT( screenshot() ) );
             connect( m_defaultViewsButton, SIGNAL( released() ), m_oglWidget, SLOT( resetView() ) );
-            connect( m_oglWidget, SIGNAL( screenshotDone( SPtr< core::RGBA8Image > ) ),
-                     this, SLOT( screenshotDone( SPtr< core::RGBA8Image > ) ) );
+            connect( m_oglWidget, SIGNAL( screenshotDone( SPtr< core::RGBA8Image >, const std::string& ) ),
+                     this, SLOT( screenshotDone( SPtr< core::RGBA8Image >, const std::string& ) ) );
         }
 
         ViewWidget::~ViewWidget()
         {
         }
+
+/*
+
+        void OGLWidget::setViewAlongPosX()
+        {
+            resetView();
+            m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                              glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        }
+
+        void OGLWidget::setViewAlongNegX()
+        {
+            resetView();
+            m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                              glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        }
+
+        void OGLWidget::setViewAlongPosY()
+        {
+            resetView();
+            m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+        }
+
+        void OGLWidget::setViewAlongNegY()
+        {
+            resetView();
+            m_arcballMatrix =  glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
+                               glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+        }
+
+        void OGLWidget::setViewAlongPosZ()
+        {
+            resetView();
+            m_arcballMatrix = glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
+                              glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        }
+
+        void OGLWidget::setViewAlongNegZ()
+        {
+            resetView();
+            // the default camera
+            m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        }
+*/
 
         void ViewWidget::setTechnicalDefaultViews()
         {
@@ -153,20 +197,34 @@ namespace di
             }
             m_viewActions.clear();
 
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along -X, YZ Plane", m_oglWidget, SLOT( setViewAlongNegX() ),
+            // build a list
+            std::vector< std::tuple< glm::mat4, bool, std::string > > views;
+
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongNegX(), true, "Along -X, YZ Plane" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongPosX(), true, "Along +X, YZ Plane" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongNegY(), true, "Along -Y, XZ Plane" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongPosY(), true, "Along +Y, XZ Plane" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongNegZ(), true, "Along -Z, XY Plane" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongPosZ(), true, "Along +Z, XY Plane" ) );
+
+            m_oglWidget->setDefaultViews( views );
+
+            // Create actions for it.
+
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along -X, YZ Plane", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_R ) ) );
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along +X, YZ Plane", m_oglWidget, SLOT( setViewAlongPosX() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along +X, YZ Plane", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_L ) ) );
 
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along -Y, XZ Plane", m_oglWidget, SLOT( setViewAlongNegY() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along -Y, XZ Plane", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_A ) ) );
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along +Y, XZ Plane", m_oglWidget, SLOT( setViewAlongPosY() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along +Y, XZ Plane", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_P ) ) );
 
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along -Z, XY Plane", m_oglWidget, SLOT( setViewAlongNegZ() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along -Z, XY Plane", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_S ) ) );
 
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along +Z, XY Plane", m_oglWidget, SLOT( setViewAlongPosZ() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Along +Z, XY Plane", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_I ) ) );
         }
 
@@ -180,19 +238,32 @@ namespace di
             }
             m_viewActions.clear();
 
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Anterior", m_oglWidget, SLOT( setViewAlongNegY() ),
+            // build a list
+            std::vector< std::tuple< glm::mat4, bool, std::string > > views;
+
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongNegY(), true, "Anterior" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongPosY(), true, "Posterior" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongPosX(), true, "Left" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongNegX(), true, "Right" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongNegZ(), true, "Superior" ) );
+            views.push_back( std::make_tuple( m_oglWidget->getOrientationMatrixAlongPosZ(), true, "Inferior" ) );
+
+            m_oglWidget->setDefaultViews( views );
+
+            // Create actions for it.
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Anterior", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_A ) ) );
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Posterior", m_oglWidget, SLOT( setViewAlongPosY() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Posterior", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_P ) ) );
 
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Left", m_oglWidget, SLOT( setViewAlongPosX() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Left", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_L ) ) );
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Right", m_oglWidget, SLOT( setViewAlongNegX() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Right", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_R ) ) );
 
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Superior", m_oglWidget, SLOT( setViewAlongNegZ() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Superior", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_S ) ) );
-            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Inferior", m_oglWidget, SLOT( setViewAlongPosZ() ),
+            m_viewActions.push_back( m_defaultViewsMenu->addAction( "Inferior", this, SLOT( defaultViewTriggered() ),
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_I ) ) );
         }
 
@@ -204,12 +275,25 @@ namespace di
             m_oglWidget->screenshot();
         }
 
-        void ViewWidget::screenshotDone( SPtr< core::RGBA8Image > pixels )
+        void ViewWidget::defaultViewTriggered()
+        {
+            QObject* obj = sender();
+            auto action = dynamic_cast< QAction* >( obj );
+
+            auto actionIt = std::find( m_viewActions.begin(), m_viewActions.end(), action );
+            if( actionIt != m_viewActions.end() )
+            {
+                size_t id = actionIt - m_viewActions.begin();
+                m_oglWidget->useDefaultView( id );
+            }
+        }
+
+        void ViewWidget::screenshotDone( SPtr< core::RGBA8Image > pixels, const std::string& nameHint )
         {
             m_screenshotButton->setDisabled( false );
 
             // and forward
-            if( !m_screenShotWidget->saveScreenShot( pixels ) )
+            if( !m_screenShotWidget->saveScreenShot( pixels, nameHint ) )
             {
                 // report
                 QMessageBox::critical( this, "Screenshot failed.", "Unable to write the screenshot to disk." );

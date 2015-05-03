@@ -104,8 +104,14 @@ namespace di
              * Reports back whenever a screenshot was taken.
              *
              * \param pixels the image
+             * \param nameHint hint how to name the file.
              */
-            void screenshotDone( SPtr< core::RGBA8Image > pixels );
+            void screenshotDone( SPtr< core::RGBA8Image > pixels, const std::string& nameHint );
+
+            /**
+             * A default view was triggered.
+             */
+            void defaultViewTriggered();
 
         protected:
         private:

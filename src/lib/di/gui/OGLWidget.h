@@ -26,6 +26,7 @@
 #define DI_OGLWIDGET_H
 
 #include <chrono>
+#include <tuple>
 
 #include <di/gfx/GL.h>
 
@@ -36,6 +37,7 @@
 #include <QGLWidget>
 
 #include <di/core/State.h>
+#include <di/core/BoundingBox.h>
 #include <di/gfx/PixelData.h>
 #include <di/GfxTypes.h>
 
@@ -128,13 +130,92 @@ namespace di
              * \return  true if everything was fine.
              */
             virtual bool setState( const di::core::State& state ) override;
+
+            /**
+             * Set the given list as the default views. Activate them by calling \ref useDefaultView. Note that only orientation matrices are useful
+             * here.
+             *
+             * \param defaultViews the list of default views. The tuple is the matrix, a name as string and a boolean flag telling the system if the
+             * matrix is a whole view matrix or only an orientation matrix. Set true for orientation-mode. It automatically adapts the view to contain
+             * the whole scene.
+             */
+            void setDefaultViews( const std::vector< std::tuple< glm::mat4, bool, std::string > >& defaultViews );
+
+            /**
+             * Convenience function to get a view matrix matching the name of this method. Useful as base for further manipulations.
+             *
+             * \return the matrix.
+             */
+            glm::mat4 getOrientationMatrixAlongPosX() const;
+
+            /**
+             * Convenience function to get a orientation matrix matching the name of this method. Useful as base for further manipulations.
+             *
+             * \return the matrix.
+             */
+            glm::mat4 getOrientationMatrixAlongNegX() const;
+
+            /**
+             * Convenience function to get a orientation matrix matching the name of this method. Useful as base for further manipulations.
+             *
+             * \return the matrix.
+             */
+            glm::mat4 getOrientationMatrixAlongPosY() const;
+
+            /**
+             * Convenience function to get a orientation matrix matching the name of this method. Useful as base for further manipulations.
+             *
+             * \return the matrix.
+             */
+            glm::mat4 getOrientationMatrixAlongNegY() const;
+
+            /**
+             * Convenience function to get a orientation matrix matching the name of this method. Useful as base for further manipulations.
+             *
+             * \return the matrix.
+             */
+            glm::mat4 getOrientationMatrixAlongPosZ() const;
+
+            /**
+             * Convenience function to get a orientation matrix matching the name of this method. Useful as base for further manipulations.
+             *
+             * \return the matrix.
+             */
+            glm::mat4 getOrientationMatrixAlongNegZ() const;
+
+            /**
+             * Build a view matrix based on the _current_ scene. Use this method only if you want a matrix that is based on the current scene. If the
+             * scene changes, this matrix might not be useful anymore.
+             *
+             * \param sceneBB the bounding box of the scene to view.
+             * \param orientation orientation
+             * \param zoom a zoom factor. Default = 1.0.
+             * \param drag a drag offset. Defaults to glm::vec2( 0.0 ).
+             *
+             * \return the matrix.
+             */
+            glm::mat4 buildViewMatrix( const core::BoundingBox& sceneBB, const glm::mat4& orientation, float zoom = 1.0,
+                                       const glm::vec2& drag = glm::vec2( 0.0 ) );
+
+            /**
+             * Build a projection matrix.
+             *
+             * \param near the near value
+             * \param far the far value
+             * \param aspect the aspect ratio
+             *
+             * \return the projection matrix.
+             */
+            glm::mat4 buildProjectionMatrix( float near, float far, float aspect );
+
         signals:
             /**
              * Issued whenever a screenshot is ready.
              *
              * \param image the pixel data of the image.
+             * \param nameHint a hint how to name the screenshot.
              */
-            void screenshotDone( SPtr< core::RGBA8Image > image );
+            void screenshotDone( SPtr< core::RGBA8Image > image, const std::string& nameHint );
 
         public slots:
 
@@ -149,34 +230,12 @@ namespace di
             void resetView();
 
             /**
-             * Set the camera transformation to view along positive x.
+             * Set the view to match the given default.
+             *
+             * \param id the number of the default, as set by \ref setDefaultViews. If the number is too large, the last one is set.
              */
-            void setViewAlongPosX();
+            void useDefaultView( size_t id );
 
-            /**
-             * Set the camera transformation to view along negative x.
-             */
-            void setViewAlongNegX();
-
-            /**
-             * Set the camera transformation to view along positive y.
-             */
-            void setViewAlongPosY();
-
-            /**
-             * Set the camera transformation to view along negative y.
-             */
-            void setViewAlongNegY();
-
-            /**
-             * Set the camera transformation to view along positive z.
-             */
-            void setViewAlongPosZ();
-
-            /**
-             * Set the camera transformation to view along negative z.
-             */
-            void setViewAlongNegZ();
         protected:
             /**
              * Do the necessary setup.
@@ -340,9 +399,14 @@ namespace di
             bool m_arcballYAxis = true;
 
             /**
-             * The default view.
+             * The default view to use when resetting the view.
              */
-            glm::mat4 m_defaultView;
+            glm::mat4 m_viewPreset;
+
+            /**
+             * All the possible default views as matrix and name.
+             */
+            std::vector< std::tuple< glm::mat4, bool, std::string > > m_defaultViews;
 
             /**
              * The current drag matrix.
@@ -386,6 +450,13 @@ namespace di
              * The widget responsible for setting up the screenshotter
              */
             ScreenShotWidget* m_screenShotWidget = nullptr;
+
+            /**
+             * Render the whole scene to this view.
+             *
+             * \param view the view.
+             */
+            void renderToView( core::View* view );
         };
     }
 }

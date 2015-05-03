@@ -104,10 +104,11 @@ namespace di
              * Save the pixel data as screenshot.
              *
              * \param pixels the image
+             * \param nameHint hint how to name the file.
              *
              * \return false on error
              */
-            bool saveScreenShot( SPtr< core::RGBA8Image > pixels );
+            bool saveScreenShot( SPtr< core::RGBA8Image > pixels, const std::string& nameHint );
 
             /**
              * Check if the background should be different from the default
@@ -123,6 +124,12 @@ namespace di
              */
             di::Color getBackgroundColor() const;
 
+            /**
+             * Checks if the user wants all views to be captured.
+             *
+             * \return true if enabled.
+             */
+            bool getCaptureAll() const;
         protected slots:
             /**
              * Handle shutdown. Emited by the main windows
@@ -183,6 +190,11 @@ namespace di
              * Override default background with this one.
              */
             QCheckBox* m_bgColorOverride = nullptr;
+
+            /**
+             * Checkbox to force screenshots of all default views.
+             */
+            QCheckBox* m_allDefaultViews = nullptr;
         };
     }
 }

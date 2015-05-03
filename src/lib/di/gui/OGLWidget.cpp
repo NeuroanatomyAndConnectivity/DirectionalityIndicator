@@ -175,132 +175,21 @@ namespace di
             glViewport( 0, 0, std::max( 1, w ), std::max( 1, h ) );
         }
 
-        void OGLWidget::paintGL()
+        void OGLWidget::renderToView( core::View* view )
         {
-            auto now = std::chrono::system_clock::now();
-            auto duration = std::chrono::duration_cast< std::chrono::milliseconds >( now - m_fpsLastTime );
-            auto durationLastShow = std::chrono::duration_cast< std::chrono::milliseconds >( now - m_fpsLastShowTime );
-            m_fpsLastTime = now;
-
-            float fps = 1000.0 / static_cast< float >( duration.count() );
-
-            if( durationLastShow.count() >= 2000 )
-            {
-                m_fpsLastShowTime = now;
-                LogI << "FPS " << fps << LogEnd;
-            }
-
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Get scene BB
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            // NOTE: this tries to lock the network first. We are nice and only try to run. If not, we skip the frame.
-
-            // Allow all visualizations to update:
-            core::BoundingBox sceneBB;
-            Application::getProcessingNetwork()->visitVisualizations(
-                [ &sceneBB ]( SPtr< di::core::Visualization > vis )
-                {
-                    sceneBB.include( vis->getBoundingBox() );
-                }
-            );
-
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Update Camera
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            double near = 0.3; // the near plane
-            double far = m_zoom * sqrt( 3.0 ) + near;    // the diagonal of the cube needs to fit (sqrt(3))
-            if( sceneBB.isValid() )
-            {
-                // Calculate scene
-                double maxExtend = sqrt( 3.0 ) *
-                                   std::max( sceneBB.getSize().x,
-                                             std::max( sceneBB.getSize().y,
-                                                       sceneBB.getSize().z ) );
-
-                // Move scene to rotation point
-                glm::mat4 rotationPointTranslate = glm::translate( -sceneBB.getCenter() );
-                // Scale scene down to match screen size. The scene is now inside a unit sized cube
-                glm::mat4 scaleToFit = glm::scale( glm::vec3( 1.0 / ( 1.0 * maxExtend ) ) );
-                // Zoom
-                glm::mat4 zoom = glm::scale( glm::vec3( m_zoom ) );
-
-                // move scene into the visible area
-                glm::mat4 moveToVisibleArea = glm::translate( glm::vec3( 0.0, 0.0, -( m_zoom * 0.5 + near ) ) );
-
-                glm::mat4 dragMatrix = glm::translate( static_cast< float >( maxExtend ) *
-                                                       ( 1.0f / static_cast< float >( m_zoom ) ) *
-                                                       glm::vec3( m_dragOffset.x, m_dragOffset.y, 0.0 ) );
-
-                m_camera.setViewMatrix( moveToVisibleArea * scaleToFit * zoom * dragMatrix * m_arcballMatrix * rotationPointTranslate );
-
-                // set a nice default projection matrix:
-                m_camera.setProjectionMatrix(
-                    glm::ortho( 0.5 * -getAspectRatio(), 0.5 * getAspectRatio(), -0.5, 0.5, near, far )
-                );
-            }
-            else
-            {
-                m_camera.setProjectionMatrix( glm::mat4() );
-                m_camera.setViewMatrix( glm::mat4() );
-            }
-
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // Define render target
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            core::View* targetView = this;
-
-            // Screenshot?
-            if( m_screenShotRequest && !m_screenShotWidget  )
-            {
-                LogE << "Before requesting a screenshot, define a responsible ScreenShotWidget." << LogEnd;
-                m_screenShotRequest = false;
-            }
-
-            SPtr< core::OffscreenView > screenshotView = nullptr;
-            if( m_screenShotRequest )
-            {
-                LogD << "Screenshot requested. Creating offscreen view." << LogEnd;
-
-                // Create the offscreen view
-                screenshotView = std::make_shared< core::OffscreenView >(
-                            glm::vec2( m_screenShotWidget->getWidth(),
-                                       m_screenShotWidget->getHeight() ),
-                            m_screenShotWidget->getSamples()
-                        );
-
-                // Force high quality
-                screenshotView->setHQMode( true );
-
-                // The screenshot view might have a different aspect:
-                core::Camera offCam( m_camera );
-                offCam.setProjectionMatrix(
-                    glm::ortho( 0.5 * -screenshotView->getAspectRatio(), 0.5 * screenshotView->getAspectRatio(), -0.5, 0.5, near, far )
-                );
-                screenshotView->setCamera( offCam );
-
-                // Init the FBO
-                screenshotView->prepare();
-
-                targetView = static_cast< core::View* >( screenshotView.get() );
-            }
-
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Update all visualizations
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // Allow all visualizations to update:
             Application::getProcessingNetwork()->visitVisualizations(
-                [ this, targetView ]( SPtr< di::core::Visualization > vis )
+                [ this, view ]( SPtr< di::core::Visualization > vis )
                 {
                     if( vis->isRenderingActive() )
                     {
-                        targetView->bind();
-                        vis->update( *targetView, m_forceReload );
+                        view->bind();
+                        vis->update( *view, m_forceReload );
                     }
-
                 }
             );
             m_forceReload = false;
@@ -309,9 +198,9 @@ namespace di
             // Draw
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            targetView->bind();
-            glViewport( targetView->getViewport().first.x, targetView->getViewport().first.y,
-                        targetView->getViewport().second.x, targetView->getViewport().second.y );
+            view->bind();
+            glViewport( view->getViewport().first.x, view->getViewport().first.y,
+                        view->getViewport().second.x, view->getViewport().second.y );
 
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -362,25 +251,198 @@ namespace di
             glEnable( GL_DEPTH_TEST );
 
             Application::getProcessingNetwork()->visitVisualizations(
-                [ targetView ]( SPtr< di::core::Visualization > vis )
+                [ view ]( SPtr< di::core::Visualization > vis )
                 {
                     if( vis->isRenderingActive() )
                     {
-                        targetView->bind();
-                        vis->render( *targetView );
+                        view->bind();
+                        vis->render( *view );
                     }
                 }
             );
+        }
 
-            // thats it.
-            m_screenShotRequest = false;
-            if( screenshotView )
+        void OGLWidget::paintGL()
+        {
+            auto now = std::chrono::system_clock::now();
+            auto duration = std::chrono::duration_cast< std::chrono::milliseconds >( now - m_fpsLastTime );
+            auto durationLastShow = std::chrono::duration_cast< std::chrono::milliseconds >( now - m_fpsLastShowTime );
+            m_fpsLastTime = now;
+
+            float fps = 1000.0 / static_cast< float >( duration.count() );
+
+            if( durationLastShow.count() >= 2000 )
             {
-                // get image and report back
-                emit screenshotDone( screenshotView->read() );
+                m_fpsLastShowTime = now;
+                LogI << "FPS " << fps << LogEnd;
+            }
 
-                // cleanup the FBO
-                screenshotView->finalize();
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Get scene BB
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // NOTE: this tries to lock the network first. We are nice and only try to run. If not, we skip the frame.
+
+            // Allow all visualizations to update:
+            core::BoundingBox sceneBB;
+            Application::getProcessingNetwork()->visitVisualizations(
+                [ &sceneBB ]( SPtr< di::core::Visualization > vis )
+                {
+                    sceneBB.include( vis->getBoundingBox() );
+                }
+            );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Update Camera
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            double near = 0.3; // the near plane
+            double far = m_zoom * sqrt( 3.0 ) + near;    // the diagonal of the cube needs to fit (sqrt(3))
+            m_camera.setProjectionMatrix( buildProjectionMatrix( near, far, getAspectRatio() ) );
+            m_camera.setViewMatrix( buildViewMatrix( sceneBB, m_arcballMatrix, m_zoom, m_dragOffset ) );
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Define render target
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            // A list of views to render to. Used for screenshots.
+            std::vector< SPtr< core::OffscreenView > > targetViews;
+            // Also keep a list of name hints for each view. Used for saving them to files.
+            std::map< SPtr< core::OffscreenView >, std::string > targetViewNameHints;
+
+            // Screenshot?
+            if( m_screenShotRequest && !m_screenShotWidget  )
+            {
+                LogE << "Before requesting a screenshot, define a responsible ScreenShotWidget." << LogEnd;
+                m_screenShotRequest = false;
+            }
+
+            if( m_screenShotRequest )
+            {
+                LogD << "Screenshot requested. Creating offscreen view." << LogEnd;
+
+                // A list of view matrices:
+                std::vector< std::tuple< glm::mat4, bool, std::string > > matrices;
+                if(  m_screenShotWidget->getCaptureAll() )
+                {
+                    matrices = m_defaultViews;
+                }
+
+                // Also add the user cam. NOTE: the bool is false, as the cam contains a whole view matrix already.
+                matrices.push_back( std::make_tuple( m_camera.getViewMatrix(), false, "User Camera" ) );
+
+                // Create views for each listed matrix
+                for( auto matrix : matrices )
+                {
+                    // Create the off-screen view
+                    auto screenshotView = std::make_shared< core::OffscreenView >(
+                        glm::vec2( m_screenShotWidget->getWidth(), m_screenShotWidget->getHeight() ), m_screenShotWidget->getSamples() );
+
+                    // Force high quality
+                    screenshotView->setHQMode( true );
+
+                    // The screenshot view might have a different aspect:
+                    core::Camera offCam( m_camera );
+                    offCam.setProjectionMatrix( buildProjectionMatrix( near, far, screenshotView->getAspectRatio() ) );
+
+                    // Get the desired view.
+                    auto viewMatrix = std::get< 0 >( matrix );
+                    // If the programmer requested to build the view matrix using the given orientation:
+                    if( std::get< 1 >( matrix ) )
+                    {
+                        viewMatrix = buildViewMatrix( sceneBB, viewMatrix, 1.732, glm::vec2( 0.0 ) );
+                    }
+                    offCam.setViewMatrix( viewMatrix );
+                    screenshotView->setCamera( offCam );
+
+                    // Init the FBO
+                    screenshotView->prepare();
+
+                    // Done. Add to list
+                    targetViews.push_back( screenshotView );
+                    targetViewNameHints[ screenshotView ] = std::get< 2 >( matrix );
+                }
+
+
+                /* Some tiling demo code. Not perfect for our image space arrows.
+                double finalWidth = 4096.0;
+                double finalHeight = 3072.0;
+                double tileWidth = 1024.0;
+                double tileHeight = 1024.0;
+
+                // How much tiles to render?
+                auto numTilesX = static_cast< uint16_t >( std::ceil( finalWidth / tileWidth ) );
+                auto numTilesY = static_cast< uint16_t >( std::ceil( finalHeight / tileHeight ) );
+
+                LogD << "Splitting into " << numTilesX << "x" << numTilesY << " tiles." << LogEnd;
+
+                // create a lot of cameras, one for each tile
+                for( uint8_t tileY = 0; tileY < numTilesY; ++tileY )
+                {
+                    for( uint8_t tileX = 0; tileX < numTilesX; ++tileX )
+                    {
+                        // The size of the tile
+                        auto tileAspect = tileWidth / tileHeight;
+
+                        auto tx = static_cast< double >( tileX ) / static_cast< double >( numTilesX );
+                        auto ty = static_cast< double >( tileY ) / static_cast< double >( numTilesY );
+                        auto sx = 1.0 / static_cast< double >( numTilesX );
+                        auto sy = 1.0 / static_cast< double >( numTilesY );
+
+                        // Create projection and move it a bit to match the tile's viewport
+                        auto moveMatrix = glm::translate( glm::dvec3( tx, ty, 0.0 ) );
+                        auto scaleMatrix = glm::scale( glm::dvec3( sx, sy, 1.0 ) );
+                        auto projMatrix = glm::ortho( -0.5 + tx, -0.5 + tx + sx , -0.5 + ty, -0.5 + ty + sy, near, far );
+
+                        // Create the off-screen view
+                        auto screenshotView = std::make_shared< core::OffscreenView >( glm::vec2( tileWidth, tileHeight ), 1 );
+
+                        // Force high quality
+                        screenshotView->setHQMode( true );
+
+                        // The screenshot view might have a different aspect:
+                        core::Camera offCam( m_camera );
+                        //offCam.setProjectionMatrix( projMatrix );
+                        screenshotView->setCamera( offCam );
+
+                        // Init the FBO
+                        screenshotView->prepare();
+
+                        // Done. Add to list
+                        targetViews.push_back( screenshotView );
+                    }
+                }*/
+
+
+            }
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Render to render target(s)
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            if( !targetViews.empty() )
+            {
+                for( auto view : targetViews )
+                {
+                    renderToView( view.get() );
+
+                    // if this is part of a screenshot -> submit
+                    if( m_screenShotRequest )
+                    {
+                        // get image and report back
+                        emit screenshotDone( view->read(), targetViewNameHints[ view ] );
+                    }
+
+                    // cleanup the FBO
+                    view->finalize();
+                }
+
+                // thats it.
+                m_screenShotRequest = false;
+            }
+            else
+            {
+                renderToView( this );
             }
         }
 
@@ -519,49 +581,8 @@ namespace di
 
         void OGLWidget::resetView()
         {
-            m_arcballMatrix = m_defaultView;
+            m_arcballMatrix = m_viewPreset;
             m_dragOffset = glm::vec2();
-        }
-
-        void OGLWidget::setViewAlongPosX()
-        {
-            resetView();
-            m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
-                              glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-        }
-
-        void OGLWidget::setViewAlongNegX()
-        {
-            resetView();
-            m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
-                              glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-        }
-
-        void OGLWidget::setViewAlongPosY()
-        {
-            resetView();
-            m_arcballMatrix = glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
-        }
-
-        void OGLWidget::setViewAlongNegY()
-        {
-            resetView();
-            m_arcballMatrix =  glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
-                               glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
-        }
-
-        void OGLWidget::setViewAlongPosZ()
-        {
-            resetView();
-            m_arcballMatrix = glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
-                              glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
-        }
-
-        void OGLWidget::setViewAlongNegZ()
-        {
-            resetView();
-            // the default camera
-            m_arcballMatrix = glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
         }
 
         glm::vec3 OGLWidget::toScreenCoord( double x, double y )
@@ -619,8 +640,98 @@ namespace di
 
         void OGLWidget::setViewPreset( const glm::mat4& view )
         {
-            m_defaultView = view;
+            m_viewPreset = view;
             resetView();
+        }
+
+        void OGLWidget::useDefaultView( size_t id )
+        {
+            resetView();
+            if( m_defaultViews.empty() )
+            {
+                return;
+            }
+
+            auto viewInfo = m_defaultViews[ std::min( id, m_defaultViews.size() - 1 ) ];
+            LogD << "Setting view to \"" << std::get< 2 >( viewInfo ) << "\"." << LogEnd;
+            m_arcballMatrix = std::get< 0 >( viewInfo );
+        }
+
+        void OGLWidget::setDefaultViews( const std::vector< std::tuple< glm::mat4, bool, std::string > >& defaultViews )
+        {
+            m_defaultViews = defaultViews;
+        }
+
+        glm::mat4 OGLWidget::getOrientationMatrixAlongPosX() const
+        {
+            return glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                   glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        }
+
+        glm::mat4 OGLWidget::getOrientationMatrixAlongNegX() const
+        {
+            return glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) ) *
+                   glm::rotate( glm::radians( -90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        }
+
+        glm::mat4 OGLWidget::getOrientationMatrixAlongPosY() const
+        {
+            return glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+        }
+
+        glm::mat4 OGLWidget::getOrientationMatrixAlongNegY() const
+        {
+            return glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
+                   glm::rotate( glm::radians( -90.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+        }
+
+        glm::mat4 OGLWidget::getOrientationMatrixAlongPosZ() const
+        {
+            return glm::rotate( glm::radians( 180.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ) *
+                   glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        }
+
+        glm::mat4 OGLWidget::getOrientationMatrixAlongNegZ() const
+        {
+            // the default camera
+            return glm::rotate( glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        }
+
+        glm::mat4 OGLWidget::buildViewMatrix( const core::BoundingBox& sceneBB, const glm::mat4& orientation, float zoom, const glm::vec2& drag )
+        {
+            double near = 0.3; // the near plane
+            // double far = zoom * sqrt( 3.0 ) + near;    // the diagonal of the cube needs to fit (sqrt(3))
+            if( sceneBB.isValid() )
+            {
+                // Calculate scene
+                double maxExtend = sqrt( 3.0 ) *
+                                   std::max( sceneBB.getSize().x,
+                                             std::max( sceneBB.getSize().y,
+                                                       sceneBB.getSize().z ) );
+
+                // Move scene to rotation point
+                glm::mat4 rotationPointTranslate = glm::translate( -sceneBB.getCenter() );
+                // Scale scene down to match screen size. The scene is now inside a unit sized cube
+                glm::mat4 scaleToFit = glm::scale( glm::vec3( 1.0 / ( 1.0 * maxExtend ) ) );
+                // Zoom
+                glm::mat4 zoomMatrix = glm::scale( glm::vec3( zoom ) );
+
+                // move scene into the visible area
+                glm::mat4 moveToVisibleArea = glm::translate( glm::vec3( 0.0, 0.0, -( zoom * 0.5 + near ) ) );
+
+                glm::mat4 dragMatrix = glm::translate( static_cast< float >( maxExtend ) *
+                                                       ( 1.0f / static_cast< float >( zoom ) ) *
+                                                       glm::vec3( drag.x, drag.y, 0.0 ) );
+
+                return moveToVisibleArea * scaleToFit * zoomMatrix * dragMatrix * orientation * rotationPointTranslate;
+            }
+
+            return glm::mat4();
+        }
+
+        glm::mat4 OGLWidget::buildProjectionMatrix( float near, float far, float aspect )
+        {
+            return glm::ortho( -0.5f * aspect, 0.5f * aspect, -0.5f, 0.5f, near, far );
         }
 
         di::core::State OGLWidget::getState() const
