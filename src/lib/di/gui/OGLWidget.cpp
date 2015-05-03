@@ -350,7 +350,7 @@ namespace di
                     // If the programmer requested to build the view matrix using the given orientation:
                     if( std::get< 1 >( matrix ) )
                     {
-                        viewMatrix = buildViewMatrix( sceneBB, viewMatrix, 1.732, glm::vec2( 0.0 ) );
+                        viewMatrix = buildViewMatrix( sceneBB, viewMatrix, 2.0, glm::vec2( 0.0 ) );
                     }
                     offCam.setViewMatrix( viewMatrix );
                     screenshotView->setCamera( offCam );
