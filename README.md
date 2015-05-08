@@ -79,7 +79,7 @@ data file combinations.
 #### Screenshots
 The software allows you to trigger the screenshot mechanism from command line:
 ```shell
-$ bin/DirectionalityIndicator myProject.project --screenshot --screenshot-path="/an/path/"
+$ bin/DirectionalityIndicator myProject.project --screenshot --screenshot-path="/a/path/"
 ```
 
 This starts the software, loads the project, takes the screenshots and quits. The parameter "--screenshot-path" is optional and allows to define 
