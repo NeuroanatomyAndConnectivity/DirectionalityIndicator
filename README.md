@@ -45,7 +45,7 @@ $ cmake -DDI_FORCE_QT4=ON ../src
 # Build using make
 $ make
 # Run the software
-$ ./DirectionalityIndicator
+$ bin/DirectionalityIndicator
 ```
 
 ## Usage
@@ -53,10 +53,39 @@ $ ./DirectionalityIndicator
 To start, simply start the binary.
 
 ```shell
-$ DirectionalityIndicator
+$ bin/DirectionalityIndicator
 ```
 
-It is planned to allow specification of data files on the command line. Right now, this is not supported. More options will follow.
+### Command Line Options
+
+#### Data/Project File Loading
+You can specify data files and project files on the command line. 
+
+Example:
+```shell
+$ bin/DirectionalityIndicator "/some/path/with spaces/file2.labels" ../someProjectFile.project aMeshFile.ply  
+```
+
+Some things to keep in mind:
+* Paths that contain spaces should be enclosed in ""
+* You can specify data files and projects
+* Order of appearance matters
+ * Latter specified files override previous ones
+
+Especially the ordering of files can be very useful. Assume you have a project file. It contains all the paths to the data files needed. If you
+specify your own data file afterwards, you overwrite the one in the project file. This way, you can re-use the same project for multiple different 
+data file combinations.
+
+#### Screenshots
+The software allows you to trigger the screenshot mechanism from command line:
+```shell
+$ bin/DirectionalityIndicator myProject.project --screenshot --screenshot-path="/an/path/"
+```
+
+This starts the software, loads the project, takes the screenshots and quits. The parameter "--screenshot-path" is optional and allows to define 
+an explicit path where to store the screenshots. 
+
+NOTE: the screenshot is done using the settings you specify in the software's screenshot-settings.
 
 ## Support
 
