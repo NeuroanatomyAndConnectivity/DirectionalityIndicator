@@ -22,16 +22,50 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EVENTS_H
-#define DI_EVENTS_H
+#ifndef DI_CALLBACKEVENT_H
+#define DI_CALLBACKEVENT_H
 
 #include <QEvent>
 
-#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
-#define QT_OBSERVER_EVENT QEvent::User + 2
-#define QT_CALLBACK_EVENT QEvent::User + 3
+#include <di/gui/events/Events.h>
 
-#include <di/gui/events/CommandObserverEvent.h>
+#include "Types.h"
 
-#endif  // DI_EVENTS_H
+namespace di
+{
+    namespace gui
+    {
+        /**
+         * A QEvent to defer a function call to the UI thread.
+         */
+        class CallbackEvent: public QEvent
+        {
+        public:
+            /**
+             * Constructor. Does nothing.
+             *
+             * \param func the function to call
+             */
+            explicit CallbackEvent( std::function< void() > func );
+
+            /**
+             * Destructor. Does nothing.
+             */
+            virtual ~CallbackEvent();
+
+            /**
+             * Call the function.
+             */
+            void call();
+        protected:
+        private:
+            /**
+             * The function call back in UI thread.
+             */
+            std::function< void() > m_function;
+        };
+    }
+}
+
+#endif  // DI_CALLBACKEVENT_H
 

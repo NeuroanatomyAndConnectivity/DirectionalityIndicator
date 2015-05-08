@@ -109,6 +109,23 @@ namespace di
              */
             MainWindow* getMainWindow();
 
+            /**
+             * Use this to en/disable the UI. This will only prohibit user interaction.
+             *
+             * \param enable true to enable.
+             */
+            virtual void setUIEnabled( bool enable = true );
+
+            /**
+             * Call the function inside the UI thread.
+             *
+             * \param func the function to call
+             *
+             * \return the callable that can be called from some arbitrary thread. It will not block. It only triggers an UI event that some time will
+             * call the specified function.
+             */
+            std::function< void() > runInUIThread( std::function< void() > func );
+
         protected:
             /**
              * Called when the user wants to load a project from file. Does nothing by default. Implement this if you want to save specific things.

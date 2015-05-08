@@ -32,6 +32,8 @@
 #include <di/core/Command.h>
 #include <di/core/data/DataSetBase.h>
 
+#include <di/algorithms/DataInject.h>
+
 #include <di/Types.h>
 
 namespace di
@@ -63,9 +65,10 @@ namespace di
              * \param reader the reader to use. Can be nullptr.
              * \param observer an object that gets notified upon changes in this command's state.
              * \param filename the file to load
+             * \param inject the injector to use to insert the data into the network.
              */
-            ReadFile( SPtr< core::Reader > reader, const std::string& filename,
-                      SPtr< di::core::CommandObserver > observer = nullptr );
+            ReadFile( SPtr< core::Reader > reader, const std::string& filename, SPtr< di::core::CommandObserver > observer = nullptr,
+                      SPtr< di::algorithms::DataInject > inject = nullptr );
 
             /**
              * Clean up.
@@ -114,6 +117,13 @@ namespace di
              * \return the reader instance or nullptr.
              */
             SPtr< core::Reader > getReader() const;
+
+            /**
+             * Return the injector specified during construction. Might be nullptr.
+             *
+             * \return the injector.
+             */
+            SPtr< di::algorithms::DataInject > getDataInject() const;
         protected:
         private:
             /**
@@ -130,6 +140,11 @@ namespace di
              * The reader to use. Can be null.
              */
             SPtr< core::Reader > m_reader = nullptr;
+
+            /**
+             * The injector to use. Can be null.
+             */
+            SPtr< di::algorithms::DataInject > m_inject = nullptr;
         };
     }
 }

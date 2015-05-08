@@ -85,7 +85,7 @@ namespace di
              * Gets the size of the viewport in x and y directions. Keep in mind that the physical pixel coordinate of the upper-right corner will be
              * origin + size - (1,1). Alternatively, use \ref getViewport() to query this directly.
              *
-             * \return
+             * \return the size of the viewport
              */
             glm::vec2 getViewportSize() const override;
 
@@ -216,6 +216,11 @@ namespace di
              * \param nameHint a hint how to name the screenshot.
              */
             void screenshotDone( SPtr< core::RGBA8Image > image, const std::string& nameHint );
+
+            /**
+             * Called when screenshots where requested and successfully saved.
+             */
+            void allScreenshotsDone();
 
         public slots:
 

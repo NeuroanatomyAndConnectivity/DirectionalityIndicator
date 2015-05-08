@@ -132,7 +132,8 @@ namespace di
             // Use deferred loading:
             Application::getProcessingNetwork()->loadFile(
                 m_reader, // NOTE: nullptr is allowed by loadFile.
-                m_currentFile.toStdString(), SPtr< CommandObserverQt >( new CommandObserverQt( this, { m_fileLoadLabel, m_fileLoadLabel } ) ) );
+                m_currentFile.toStdString(), m_dataInject,
+                SPtr< CommandObserverQt >( new CommandObserverQt( this, {m_fileLoadLabel, m_fileLoadLabel} ) ) );
         }
 
         void FileWidget::prepareProcessingNetwork()
@@ -165,7 +166,6 @@ namespace di
             if( event->type() == QT_COMMANDOBSERVER_EVENT )
             {
                 CommandObserverEvent* coe = dynamic_cast< CommandObserverEvent* >( event );
-                LogD << "huhu" << this << " . " << coe->getObserverStatus() << LogEnd;
 
                 // status of a CommandObserver changed
                 if( coe->getObserverStatus() == CommandObserverEvent::GENERIC )
@@ -199,10 +199,8 @@ namespace di
                     ScaleLabel* label = dynamic_cast< ScaleLabel* >( coe->getObserver()->getAffected()[1] );
                     label->setText( "Success" );
 
-                    // Inject to network
-                    m_dataInject->inject( coe->getIssuer< di::commands::ReadFile >()->getResult() );
-                    // NOTE: done using the dirty callback
-                    // Application::getProcessingNetwork()->runNetwork();
+                    // Inject to network? NO! Done by the injector specified in the command
+                    // m_dataInject->inject( coe->getIssuer< di::commands::ReadFile >()->getResult() );
                 }
 
                 if( coe->getObserverStatus() == CommandObserverEvent::ABORT )

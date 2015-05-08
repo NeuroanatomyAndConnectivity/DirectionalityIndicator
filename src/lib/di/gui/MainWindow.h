@@ -86,6 +86,15 @@ namespace di
              */
             virtual void closeEvent( QCloseEvent* event );
 
+            /**
+             * Handle Qt Events.
+             *
+             * \param event the event
+             *
+             * \return true if handled.
+             */
+            virtual bool event( QEvent* event );
+
         protected slots:
             /**
              * Handle the load menu.

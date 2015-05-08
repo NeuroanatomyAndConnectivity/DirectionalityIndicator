@@ -24,62 +24,44 @@
 
 #include <string>
 
-#include <di/core/Reader.h>
-
-#include "ReadFile.h"
+#include "Callback.h"
 
 namespace di
 {
     namespace commands
     {
-        ReadFile::ReadFile( const std::string& filename, SPtr< di::core::CommandObserver > observer ):
-            ReadFile( nullptr, filename, observer )
+        Callback::Callback( SPtr< di::core::CommandObserver > observer ):
+            Command( observer )
         {
         }
 
-        ReadFile::ReadFile( SPtr< core::Reader > reader, const std::string& filename, SPtr< di::core::CommandObserver > observer,
-                            SPtr< di::algorithms::DataInject > inject )
-            : Command( observer ), m_filename( filename ), m_reader( reader ), m_inject( inject )
+        Callback::Callback( std::function< void() > callback ):
+            Command( nullptr ),
+            m_function( callback ),
+            m_functionDefined( true )
         {
         }
 
-        ReadFile::~ReadFile()
+        Callback::~Callback()
         {
         }
 
-        std::string ReadFile::getName() const
+        void Callback::call()
         {
-            return "Read File";
+            if( m_functionDefined )
+            {
+                m_function();
+            }
         }
 
-        std::string ReadFile::getDescription() const
+        std::string Callback::getName() const
         {
-            return "Read a file from disk. This command tries to use the optimal loader.";
+            return "Callback";
         }
 
-        std::string ReadFile::getFilename() const
+        std::string Callback::getDescription() const
         {
-            return m_filename;
-        }
-
-        SPtr< di::core::DataSetBase > ReadFile::getResult() const
-        {
-            return m_result;
-        }
-
-        void ReadFile::setResult( SPtr< di::core::DataSetBase > result )
-        {
-            m_result = result;
-        }
-
-        SPtr< core::Reader > ReadFile::getReader() const
-        {
-            return m_reader;
-        }
-
-        SPtr< di::algorithms::DataInject > ReadFile::getDataInject() const
-        {
-            return m_inject;
+            return "Callback a function when processing. Very useful for synchronization.";
         }
     }
 }

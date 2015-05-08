@@ -56,7 +56,7 @@ namespace di
             {
                 return;
             }
-            LogD << "Injecting data instance " << static_cast< const void* >( m_injectionData.get() ) << "." << LogEnd;
+            LogD << "process: Injecting data instance " << static_cast< const void* >( m_injectionData.get() ) << "." << LogEnd;
             m_dataOutput->setData( m_injectionData );
         }
 
@@ -65,6 +65,7 @@ namespace di
             // NOTE: we are not allowed to update the outputs here.
             std::lock_guard<std::mutex> lock( m_injectionDataMutex );
             requestUpdate( m_injectionData != data );
+            LogD << "inject: data instance " << static_cast< const void* >( data.get() ) << " - " << ( m_injectionData != data ) << "." << LogEnd;
             m_injectionData = data;
         }
     }

@@ -77,8 +77,21 @@ namespace di
 
         bool App::handleCommandLine( const std::vector< std::string >& arguments, int /* argc */, char** /* argv */ )
         {
-            // We assume all arguments to be filenames
-            m_deferLoad = arguments;
+            // handle some special arguments first
+            for( auto arg : arguments )
+            {
+                auto argument = di::core::toLower( arg );
+                if( argument == "--screenshot" )
+                {
+                    m_screenShotMode = true;
+                }
+                else
+                {
+                    // We assume all arguments to be filenames
+                    // NOTE: use the original arg, no lower case argument.
+                    m_deferLoad.push_back( arg );
+                }
+            }
             return true;
         }
 
@@ -91,8 +104,15 @@ namespace di
 
         void App::onDirtyNetwork()
         {
-            LogD << "Network marked dirty. Requesting update." << LogEnd;
-            getProcessingNetwork()->runNetwork();
+            if( m_screenShotMode )
+            {
+                LogD << "Network marked dirty. Ignoring since screenshot mode is active." << LogEnd;
+            }
+            else
+            {
+                LogD << "Network marked dirty. Requesting update." << LogEnd;
+                getProcessingNetwork()->runNetwork();
+            }
         }
 
         void App::prepareUI()
@@ -240,6 +260,25 @@ namespace di
                     continue;
                 }
             }
+
+            // if screenshot mode is active, the network needs to be updated explicitly:
+            if( m_screenShotMode )
+            {
+                // We want to close the app when done. To achieve this, we need to connect the ViewWidget::screenshotDone signal with the main
+                // window's close slot. Problem: we cannot connect in Application derived classes since they are no QObjects. So we use a convenience
+                // method to use std::function.
+                m_viewWidget->screenshotDone( std::bind( &di::gui::MainWindow::close, getMainWindow() ) );
+
+                // Disable UI in this mode:
+                LogD << "Disabling UI user input." << LogEnd;
+                setUIEnabled( false );
+
+                LogD << "Issuing update command." << LogEnd;
+                getProcessingNetwork()->runNetwork();
+
+                // Trigger the screenshot function when done. But use the runInUIThread adapter to ensure this is done in the UI thread.
+                getProcessingNetwork()->callback( runInUIThread( std::bind( &di::gui::ViewWidget::screenshot, m_viewWidget ) ) );
+            }
         }
 
         void App::close()
@@ -292,6 +331,17 @@ namespace di
 
             // Done collecting data. Save ...
             main.toFile( filename.toStdString() );
+        }
+
+        void App::screenShotModeCallback()
+        {
+            LogE << "---------------------------------------huhu" << LogEnd;
+
+            // Trigger close when all screenshots are done
+            //connect( m_viewWidget, SIGNAL( allScreenshotsDone() ), getMainWindow(), SLOT( close() ) );
+//            getMainWindow()->close();
+            // Trigger the screenshot
+            //m_viewWidget->screenshot();
         }
     }
 }

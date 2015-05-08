@@ -93,6 +93,19 @@ namespace di
              */
             bool setState( const di::core::State& state );
 
+            /**
+             * Same as the \ref screenshotDone signal, but does not use the Qt mechanism. Useful when using from non-QObject classes.
+             *
+             * \param func function to notify
+             */
+            void screenshotDone( std::function< void() > func );
+
+        signals:
+            /**
+             * Reports back whenever all screenshots were taken that have been requested by \ref screenshot().
+             */
+            void screenshotDone();
+
         public slots:
             /**
              * Take screenshot.
@@ -107,6 +120,11 @@ namespace di
              * \param nameHint hint how to name the file.
              */
             void screenshotDone( SPtr< core::RGBA8Image > pixels, const std::string& nameHint );
+
+            /**
+             * Reports back whenever all screenshots were taken.
+             */
+            void allScreenshotsDone();
 
             /**
              * A default view was triggered.
@@ -154,6 +172,11 @@ namespace di
              * The actions to add to the view menu
              */
             std::vector< QAction* > m_viewActions;
+
+            /**
+             * The callbacks to use when screenshots where done.
+             */
+            std::vector< std::function< void() > > m_screenshotDoneCallbacks;
         };
     }
 }

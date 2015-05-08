@@ -79,15 +79,6 @@ namespace di
             virtual ~FileWidget();
 
             /**
-             * Event handler. We use it to handle \ref CommandObserverQt updates.
-             *
-             * \param event the event to handle
-             *
-             * \return true on success.
-             */
-            virtual bool event( QEvent* event );
-
-            /**
              * Allows this widget to prepare everything in the network. This is only a temporary solution.
              */
             void prepareProcessingNetwork();
@@ -159,6 +150,15 @@ namespace di
             virtual void load( const std::string& filename );
 
         protected:
+            /**
+             * Event handler. We use it to handle \ref CommandObserverQt updates.
+             *
+             * \param event the event to handle
+             *
+             * \return true on success.
+             */
+            virtual bool event( QEvent* event );
+
         private:
             /**
              * The reader to use for loading.

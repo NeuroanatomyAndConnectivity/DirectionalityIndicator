@@ -438,6 +438,7 @@ namespace di
                 }
 
                 // thats it.
+                emit allScreenshotsDone();
                 m_screenShotRequest = false;
             }
             else

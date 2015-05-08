@@ -30,6 +30,9 @@
 #include <di/core/ObserverCallback.h>
 
 #include <di/commands/ReadFile.h>
+#include <di/commands/Callback.h>
+
+#include <di/algorithms/DataInject.h>
 
 #include <di/io/PlyReader.h>
 
@@ -260,9 +263,16 @@ namespace di
         SPtr< di::commands::ReadFile > ProcessingNetwork::loadFile( SPtr< Reader > reader, const std::string& fileName,
                                                                     SPtr< CommandObserver > observer )
         {
+            return loadFile( reader, fileName, nullptr, observer );
+        }
+
+        SPtr< di::commands::ReadFile > ProcessingNetwork::loadFile( SPtr< Reader > reader, const std::string& fileName,
+                                                                    SPtr< di::algorithms::DataInject > inject,
+                                                                    SPtr< CommandObserver > observer )
+        {
             return commit(
                 SPtr< di::commands::ReadFile >(
-                    new di::commands::ReadFile( reader, fileName, observer )
+                    new di::commands::ReadFile( reader, fileName, observer, inject )
                 )
             );
         }
@@ -364,6 +374,24 @@ namespace di
             );
         }
 
+        SPtr< di::commands::Callback > ProcessingNetwork::callback( std::function< void() > callback )
+        {
+            return commit(
+              SPtr< di::commands::Callback >(
+                    new di::commands::Callback( callback )
+                )
+            );
+        }
+
+        SPtr< di::commands::Callback > ProcessingNetwork::callback( SPtr< CommandObserver > observer )
+        {
+            return commit(
+              SPtr< di::commands::Callback >(
+                    new di::commands::Callback( observer )
+                )
+            );
+        }
+
         void ProcessingNetwork::process( SPtr< Command > command )
         {
             // IMPORTANT: in the future, it is planned to make this dynamic... for now, it is sufficient to do it the hard-coded way as we need to get
@@ -406,6 +434,12 @@ namespace di
                 {
                     readFileCmd->fail( "No suitable reader found for \"" + fn  + "\"."  );
                 }
+
+                auto injector = readFileCmd->getDataInject();
+                if( injector )
+                {
+                    injector->inject( readFileCmd->getResult() );
+                }
             }
 
             // Add a new algorithm?
@@ -446,6 +480,13 @@ namespace di
             {
                 // Call the proper function. Keep in mind that this is a temporary solution. The will be done by a scheduler in the future.
                 runNetworkImpl();
+            }
+
+            // Trigger callback?
+            SPtr< di::commands::Callback > callbackCmd = std::dynamic_pointer_cast< di::commands::Callback >( command );
+            if( callbackCmd )
+            {
+                callbackCmd->call();
             }
 
             // Query State?

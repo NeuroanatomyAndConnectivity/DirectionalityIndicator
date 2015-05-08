@@ -176,6 +176,16 @@ namespace di
              * Widget to handle mesh files.
              */
             gui::FileWidget* m_meshFile = nullptr;
+
+            /**
+             * If true, the app starts, loads, takes a screenshot and quits.
+             */
+            bool m_screenShotMode = false;
+
+            /**
+             * Callback triggered when in screenshot mode.
+             */
+            void screenShotModeCallback();
         };
     }
 }

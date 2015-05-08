@@ -22,16 +22,29 @@
 //
 //---------------------------------------------------------------------------------------
 
-#ifndef DI_EVENTS_H
-#define DI_EVENTS_H
+#include <di/gui/events/Events.h>
 
-#include <QEvent>
+#include "CallbackEvent.h"
 
-#define QT_COMMANDOBSERVER_EVENT QEvent::User + 1
-#define QT_OBSERVER_EVENT QEvent::User + 2
-#define QT_CALLBACK_EVENT QEvent::User + 3
+namespace di
+{
+    namespace gui
+    {
+        CallbackEvent::CallbackEvent( std::function< void() > func ):
+            QEvent( static_cast< QEvent::Type >( QT_CALLBACK_EVENT ) ),
+            m_function( func )
+        {
+        }
 
-#include <di/gui/events/CommandObserverEvent.h>
+        CallbackEvent::~CallbackEvent()
+        {
+            // do nothing
+        }
 
-#endif  // DI_EVENTS_H
+        void CallbackEvent::call()
+        {
+            m_function();
+        }
+    }
+}
 

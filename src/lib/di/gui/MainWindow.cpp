@@ -29,6 +29,8 @@
 #include <QDir>
 #include <QMessageBox>
 
+#include <di/gui/events/CallbackEvent.h>
+
 #include <di/gui/Application.h>
 
 #include "MainWindow.h"
@@ -195,6 +197,17 @@ namespace di
         void MainWindow::saveCamHandler()
         {
             saveProjectHandler( false, true, false, false );
+        }
+
+        bool MainWindow::event( QEvent* event )
+        {
+            if( event->type() == QT_CALLBACK_EVENT )
+            {
+                CallbackEvent* ce = dynamic_cast< CallbackEvent* >( event );
+                ce->call();
+                return true;
+            }
+            return QMainWindow::event( event );
         }
     }
 }

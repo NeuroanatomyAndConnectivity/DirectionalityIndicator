@@ -48,10 +48,16 @@
 #include <di/commands/AddAlgorithm.h>
 #include <di/commands/Connect.h>
 #include <di/commands/RunNetwork.h>
+#include <di/commands/Callback.h>
 #include <di/commands/QueryState.h>
 
 namespace di
 {
+    namespace algorithms
+    {
+        class DataInject;
+    }
+
     namespace core
     {
         class Reader;
@@ -146,18 +152,20 @@ namespace di
             virtual SPtr< di::commands::ReadFile > loadFile( const std::string& fileName, SPtr< CommandObserver > observer = nullptr );
 
             /**
-             * Load the specified file. This operation is non-blocking and runs in this container's thread.
-             *
-             * \note equals to committing a di::commands::ReadFile( fileName, observer );
+             * \copydoc loadFile
              *
              * \param reader the reader instance to use. Can be nullptr to use known readers automatically.
-             * \param fileName the file to load.
-             * \param observer the observer that gets informed about changes. Can be omitted.
-             *
-             * \return the command instance. Not needed to keep this.
-             *
              */
             virtual SPtr< di::commands::ReadFile > loadFile( SPtr< Reader > reader, const std::string& fileName,
+                                                             SPtr< CommandObserver > observer = nullptr );
+
+            /**
+             * \copydoc loadFile
+             *
+             * \param inject the injector used to insert the data into the network. If null, it is your task to handle this.
+             */
+            virtual SPtr< di::commands::ReadFile > loadFile( SPtr< Reader > reader, const std::string& fileName,
+                                                             SPtr< di::algorithms::DataInject > inject = nullptr,
                                                              SPtr< CommandObserver > observer = nullptr );
 
             /**
@@ -224,6 +232,24 @@ namespace di
              * \return the command instance. Not needed to keep this.
              */
             virtual SPtr< di::commands::RunNetwork > runNetwork( SPtr< CommandObserver > observer = nullptr );
+
+            /**
+             * Commit a callback command. The command only triggers the observer.
+             *
+             * \param observer the observer
+             *
+             * \return the command
+             */
+            virtual SPtr< di::commands::Callback > callback( SPtr< CommandObserver > observer );
+
+            /**
+             * Commit a callback command. The command only triggers the observer.
+             *
+             * \param callback the callback triggered on execution inside the network thread.
+             *
+             * \return the command
+             */
+            virtual SPtr< di::commands::Callback > callback( std::function< void() > callback );
 
             /**
              * Is an update requested? Convenience method to check all algorithms at once.

@@ -34,6 +34,8 @@
 #include <di/core/Filesystem.h>
 #include <di/core/ObserverCallback.h>
 
+#include <di/gui/events/CallbackEvent.h>
+
 #include "Application.h"
 
 namespace di
@@ -169,6 +171,21 @@ namespace di
         void Application::saveProject( const QString& /* filename */, bool /* all */, bool /* viewOnly */, bool /* paramsOnly */,
                                        bool /* dataOnly */ )
         {
+        }
+
+        void Application::setUIEnabled( bool enable )
+        {
+            auto mw = getMainWindow();
+            if( mw )
+            {
+                mw->setEnabled( enable );
+            }
+        }
+
+        std::function< void() > Application::runInUIThread( std::function< void() > func )
+        {
+            auto ev = new CallbackEvent( func );
+            return [ ev, this ](){ QCoreApplication::postEvent( getMainWindow(), ev ); };
         }
     }
 }

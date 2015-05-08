@@ -137,6 +137,7 @@ namespace di
             connect( m_defaultViewsButton, SIGNAL( released() ), m_oglWidget, SLOT( resetView() ) );
             connect( m_oglWidget, SIGNAL( screenshotDone( SPtr< core::RGBA8Image >, const std::string& ) ),
                      this, SLOT( screenshotDone( SPtr< core::RGBA8Image >, const std::string& ) ) );
+            connect( m_oglWidget, SIGNAL( allScreenshotsDone() ), this, SLOT( allScreenshotsDone() ) );
         }
 
         ViewWidget::~ViewWidget()
@@ -300,6 +301,18 @@ namespace di
             }
         }
 
+        void ViewWidget::allScreenshotsDone()
+        {
+            // Just re-emit a signal.
+            emit screenshotDone();
+
+            // And call all the functors
+            for( auto callback : m_screenshotDoneCallbacks )
+            {
+                callback();
+            }
+        }
+
         void ViewWidget::setViewPreset( const glm::mat4& view )
         {
             m_oglWidget->setViewPreset( view );
@@ -314,6 +327,11 @@ namespace di
         bool ViewWidget::setState( const di::core::State& state )
         {
             return m_oglWidget->setState( state );
+        }
+
+        void ViewWidget::screenshotDone( std::function< void() > func )
+        {
+            m_screenshotDoneCallbacks.push_back( func );
         }
     }
 }
