@@ -109,17 +109,20 @@ namespace di
         public slots:
             /**
              * Take screenshot.
+             *
+             * \param path override the user path. The path MUST be absolute. If empty, the default path is used.
              */
-            void screenshot();
+            void screenshot( std::string path = "" );
 
         protected slots:
             /**
              * Reports back whenever a screenshot was taken.
              *
-             * \param pixels the image
-             * \param nameHint hint how to name the file.
+             * \param image the pixel data of the image.
+             * \param nameHint a hint how to name the screenshot.
+             * \param pathOverride the path where to store the image. Can be empty to use the user specified path.
              */
-            void screenshotDone( SPtr< core::RGBA8Image > pixels, const std::string& nameHint );
+            void screenshotDone( SPtr< core::RGBA8Image > image, const std::string& nameHint, const std::string& pathOverride = "" );
 
             /**
              * Reports back whenever all screenshots were taken.

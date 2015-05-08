@@ -84,12 +84,20 @@ namespace di
                 if( argument == "--screenshot" )
                 {
                     m_screenShotMode = true;
+                    LogD << "Commandline: screenshot mode activated." << LogEnd;
+                }
+                else if( argument.find( "--screenshot-path=" ) != std::string::npos )
+                {
+                    auto len = std::string( "--screenshot-path=" ).length();
+                    m_screenShotPath = argument.substr( len, argument.length() - len );
+                    LogD << "Commandline: screenshot-path set to \"" << m_screenShotPath << "\"." << LogEnd;
                 }
                 else
                 {
                     // We assume all arguments to be filenames
                     // NOTE: use the original arg, no lower case argument.
                     m_deferLoad.push_back( arg );
+                    LogD << "Commandline: file specified - \"" << arg << "\"." << LogEnd;
                 }
             }
             return true;
@@ -277,7 +285,7 @@ namespace di
                 getProcessingNetwork()->runNetwork();
 
                 // Trigger the screenshot function when done. But use the runInUIThread adapter to ensure this is done in the UI thread.
-                getProcessingNetwork()->callback( runInUIThread( std::bind( &di::gui::ViewWidget::screenshot, m_viewWidget ) ) );
+                getProcessingNetwork()->callback( runInUIThread( std::bind( &di::gui::ViewWidget::screenshot, m_viewWidget, m_screenShotPath ) ) );
             }
         }
 
@@ -331,17 +339,6 @@ namespace di
 
             // Done collecting data. Save ...
             main.toFile( filename.toStdString() );
-        }
-
-        void App::screenShotModeCallback()
-        {
-            LogE << "---------------------------------------huhu" << LogEnd;
-
-            // Trigger close when all screenshots are done
-            //connect( m_viewWidget, SIGNAL( allScreenshotsDone() ), getMainWindow(), SLOT( close() ) );
-//            getMainWindow()->close();
-            // Trigger the screenshot
-            //m_viewWidget->screenshot();
         }
     }
 }

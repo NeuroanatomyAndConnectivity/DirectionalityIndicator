@@ -183,9 +183,9 @@ namespace di
             bool m_screenShotMode = false;
 
             /**
-             * Callback triggered when in screenshot mode.
+             * The path where to store the screenshots. Needs to be absolute.
              */
-            void screenShotModeCallback();
+            std::string m_screenShotPath;
         };
     }
 }

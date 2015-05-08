@@ -105,10 +105,11 @@ namespace di
              *
              * \param pixels the image
              * \param nameHint hint how to name the file.
+             * \param pathOverride the path where to store the image. Can be empty to use the user specified path.
              *
              * \return false on error
              */
-            bool saveScreenShot( SPtr< core::RGBA8Image > pixels, const std::string& nameHint );
+            bool saveScreenShot( SPtr< core::RGBA8Image > pixels, const std::string& nameHint, const std::string& pathOverride = "" );
 
             /**
              * Check if the background should be different from the default

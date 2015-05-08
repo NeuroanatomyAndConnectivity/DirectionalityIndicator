@@ -214,8 +214,9 @@ namespace di
              *
              * \param image the pixel data of the image.
              * \param nameHint a hint how to name the screenshot.
+             * \param pathOverride the path where to store the image. Can be empty to use the user specified path.
              */
-            void screenshotDone( SPtr< core::RGBA8Image > image, const std::string& nameHint );
+            void screenshotDone( SPtr< core::RGBA8Image > image, const std::string& nameHint, const std::string& pathOverride = "" );
 
             /**
              * Called when screenshots where requested and successfully saved.
@@ -226,8 +227,10 @@ namespace di
 
             /**
              * Call to take a screenshot.
+             *
+             * \param path override the user path. The path MUST be absolute. If empty, the default path is used.
              */
-            void screenshot();
+            void screenshot( std::string path = "" );
 
             /**
              * Reset the view to XY-Z
@@ -450,6 +453,11 @@ namespace di
              * If true, a screenshot is requested.
              */
             bool m_screenShotRequest = false;
+
+            /**
+             * Override the path of the screenshots.
+             */
+            std::string m_screenShotPathOverride = "";
 
             /**
              * The widget responsible for setting up the screenshotter

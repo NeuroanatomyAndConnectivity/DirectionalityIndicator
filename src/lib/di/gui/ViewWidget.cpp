@@ -135,8 +135,8 @@ namespace di
             // Wire them:
             connect( m_screenshotButton, SIGNAL( released() ), this, SLOT( screenshot() ) );
             connect( m_defaultViewsButton, SIGNAL( released() ), m_oglWidget, SLOT( resetView() ) );
-            connect( m_oglWidget, SIGNAL( screenshotDone( SPtr< core::RGBA8Image >, const std::string& ) ),
-                     this, SLOT( screenshotDone( SPtr< core::RGBA8Image >, const std::string& ) ) );
+            connect( m_oglWidget, SIGNAL( screenshotDone( SPtr< core::RGBA8Image >, const std::string&, const std::string& ) ),
+                     this, SLOT( screenshotDone( SPtr< core::RGBA8Image >, const std::string&, const std::string& ) ) );
             connect( m_oglWidget, SIGNAL( allScreenshotsDone() ), this, SLOT( allScreenshotsDone() ) );
         }
 
@@ -268,12 +268,12 @@ namespace di
                                                                     QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_I ) ) );
         }
 
-        void ViewWidget::screenshot()
+        void ViewWidget::screenshot( std::string path )
         {
             m_screenshotButton->setDisabled( true );
 
             // and forward
-            m_oglWidget->screenshot();
+            m_oglWidget->screenshot( path );
         }
 
         void ViewWidget::defaultViewTriggered()
@@ -289,12 +289,12 @@ namespace di
             }
         }
 
-        void ViewWidget::screenshotDone( SPtr< core::RGBA8Image > pixels, const std::string& nameHint )
+        void ViewWidget::screenshotDone( SPtr< core::RGBA8Image > pixels, const std::string& nameHint, const std::string& pathOverride )
         {
             m_screenshotButton->setDisabled( false );
 
             // and forward
-            if( !m_screenShotWidget->saveScreenShot( pixels, nameHint ) )
+            if( !m_screenShotWidget->saveScreenShot( pixels, nameHint, pathOverride ) )
             {
                 // report
                 QMessageBox::critical( this, "Screenshot failed.", "Unable to write the screenshot to disk." );

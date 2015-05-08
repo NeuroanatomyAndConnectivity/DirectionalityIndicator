@@ -232,14 +232,19 @@ namespace di
             return infile.good();
         }
 
-        bool ScreenShotWidget::saveScreenShot( SPtr< core::RGBA8Image > pixels, const std::string& nameHint )
+        bool ScreenShotWidget::saveScreenShot( SPtr< core::RGBA8Image > pixels, const std::string& nameHint, const std::string& pathOverride )
         {
             // Use time to construct filename
             auto now = std::time( nullptr );
             auto localTime = std::localtime( &now );    // NOLINT: do not use localtime_r
 
             std::ostringstream fn;
-            fn << m_location->text().toStdString() << "/Screenshot_"
+            auto path = m_location->text().toStdString();
+            if( !pathOverride.empty() )
+            {
+                path = pathOverride;
+            }
+            fn << path << "/Screenshot_"
                << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << "_"
                << localTime->tm_hour << "-" << localTime->tm_min << "-" << localTime->tm_sec << "_" << nameHint << "_";
 

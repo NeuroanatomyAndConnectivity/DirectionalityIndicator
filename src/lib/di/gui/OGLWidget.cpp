@@ -430,7 +430,7 @@ namespace di
                     if( m_screenShotRequest )
                     {
                         // get image and report back
-                        emit screenshotDone( view->read(), targetViewNameHints[ view ] );
+                        emit screenshotDone( view->read(), targetViewNameHints[ view ], m_screenShotPathOverride );
                     }
 
                     // cleanup the FBO
@@ -628,10 +628,19 @@ namespace di
             return m_camera;
         }
 
-        void OGLWidget::screenshot()
+        void OGLWidget::screenshot( std::string path )
         {
             m_screenShotRequest = true;
-            LogD << "Requesting screenshot ..." << LogEnd;
+            if( path.empty() )
+            {
+                LogD << "Requesting screenshot." << LogEnd;
+                m_screenShotPathOverride = "";
+            }
+            else
+            {
+                LogD << "Requesting screenshot. Path: \"" << path << "\"" << LogEnd;
+                m_screenShotPathOverride = path;
+            }
         }
 
         void OGLWidget::setResponsibleScreenShotWidget( ScreenShotWidget* screenShotWidget )
