@@ -45,9 +45,19 @@ namespace di
         {
         public:
             /**
+             * The type to use for storing each label value.
+             */
+            typedef double value_type;
+
+            /**
+             * The attribute type
+             */
+            typedef std::vector< value_type > AttributeType;
+
+            /**
              * The resulting data set type after loading.
              */
-            typedef core::DataSetCollection< std::vector< uint32_t > > DataSetType;
+            typedef core::DataSetCollection< AttributeType > DataSetType;
 
             /**
              * Constructor;

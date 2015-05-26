@@ -56,30 +56,10 @@ namespace di
                        "Extract regions on a given triangle dataset defined by different colors." )
         {
             // 1: the output
-            m_borderLinesOutput = addOutput< di::core::LineDataSet >(
-                    "Regions",
-                    "Extracted regions as lines."
-            );
-
-            m_regionMeshOutput = addOutput< di::core::LineDataSet >(
+            /* m_regionMeshOutput = addOutput< di::core::LineDataSet >(
                     "Region Mesh as Lines",
                     "Extracted region meshes as lines."
-            );
-
-            m_centerPointOutput = addOutput< di::core::PointDataSet >(
-                    "Region Centers",
-                    "Extracted center points of the regions."
-            );
-
-            m_regionOutput = addOutput< RegionDataSet >(
-                    "Region Information",
-                    "Collection of useful information about the regions."
-            );
-
-            m_connectionsOutput = addOutput< di::core::LineDataSet >(
-                    "Connections",
-                    "Extracted connections between regions."
-            );
+            );*/
 
             m_vectorOutput = addOutput< di::core::TriangleVectorField >(
                     "Directionality",
@@ -141,7 +121,7 @@ namespace di
             auto triangleDataSet = m_dataInput->getData();
             auto triangleLabelDataSet = m_dataLabelInput->getData();
             auto labelOrderDataSet = m_dataLabelOrderingInput->getData();
-            if( !triangleDataSet || !triangleLabelDataSet || !labelOrderDataSet )
+            if( !triangleDataSet || !triangleLabelDataSet )
             {
                 return;
             }
@@ -149,7 +129,13 @@ namespace di
             auto triangles = triangleDataSet->getGrid();
             auto attribute = triangleDataSet->getAttributes< 0 >(); // the color in our case
             auto labels = triangleLabelDataSet->getAttributes< 0 >();
-            auto labelOrders = labelOrderDataSet->getAttributes< 0 >();
+
+            // Get label order information if defined
+            di::ConstSPtr< di::io::RegionLabelReader::AttributeType > labelOrders = nullptr;
+            if( labelOrderDataSet )
+            {
+                labelOrders = labelOrderDataSet->getAttributes< 0 >();
+            }
 
             if( labels->size() != triangles->getNumVertices() )
             {
@@ -157,13 +143,90 @@ namespace di
             }
 
             // Debug Code
-            LogD << "Label ordering: ";
-            for( auto l : *labelOrders )
+            if( labelOrders )
             {
-                LogContinue << l << ", ";
+                LogD << "Label ordering: ";
+                for( auto l : *labelOrders )
+                {
+                    LogContinue << l << ", ";
+                }
+                LogContinue << " - total: " << labelOrders->size() << LogEnd;
             }
-            LogContinue << " - total: " << labelOrders->size() << LogEnd;
 
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Extract Directionality on Surface -- Case 1
+            //  - Case 1: no label ordering is given and the labels are interpreted as values -> gradient on surface defines direction
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            if( !labelOrders )
+            {
+                LogD << "No label ordering given. Interpreting labels as continuous data." << LogEnd;
+
+                // DATA: Used to store the direction at each vertex
+                auto vectorAttribute = std::make_shared< di::Vec3Array >( triangles->getNumVertices() );
+
+                // This case is mostly trivial. Calculate a direction for each vertex of the mesh:
+                for( size_t vertexID = 0; vertexID < triangles->getNumVertices(); ++vertexID )
+                {
+                    // Get neighbours
+                    auto neighbours = triangles->getNeighbourVertices( vertexID );
+
+                    // Accumulate direction in here
+                    auto direction = glm::vec3( 0.0 );
+
+                    // The vertex itself
+                    auto vertex = triangles->getVertex( vertexID );
+                    auto vertexValue = static_cast< float >( labels->at( vertexID ) );
+
+                    // Iterate all neighbours.
+                    for( auto neighbourID : neighbours )
+                    {
+                        // Well, the neighbour function includes the source vertex too. Skip the source vertex.
+                        if( vertexID == neighbourID )
+                        {
+                            continue;
+                        }
+
+                        // Neighbour vertex and value:
+                        auto neighbourVertex = triangles->getVertex( neighbourID );
+                        auto neighbourValue = static_cast< float >( labels->at( neighbourID ) );
+
+                        // Distance:
+                        auto dist = glm::distance( neighbourVertex, vertex );
+
+                        // The weight of this direction is defined by a distance-normalized value
+                        auto weight = ( neighbourValue - vertexValue ) / dist;
+
+                        // Now use the direction to this vertex and scale by weight:
+                        direction += weight * glm::normalize( neighbourVertex - vertex );
+                    }
+
+
+                    // But allow the user to change it again
+                    direction *= m_enableDirectionSwitch->get() ? -1.0f : 1.0f;
+
+                    // Store
+                    vectorAttribute->at( vertexID ) = glm::normalize( direction );
+                }
+
+                // Update outputs
+                LogD << "Done. Updating output." << LogEnd;
+                m_vectorOutput->setData( std::make_shared< di::core::TriangleVectorField >( "Directionality", triangles, vectorAttribute ) );
+
+                // Case 1 finished. Stop here.
+                return;
+            }
+
+            // End of Case one
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //
+            // Extract Directionality on Surface -- Case 2
+            //  - Label ordering and regions define directionality
+            //
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //
@@ -247,40 +310,44 @@ namespace di
             //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            // DATA: the triangle mesh itself -> wireframe
-            auto linesMesh = std::make_shared< di::core::Lines >();
-            // DATA: the wireframe colors
-            auto colorsMesh = std::make_shared< di::RGBAArray >();
+            /*
+            {   // Debug
+                // DATA: the triangle mesh itself -> wireframe
+                auto linesMesh = std::make_shared< di::core::Lines >();
+                // DATA: the wireframe colors
+                auto colorsMesh = std::make_shared< di::RGBAArray >();
 
-            // Iterate all triangles and transform to lines
-            for( auto t : triangles->getTriangles() )
-            {
-                // t is an ivec3 -> 3 indices to color, vertex, normal
-                auto c1 = attribute->operator[]( t.x );
-                auto c2 = attribute->operator[]( t.y );
-                auto c3 = attribute->operator[]( t.z );
+                // Iterate all triangles and transform to lines
+                for( auto t : triangles->getTriangles() )
+                {
+                    // t is an ivec3 -> 3 indices to color, vertex, normal
+                    auto c1 = attribute->operator[]( t.x );
+                    auto c2 = attribute->operator[]( t.y );
+                    auto c3 = attribute->operator[]( t.z );
 
-                auto v1 = triangles->getVertex( t.x );
-                auto v2 = triangles->getVertex( t.y );
-                auto v3 = triangles->getVertex( t.z );
+                    auto v1 = triangles->getVertex( t.x );
+                    auto v2 = triangles->getVertex( t.y );
+                    auto v3 = triangles->getVertex( t.z );
 
-                // Always add the triangle itself
-                // Get Vertices, add to line data, connect ... nothing fancy here.
+                    // Always add the triangle itself
+                    // Get Vertices, add to line data, connect ... nothing fancy here.
 
-                auto v1I = linesMesh->addVertex( v1 );
-                auto v2I = linesMesh->addVertex( v2 );
-                auto v3I = linesMesh->addVertex( v3 );
-                linesMesh->addLine( v1I, v2I );
-                linesMesh->addLine( v1I, v3I );
-                linesMesh->addLine( v2I, v3I );
-                float a = 1.0;
-                colorsMesh->push_back( glm::vec4( c1.r, c1.g, c1.b, a ) );
-                colorsMesh->push_back( glm::vec4( c2.r, c2.g, c2.b, a ) );
-                colorsMesh->push_back( glm::vec4( c3.r, c3.g, c3.b, a ) );
+                    auto v1I = linesMesh->addVertex( v1 );
+                    auto v2I = linesMesh->addVertex( v2 );
+                    auto v3I = linesMesh->addVertex( v3 );
+                    linesMesh->addLine( v1I, v2I );
+                    linesMesh->addLine( v1I, v3I );
+                    linesMesh->addLine( v2I, v3I );
+                    float a = 1.0;
+                    colorsMesh->push_back( glm::vec4( c1.r, c1.g, c1.b, a ) );
+                    colorsMesh->push_back( glm::vec4( c2.r, c2.g, c2.b, a ) );
+                    colorsMesh->push_back( glm::vec4( c3.r, c3.g, c3.b, a ) );
+                }
+
+                // Create a wireframe mesh for debug
+                m_regionMeshOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Mesh as Lines", linesMesh, colorsMesh ) );
             }
-
-            // Create a wireframe mesh for debug
-            m_regionMeshOutput->setData( std::make_shared< di::core::LineDataSet >( "Region Mesh as Lines", linesMesh, colorsMesh ) );
+            */
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //

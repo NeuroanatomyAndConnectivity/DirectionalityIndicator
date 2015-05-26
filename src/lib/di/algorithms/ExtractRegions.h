@@ -92,29 +92,10 @@ namespace di
             core::ParamBool m_enableDirectionSwitch;
 
             /**
-             * The resulting line data.
-             */
-            SPtr< di::core::Connector< di::core::LineDataSet > > m_borderLinesOutput;
-
-            /**
              * The region mesh
              */
             SPtr< di::core::Connector< di::core::LineDataSet > > m_regionMeshOutput;
 
-            /**
-             * The calculated connection graph.
-             */
-            SPtr< di::core::Connector< di::core::LineDataSet > > m_connectionsOutput;
-
-            /**
-             * The resulting center point data.
-             */
-            SPtr< di::core::Connector< di::core::PointDataSet > > m_centerPointOutput;
-
-            /**
-             * Region normals and colors.
-             */
-            SPtr< di::core::Connector< RegionDataSet > > m_regionOutput;
 
             /**
              * The vectors on the triangle data

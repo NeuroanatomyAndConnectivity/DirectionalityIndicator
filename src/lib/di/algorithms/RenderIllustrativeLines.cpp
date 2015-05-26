@@ -221,6 +221,10 @@ namespace di
             m_visTriangleVectorData = vectors;
             m_visTriangleLabelData = labels;
 
+            // Convert labels to ints
+            m_visTriangleLabelDataUInt32 = std::make_shared< std::vector< uint32_t > >( m_visTriangleLabelData->getAttributes()->begin(),
+                                                                                        m_visTriangleLabelData->getAttributes()->end() );
+
             // Update normalization length:
             if( vectors )
             {
@@ -675,7 +679,7 @@ namespace di
 
             m_labelsBuffer->realize();
             m_labelsBuffer->bind();
-            m_labelsBuffer->data( m_visTriangleLabelData->getAttributes() );
+            m_labelsBuffer->data( *m_visTriangleLabelDataUInt32 );
             glEnableVertexAttribArray( labelsLoc );
             glVertexAttribIPointer( labelsLoc, 1, GL_UNSIGNED_INT, 0, 0 );
             logGLError();

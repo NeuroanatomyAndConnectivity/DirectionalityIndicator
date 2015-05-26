@@ -246,6 +246,11 @@ namespace di
             ConstSPtr< di::io::RegionLabelReader::DataSetType > m_visTriangleLabelData = nullptr;
 
             /**
+             * Label list as unsigned int 32. Needed for the label buffer.
+             */
+            SPtr< std::vector< uint32_t > > m_visTriangleLabelDataUInt32 = nullptr;
+
+            /**
              * The array storing the arrow points
              */
             SPtr< di::core::Points > m_points = nullptr;
