@@ -31,7 +31,7 @@
 #include <di/gui/CommandObserverQt.h>
 #include <di/gui/events/Events.h>
 
-#include "Types.h"
+#include <di/Types.h>
 
 namespace di
 {

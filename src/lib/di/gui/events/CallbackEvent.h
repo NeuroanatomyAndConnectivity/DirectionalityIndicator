@@ -28,8 +28,7 @@
 #include <QEvent>
 
 #include <di/gui/events/Events.h>
-
-#include "Types.h"
+#include <di/Types.h>
 
 namespace di
 {

@@ -29,8 +29,7 @@
 
 #include <di/gui/ObserverQt.h>
 #include <di/gui/events/Events.h>
-
-#include "Types.h"
+#include <di/Types.h>
 
 namespace di
 {
