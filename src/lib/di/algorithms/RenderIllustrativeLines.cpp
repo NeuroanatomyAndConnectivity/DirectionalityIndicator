@@ -189,6 +189,8 @@ namespace di
             auto vectors = m_vectorInput->getData();
             auto labels = m_dataLabelInput->getData();
 
+            LogD << "Processing ..." << LogEnd;
+
             // only valid if the grids match
             if( data && vectors && labels )
             {
@@ -211,6 +213,7 @@ namespace di
                 data = nullptr;
                 vectors = nullptr;
                 labels = nullptr;
+                return;
             }
 
             // Provide the needed information to the visualizer itself.
