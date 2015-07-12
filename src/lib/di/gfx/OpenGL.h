@@ -26,7 +26,7 @@
 #define DI_OPENGL_H
 
 #include <GL/glew.h>
-#include <GL/gl.h>
+#include <di/gfx/GL.h>
 
 #endif  // DI_OPENGL_H
 

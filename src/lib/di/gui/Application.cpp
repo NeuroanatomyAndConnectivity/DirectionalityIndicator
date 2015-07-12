@@ -28,6 +28,7 @@
 
 #include <QApplication>
 #include <QWidget>
+#include <QLocale>
 
 #include <di/core/ProcessingNetwork.h>
 #include <di/core/Connection.h>

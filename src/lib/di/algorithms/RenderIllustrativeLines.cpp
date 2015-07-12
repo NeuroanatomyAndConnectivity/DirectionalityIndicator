@@ -24,6 +24,7 @@
 
 #include <string>
 #include <vector>
+#include <random>
 
 #include <di/core/data/TriangleDataSet.h>
 #include <di/core/data/Points.h>
