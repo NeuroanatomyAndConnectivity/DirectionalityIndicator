@@ -50,7 +50,8 @@ namespace di
     namespace gui
     {
         OGLWidget::OGLWidget( QWidget* parent ):
-            QGLWidget( getDefaultFormat(), parent )
+            QGLWidget( getDefaultFormat(), parent ),
+            core::View()
         {
             setAutoBufferSwap( true );
             setFocusPolicy( Qt::StrongFocus );
