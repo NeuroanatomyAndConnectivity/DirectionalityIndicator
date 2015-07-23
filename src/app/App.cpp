@@ -22,6 +22,8 @@
 //
 //---------------------------------------------------------------------------------------
 
+#include <functional>
+
 #include <QDockWidget>
 #include <QToolBox>
 #include <QWidget>
@@ -275,7 +277,7 @@ namespace di
                 // We want to close the app when done. To achieve this, we need to connect the ViewWidget::screenshotDone signal with the main
                 // window's close slot. Problem: we cannot connect in Application derived classes since they are no QObjects. So we use a convenience
                 // method to use std::function.
-                //m_viewWidget->screenshotDone( std::bind( &di::gui::MainWindow::close, getMainWindow() ) );
+                m_viewWidget->screenshotDone( std::bind( &di::gui::MainWindow::close, getMainWindow() ) );
 
                 // Disable UI in this mode:
                 LogD << "Disabling UI user input." << LogEnd;
