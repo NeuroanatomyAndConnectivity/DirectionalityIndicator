@@ -29,6 +29,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QLocale>
+#include <QSurfaceFormat>
 
 #include <di/core/ProcessingNetwork.h>
 #include <di/core/Connection.h>
@@ -86,6 +87,13 @@ namespace di
             {
                 return -1;
             }
+
+            // NOTE: this is an important call to ensure 3.3 Core OpenGL on OSX. It has to be called before QApplication.
+            QSurfaceFormat format33Core;
+            //format33Core.setSamples( 32 );
+            format33Core.setVersion( 3, 3 );
+            format33Core.setProfile( QSurfaceFormat::CoreProfile );
+            QSurfaceFormat::setDefaultFormat( format33Core );
 
             // Create QApplication
             QApplication application( m_argc, m_argv, true );
