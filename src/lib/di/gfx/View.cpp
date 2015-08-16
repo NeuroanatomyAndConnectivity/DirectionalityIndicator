@@ -23,8 +23,10 @@
 //---------------------------------------------------------------------------------------
 
 #include <utility>
+#include <algorithm>
 
 #include <di/GfxTypes.h>
+#include <di/gfx/ViewEventListener.h>
 
 #include "View.h"
 
@@ -60,6 +62,39 @@ namespace di
         void View::setHQMode( bool hq )
         {
             m_hqMode = hq;
+        }
+
+        void View::pushEvent( SPtr< ViewEvent > event )
+        {
+            std::unique_lock< std::mutex > lock( m_eventListenerMutex );
+            for( auto listener : m_eventListeners )
+            {
+                listener->handle( event );
+            }
+        }
+
+        SPtrVec< ViewEventListener > View::getEventListener() const
+        {
+            std::unique_lock< std::mutex > lock( m_eventListenerMutex );
+            return m_eventListeners;
+        }
+
+        void View::addEventListener( SPtr< ViewEventListener > listener )
+        {
+            // Used to lock the command queue mutex
+            std::unique_lock< std::mutex > lock( m_eventListenerMutex );
+            auto result = std::find( m_eventListeners.begin(), m_eventListeners.end(), listener );
+            if( result == m_eventListeners.end() )
+            {
+                m_eventListeners.push_back( listener );
+            }
+        }
+
+        void View::removeEventListener( SPtr< ViewEventListener > listener )
+        {
+            // Used to lock the command queue mutex
+            std::unique_lock< std::mutex > lock( m_eventListenerMutex );
+            m_eventListeners.erase( std::remove( m_eventListeners.begin(), m_eventListeners.end(), listener ), m_eventListeners.end() );
         }
     }
 }

@@ -26,17 +26,21 @@
 #define DI_VIEW_H
 
 #include <utility>
+#include <vector>
+#include <mutex>
+
+#include <di/GfxTypes.h>
+#include <di/Types.h>
 
 #include <di/core/State.h>
-
 #include <di/gfx/Camera.h>
-#include <di/GfxTypes.h>
 
 namespace di
 {
     namespace core
     {
-        class Camera;
+        class ViewEventListener;
+        class ViewEvent;
 
         /**
          * Class represents the rendering view. This includes the Viewport and the Camera.
@@ -115,6 +119,28 @@ namespace di
              */
             virtual bool setState( const di::core::State& state ) = 0;
 
+            /**
+             * Register an event listener to get mouse/key/touch feedback. Do not call from inside a listener. This will cause a deadlock.
+             *
+             * \param listener the listener to add. If already added, nothing happens.
+             */
+            virtual void addEventListener( SPtr< ViewEventListener > listener );
+
+            /**
+             * Remove an event listener.
+             *
+             * \param listener the listener to remove. If not registered, nothing happens. Do not call from inside a listener. This will cause a
+             * deadlock.
+             */
+            virtual void removeEventListener( SPtr< ViewEventListener > listener );
+
+            /**
+             * Get the list of listeners of this view. This makes a thread-safe copy.
+             *
+             * \return a copy of the event listener pointers.
+             */
+            virtual SPtrVec< ViewEventListener > getEventListener() const;
+
         protected:
             /**
              * Construct the view.
@@ -125,12 +151,29 @@ namespace di
              * Destruct. Cleanup.
              */
             virtual ~View();
+
+            /**
+             * The event to handle by the ViewEventHandlers.
+             *
+             * \param event the event.
+             */
+            virtual void pushEvent( SPtr< ViewEvent > event );
         private:
 
             /**
              * HQ Mode?
              */
             bool m_hqMode = false;
+
+            /**
+             * The actual list of event listeners.
+             */
+            SPtrVec< ViewEventListener > m_eventListeners;
+
+            /**
+             * Securing the event listener during processing.
+             */
+            mutable std::mutex m_eventListenerMutex;
         };
     }
 }

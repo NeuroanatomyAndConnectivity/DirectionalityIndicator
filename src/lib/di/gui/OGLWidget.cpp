@@ -36,6 +36,7 @@
 #include <di/gfx/OffscreenView.h>
 #include <di/MathTypes.h>
 #include <di/GfxTypes.h>
+#include <di/gfx/ViewEvent.h>
 
 #include <di/gui/Application.h>
 #include <di/gui/ScreenShotWidget.h>
@@ -506,6 +507,8 @@ namespace di
 
         void OGLWidget::mouseMoveEvent( QMouseEvent* event )
         {
+            core::View::pushEvent( std::make_shared< core::ViewEvents::MouseMove >( event->x(), event->y() ) );
+
             if( ( m_arcballState == 0 ) && ( m_dragState == 0 ) )
             {
                 event->ignore();
