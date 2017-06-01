@@ -34,7 +34,7 @@
 #include <di/gui/ScreenShotWidget.h>
 
 #include "icons/screenshot.xpm"
-#include "icons/configure.xpm"
+//#include "icons/configure.xpm"
 #include "icons/view.xpm"
 
 #include "ViewWidget.h"
