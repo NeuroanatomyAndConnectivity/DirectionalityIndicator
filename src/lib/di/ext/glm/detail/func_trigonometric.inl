@@ -38,7 +38,7 @@ namespace glm
 {
 	// radians
 	template <typename genType>
-	GLM_FUNC_QUALIFIER genType radians(genType degrees)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR genType radians(genType degrees)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'radians' only accept floating-point input");
 
@@ -46,14 +46,14 @@ namespace glm
 	}
 
 	template <typename T, precision P, template <typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<T, P> radians(vecType<T, P> const & v)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vecType<T, P> radians(vecType<T, P> const & v)
 	{
 		return detail::functor1<T, T, P, vecType>::call(radians, v);
 	}
 	
 	// degrees
 	template <typename genType>
-	GLM_FUNC_QUALIFIER genType degrees(genType radians)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR genType degrees(genType radians)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'degrees' only accept floating-point input");
 
@@ -61,7 +61,7 @@ namespace glm
 	}
 
 	template <typename T, precision P, template <typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<T, P> degrees(vecType<T, P> const & v)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vecType<T, P> degrees(vecType<T, P> const & v)
 	{
 		return detail::functor1<T, T, P, vecType>::call(degrees, v);
 	}
@@ -113,7 +113,7 @@ namespace glm
 
 	// atan
 	template <typename genType>
-	GLM_FUNC_QUALIFIER genType atan(genType const & y, genType const & x)
+	GLM_FUNC_QUALIFIER genType atan(genType y, genType x)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'atan' only accept floating-point input");
 
@@ -165,12 +165,12 @@ namespace glm
 #	if GLM_HAS_CXX11_STL
 		using std::asinh;
 #	else
-		template <typename genType> 
-		GLM_FUNC_QUALIFIER genType asinh(genType const & x)
+		template <typename genType>
+		GLM_FUNC_QUALIFIER genType asinh(genType x)
 		{
 			GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'asinh' only accept floating-point input");
 
-			return (x < static_cast<genType>(0) ? static_cast<genType>(-1) : (x > static_cast<genType>(0) ? static_cast<genType>(1) : static_cast<genType>(0))) * log(abs(x) + sqrt(static_cast<genType>(1) + x * x));
+			return (x < static_cast<genType>(0) ? static_cast<genType>(-1) : (x > static_cast<genType>(0) ? static_cast<genType>(1) : static_cast<genType>(0))) * log(std::abs(x) + sqrt(static_cast<genType>(1) + x * x));
 		}
 #	endif
 
@@ -185,7 +185,7 @@ namespace glm
 		using std::acosh;
 #	else
 		template <typename genType> 
-		GLM_FUNC_QUALIFIER genType acosh(genType const & x)
+		GLM_FUNC_QUALIFIER genType acosh(genType x)
 		{
 			GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'acosh' only accept floating-point input");
 
@@ -206,11 +206,11 @@ namespace glm
 		using std::atanh;
 #	else
 		template <typename genType>
-		GLM_FUNC_QUALIFIER genType atanh(genType const & x)
+		GLM_FUNC_QUALIFIER genType atanh(genType x)
 		{
 			GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559, "'atanh' only accept floating-point input");
 		
-			if(abs(x) >= static_cast<genType>(1))
+			if(std::abs(x) >= static_cast<genType>(1))
 				return 0;
 			return static_cast<genType>(0.5) * log((static_cast<genType>(1) + x) / (static_cast<genType>(1) - x));
 		}
