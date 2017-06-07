@@ -81,9 +81,10 @@ namespace di
             // Get some version info here.
             const GLubyte* renderer = glGetString( GL_RENDERER );
             const GLubyte* version = glGetString( GL_VERSION );
+            const GLubyte* glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
 
             // Enable "experimental" for 3.3 functionality
-            glewExperimental = true;
+            glewExperimental = GL_TRUE;
             GLenum err = glewInit();
             if( GLEW_OK != err )
             {
@@ -95,6 +96,7 @@ namespace di
 
             LogI << "GL Renderer: " << renderer << LogEnd;
             LogI << "GL Version: " << version << LogEnd;
+            LogI << "GLSL Version: " << glsl_version << LogEnd;
             LogI << "GLEW Version: " << glewGetString( GLEW_VERSION ) << LogEnd;
 
             // Black background
