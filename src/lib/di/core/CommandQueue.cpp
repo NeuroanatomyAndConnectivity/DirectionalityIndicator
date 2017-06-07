@@ -44,74 +44,51 @@ namespace di
 
         void CommandQueue::run()
         {
-            // Used to lock the command queue mutex
-            std::unique_lock< std::mutex > lock( m_commandQueueMutex );
+            bool running = true;
 
             // loop and handle ...
-            while( m_running )
+            while( running )
             {
-                if( m_commandQueue.empty() )
+                // Mutex lock to pull/copy all guarded variables.
+                std::unique_lock< std::mutex > lock( m_commandQueueMutex );
+                bool gracefulStop;
+                std::list< SPtr< Command > > pullCommands;
+
+                // Only wait if there is nothing to do. It's a loop to
+                // handle spurious wakeups as well.
+                while( m_commandQueue.empty() && m_running )
                 {
                     LogD << "Empty queue. Sleeping." << LogEnd;
+                    m_commandQueueCond.wait( lock );
                 }
+                running = m_running;
+                gracefulStop = m_gracefulStop;
+                m_commandQueue.swap( pullCommands );
 
-                // was the thread notified again?
-                if( !m_notified )
-                {
-                    // No. We wait.
-                    m_commandQueueCond.wait( lock,
-                                             [ this ]  // keep waiting if not explicitly notified
-                                             {
-                                                 return m_notified || !m_commandQueue.empty();
-                                             }
-                                           );
-                }
-                m_notified = false;
 
-                // stop?
-                if( !m_running )
-                {
-                    // if stopping, process the remaining commands:
-                    for( auto command : m_commandQueue )
-                    {
-                        // be fool-proof
-                        if( !command )
-                        {
-                            continue;
-                        }
+                // From here we are unlocked to process all pulled commands.
+                lock.unlock();
 
-                        // If we stop gracefully, we allow each command to be processed.
-                        if( m_gracefulStop )
-                        {
-                            processCommand( command );
-                        }
-                        else // for a forced stop, we abort the remaining commands
-                        {
-                            command->abort();
-                        }
-                    }
-                    // Cleanup ...
-                    m_commandQueue.clear();
-                }
-                else    // business as usual ... process command
+                LogD << "Wakeup " << pullCommands.size() << " commands"
+                    << (running ? "." : " and exit.") << LogEnd;
+
+                for( auto command : pullCommands )
                 {
-                    // get command
-                    SPtr< Command > command;
-                    if( !m_commandQueue.empty() )
-                    {
-                        command = m_commandQueue.front();
-                        m_commandQueue.pop_front();
-                    }
                     // be fool-proof
                     if( !command )
                     {
                         continue;
                     }
 
-                    // unlock as this would (otherwise) block the queue itself when "processCommand" is blocking
-                    lock.unlock();
-                    processCommand( command );
-                    lock.lock();
+                    // If we stop gracefully, we allow each command to be processed.
+                    if( running || gracefulStop )
+                    {
+                        processCommand( command );
+                    }
+                    else // for a forced stop, we abort the remaining commands
+                    {
+                        command->abort();
+                    }
                 }
             }
         }
@@ -145,11 +122,11 @@ namespace di
 
         void CommandQueue::start()
         {
+            std::lock_guard< std::mutex > lock( m_commandQueueMutex );
+
             // ignore the call if the thread is running already
             if( m_thread )
-            {
                 return;
-            }
 
             // start the std::thread.
             m_running = true;
@@ -158,20 +135,24 @@ namespace di
 
         void CommandQueue::stop( bool graceful )
         {
+            std::unique_lock< std::mutex > lock( m_commandQueueMutex );
+
+            // ignore the call if there is no thread running
+            if( !m_thread )
+                return;
+
             m_running = false;
             m_gracefulStop = graceful;
-            if( m_thread )
-            {
-                notifyThread();
-                m_thread->join();
-                m_thread = nullptr;
-            }
+
+            lock.unlock();
+
+            notifyThread();
+            m_thread->join();
+            m_thread = nullptr;
         }
 
         void CommandQueue::notifyThread()
         {
-            // Always set this variable to ensure that a busy thread continues to work if it is not waiting on m_commandQueueCond right now.
-            m_notified = true;
             m_commandQueueCond.notify_one();
         }
     }

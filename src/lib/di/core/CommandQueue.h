@@ -121,7 +121,8 @@ namespace di
             std::list< SPtr< Command > > m_commandQueue;
 
             /**
-             * Securing the command queue during processing.
+             * Securing the command queue during processing. This mutex protects
+             * m_commandQueue, m_running and m_gracefulStop.
              */
             std::mutex m_commandQueueMutex;
 
@@ -144,11 +145,6 @@ namespace di
              * Handles thread notification.
              */
             void notifyThread();
-
-            /**
-             * If true, the thread was notified in the past (before the wait call).
-             */
-            bool m_notified = false;
 
             /**
              * Handle a single command.
