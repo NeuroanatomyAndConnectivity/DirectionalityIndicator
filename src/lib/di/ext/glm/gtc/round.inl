@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2015 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -30,8 +30,9 @@
 /// @author Christophe Riccio
 ///////////////////////////////////////////////////////////////////////////////////
 
-namespace glm
-{
+#include "../detail/func_integer.hpp"
+
+namespace glm{
 namespace detail
 {
 	template <typename T, precision P, template <typename, precision> class vecType, bool compute = false>
@@ -104,10 +105,7 @@ namespace detail
 		GLM_FUNC_QUALIFIER static genType call(genType Source, genType Multiple)
 		{
 			if(Source > genType(0))
-			{
-				genType Tmp = Source - genType(1);
-				return Tmp + (Multiple - std::fmod(Tmp, Multiple));
-			}
+				return Source + (Multiple - std::fmod(Source, Multiple));
 			else
 				return Source + std::fmod(-Source, Multiple);
 		}
@@ -152,10 +150,7 @@ namespace detail
 			if(Source >= genType(0))
 				return Source - std::fmod(Source, Multiple);
 			else
-			{
-				genType Tmp = Source + genType(1);
-				return Tmp - std::fmod(Tmp, Multiple) - Multiple;
-			}
+				return Source - std::fmod(Source, Multiple) - Multiple;
 		}
 	};
 
@@ -281,7 +276,7 @@ namespace detail
 	template <typename genType>
 	GLM_FUNC_QUALIFIER genType floorPowerOfTwo(genType value)
 	{
-		return isPowerOfTwo(value) ? value : highestBitValue(value);
+		return isPowerOfTwo(value) ? value : static_cast<genType>(1) << findMSB(value);
 	}
 
 	template <typename T, precision P, template <typename, precision> class vecType>
@@ -299,8 +294,8 @@ namespace detail
 		if(isPowerOfTwo(value))
 			return value;
 
-		genIUType const prev = highestBitValue(value);
-		genIUType const next = prev << 1;
+		genIUType const prev = static_cast<genIUType>(1) << findMSB(value);
+		genIUType const next = prev << static_cast<genIUType>(1);
 		return (next - value) < (value - prev) ? next : prev;
 	}
 

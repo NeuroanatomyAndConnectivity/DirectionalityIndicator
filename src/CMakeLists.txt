@@ -282,22 +282,19 @@ IF( NOT REQUIRE_QT4 )
         MESSAGE( "Using custom Qt path. Ensure you set the path to the directory containing the bin and lib directories." )
         SET( CMAKE_PREFIX_PATH "$ENV{DI_QTDIR}/lib/cmake/Qt5Widgets" ${CMAKE_PREFIX_PATH} )
         SET( CMAKE_PREFIX_PATH "$ENV{DI_QTDIR}/lib/cmake/Qt5OpenGL" ${CMAKE_PREFIX_PATH} )
-        SET( CMAKE_PREFIX_PATH "$ENV{DI_QTDIR}/lib/cmake/Qt5WebKitWidgets" ${CMAKE_PREFIX_PATH} )
         SET( CMAKE_PREFIX_PATH $ENV{DI_QTDIR} ${CMAKE_PREFIX_PATH} )
     endif()
 
     # Package dependencies:
     FIND_PACKAGE( Qt5Widgets )
     FIND_PACKAGE( Qt5OpenGL )
-    FIND_PACKAGE( Qt5WebKitWidgets )
 
     # Qt5 specific setup
-    IF( Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND Qt5WebKitWidgets_FOUND )
+    IF( Qt5Widgets_FOUND AND Qt5OpenGL_FOUND )
         # Includes:
         INCLUDE_DIRECTORIES( SYSTEM ${QT_INCLUDE_DIR} )
         INCLUDE_DIRECTORIES( SYSTEM ${Qt5Widgets_INCLUDE_DIRS} )
         INCLUDE_DIRECTORIES( SYSTEM ${Qt5OpenGL_INCLUDE_DIRS} )
-        INCLUDE_DIRECTORIES( SYSTEM ${Qt5WebKitWidgets_INCLUDE_DIRS} )
 
         # Compiling with Qt5 requires some special definitions and flags to be set.
 
@@ -305,7 +302,6 @@ IF( NOT REQUIRE_QT4 )
         SET( _QT5_DEFINITIONS "" )
         LIST( APPEND _QT5_DEFINITIONS ${Qt5Widgets_DEFINITIONS} )
         LIST( APPEND _QT5_DEFINITIONS ${Qt5OpenGL_DEFINITIONS} )
-        LIST( APPEND _QT5_DEFINITIONS ${Qt5WebKitWidgets_DEFINITIONS} )
         LIST( REMOVE_DUPLICATES _QT5_DEFINITIONS )
         ADD_DEFINITIONS( ${_QT5_DEFINITIONS} )
 
@@ -313,11 +309,10 @@ IF( NOT REQUIRE_QT4 )
         SET( _QT5_EXECUTABLE_COMPILE_FLAGS "" )
         LIST( APPEND _QT5_EXECUTABLE_COMPILE_FLAGS ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} )
         LIST( APPEND _QT5_EXECUTABLE_COMPILE_FLAGS ${Qt5OpenGL_EXECUTABLE_COMPILE_FLAGS} )
-        LIST( APPEND _QT5_EXECUTABLE_COMPILE_FLAGS ${Qt5WebKitWidgets_EXECUTABLE_COMPILE_FLAGS} )
         LIST( REMOVE_DUPLICATES _QT5_EXECUTABLE_COMPILE_FLAGS )
         SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_QT5_EXECUTABLE_COMPILE_FLAGS}" )
 
-        SET( QT_Link_Libs Qt5::Widgets Qt5::OpenGL Qt5::WebKitWidgets ) 
+        SET( QT_Link_Libs Qt5::Widgets Qt5::OpenGL )
     ELSE()
         # Not Found ... we need at least Qt4:
         SET( REQUIRE_QT4 TRUE )
@@ -326,14 +321,14 @@ ENDIF()
 
 IF( REQUIRE_QT4 )
     # Searching Qt4
-    FIND_PACKAGE( Qt4 4.8.0 REQUIRED QtCore QtGui QtOpenGL QtWebKit )
+    FIND_PACKAGE( Qt4 4.8.0 REQUIRED QtCore QtGui QtOpenGL)
     
     IF( NOT QT4_FOUND )
         MESSAGE( FATAL_ERROR "Neither Qt5 nor Qt4 were found. Abort. Try using DI_QTDIR or QTDIR environment variables to point to your Qt installation." )
     ENDIF()
 
     INCLUDE_DIRECTORIES( SYSTEM ${QT_INCLUDES} )
-    SET( QT_Link_Libs Qt4::QtCore Qt4::QtGui Qt4::QtOpenGL Qt4::QtWebKit )
+    SET( QT_Link_Libs Qt4::QtCore Qt4::QtGui Qt4::QtOpenGL )
 endif()
 
 # This is needed since the mocs will be generated there

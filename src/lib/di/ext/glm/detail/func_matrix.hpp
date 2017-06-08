@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2015 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -72,19 +72,19 @@ namespace detail
 	template <typename T, precision P>
 	struct outerProduct_trait<T, P, tvec2, tvec3>
 	{
-		typedef tmat2x3<T, P> type;
+		typedef tmat3x2<T, P> type;
 	};
 
 	template <typename T, precision P>
 	struct outerProduct_trait<T, P, tvec2, tvec4>
 	{
-		typedef tmat2x4<T, P> type;
+		typedef tmat4x2<T, P> type;
 	};
 
 	template <typename T, precision P>
 	struct outerProduct_trait<T, P, tvec3, tvec2>
 	{
-		typedef tmat3x2<T, P> type;
+		typedef tmat2x3<T, P> type;
 	};
 
 	template <typename T, precision P>
@@ -96,19 +96,19 @@ namespace detail
 	template <typename T, precision P>
 	struct outerProduct_trait<T, P, tvec3, tvec4>
 	{
-		typedef tmat3x4<T, P> type;
+		typedef tmat4x3<T, P> type;
 	};
 
 	template <typename T, precision P>
 	struct outerProduct_trait<T, P, tvec4, tvec2>
 	{
-		typedef tmat4x2<T, P> type;
+		typedef tmat2x4<T, P> type;
 	};
 
 	template <typename T, precision P>
 	struct outerProduct_trait<T, P, tvec4, tvec3>
 	{
-		typedef tmat4x3<T, P> type;
+		typedef tmat3x4<T, P> type;
 	};
 
 	template <typename T, precision P>

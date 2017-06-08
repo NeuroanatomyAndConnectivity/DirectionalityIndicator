@@ -68,7 +68,7 @@ namespace di
             /**
              * Process the data in the inputs and update output data. Keep in mind that this might be called in its own thread thread.
              */
-            virtual void process();
+            virtual void process() override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Visualization Specific Methods
@@ -79,7 +79,7 @@ namespace di
              *
              * \note this runs in the OpenGL thread and the context is bound.
              */
-            virtual void prepare();
+            virtual void prepare() override;
 
             /**
              * Finalize your OpenGL resources here. Free buffers and shaders.
@@ -87,7 +87,7 @@ namespace di
              *
              * \note this runs in the OpenGL thread and the context is bound.
              */
-            virtual void finalize();
+            virtual void finalize() override;
 
             /**
              * Do actual rendering.
@@ -97,7 +97,7 @@ namespace di
              *
              * \param view the view to render to. This contains probably useful information.
              */
-            virtual void render( const core::View& view );
+            virtual void render( const core::View& view ) override;
 
             /**
              * This method is called between the frames. Use this to update resources. Immediately return if nothing needs to update. If you do not
@@ -109,7 +109,7 @@ namespace di
              * \param view the view to render to. This contains probably useful information.
              * \param reload to force a reload of all resources.
              */
-            virtual void update( const core::View& view, bool reload = false );
+            virtual void update( const core::View& view, bool reload = false ) override;
 
             /**
              * Each visualization needs to know the rendering area it will use. In most cases, this is the bounding box of the rendered geometry.
@@ -117,7 +117,7 @@ namespace di
              *
              * \return bounding box of this visualization
              */
-            virtual core::BoundingBox getBoundingBox() const;
+            virtual core::BoundingBox getBoundingBox() const override;
 
         protected:
             /**

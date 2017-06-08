@@ -58,7 +58,7 @@ namespace di
              *
              * \param other the instance to copy
              */
-            GridTransformation( const GridTransformation& other ) = default;
+            GridTransformation( const GridTransformation& ) = default;
 
             /**
              * Assign operation.
@@ -67,7 +67,7 @@ namespace di
              *
              * \return  this.
              */
-            GridTransformation& operator=( const GridTransformation& other ) = default;
+            GridTransformation& operator=( const GridTransformation& ) = default;
 
             /**
              * Destructor. Clean up if needed.

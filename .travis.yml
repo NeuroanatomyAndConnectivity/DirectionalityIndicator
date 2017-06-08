@@ -1,0 +1,42 @@
+language: cpp
+
+sudo: required
+dist: trusty
+
+os:
+  - linux
+
+compiler:
+  - gcc
+  - clang
+
+env:
+  - USE_QT="qt4"
+  - USE_QT="qt5"
+
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode8.3
+      compiler: clang
+      env: USE_QT="qt5"
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
+      env: USE_QT="qt5"
+
+install:
+  - env | grep -v "encrypted" | LC_ALL=C sort
+  - lscpu || sysctl hw
+  - source ./.travis-functions.sh
+  - travis_install_script
+
+script:
+  - travis_script
+
+branches:
+  only:
+    - master
+    - next
+    - /^travis.*/
+    - /^tmp.*/

@@ -129,7 +129,7 @@ namespace di
              *
              * \return true if everything is ok
              */
-            virtual bool handleCommandLine( const std::vector< std::string >& arguments, int argc, char** argv );
+            virtual bool handleCommandLine( const std::vector< std::string >& arguments, int argc, char** argv ) override;
 
         private:
             /**
