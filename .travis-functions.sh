@@ -24,16 +24,50 @@ function xconfigure
 	cmake $CMAKEOPT ../src
 }
 
+function script_xvfb_run
+{
+	# start xvfb X server and give it some time to start
+	export DISPLAY=:99.0
+	if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
+		sudo Xvfb :99 -ac -screen 0 1024x768x24 &
+	else
+		Xvfb :99 -ac -screen 0 1024x768x24 &
+	fi
+	sleep 3
+
+	# just for info output
+	glewinfo
+
+	# Run the program.
+	#
+	# For now we just start it in background and see if it's still running. Once
+	# it's fixed for OSX and Ubuntu soft-GL we could use paraameters like
+	#   --screenshot ../test/data/surfR_p_dist.ply ../test/data/distR.labels
+	# Note, OSX Xvfb has GL Version 4.1, so it should be possible somehow ...
+
+	./bin/DirectionalityIndicator &
+	sleep 10
+
+	# kill returns failure if there is no process running
+	kill $!
+}
+
 function script_generic
 {
 	xconfigure || return
 	$MAKE || return
+	script_xvfb_run || return
 }
 
 function install_deps_linux
 {
 	# install some packages from Ubuntu's default sources
 	sudo apt-get -qq update
+
+	# we should better install the glewinfo version from our bundled sources
+	sudo apt-get install -qq \
+		glew-utils \
+		|| return
 
 	if test "$USE_QT" = "qt4"; then
 		sudo apt-get install -qq \
@@ -52,6 +86,7 @@ function install_deps_osx
 {
 	brew update >/dev/null
 	brew install \
+		glew \
 		qt5 \
 		|| return
 
